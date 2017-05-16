@@ -13,6 +13,10 @@ import config
 log = logging.getLogger('carinev3.raster.views')
 
 
+# Pour le test
+DATE_TEST = datetime.date(2017, 5, 15)
+
+
 # Views
 def index(request):
     """Index."""
@@ -32,8 +36,8 @@ def img_raster(request, pol, ech):
     """Raster as an image."""
     # TODO: ajouter transformation du raster en wgs84
 
-    # daterun = datetime.date.today()
-    daterun = datetime.date(2017, 4, 20)  # to test...
+    daterun = datetime.date.today()
+    daterun = DATE_TEST  # test
 
     # Read database and check for expertise
     expertises = Expertise.objects.filter(daterun=daterun, pol=pol, ech=ech)
@@ -54,8 +58,8 @@ def img_raster(request, pol, ech):
 def bbox_raster(request, pol, ech):
     """Bounding box of the raster."""
 
-    # daterun = datetime.date.today()
-    daterun = datetime.date(2017, 4, 20)  # to test...
+    daterun = datetime.date.today()
+    daterun = DATE_TEST  # test
 
     fnrst = config.get_raster_path(daterun, pol, int(ech))
     r = libcarine3.Raster(fnrst, pol=libcarine3.from_name(pol))

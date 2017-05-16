@@ -35,10 +35,10 @@ map.fitBounds(bounds);
 
 /* Ajout des cartes de prévi */
 var anchors = [
-    [44.0938, 4.22073],	//haut gauche
-    [44.0938, 7.54888],	//haut droite
-    [42.9363, 7.54888],	//bas droite
-    [42.9363, 4.22073] 	//bas gauche
+    [44.442106, 4.220713],	//haut gauche
+    [44.442106, 7.576920],	//haut droite
+    [42.937183, 7.576920],	//bas droite
+    [42.937183, 4.220713] 	//bas gauche
 ];
 
 var layer_no2jm1 = L.imageTransform("{% url 'img_raster' pol='NO2' ech=-1 %}", anchors, {opacity:0.7, attribution: 'Cartes de pollution: airpaca'});
