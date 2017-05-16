@@ -8,7 +8,7 @@ class Expertise(models.Model):
     pol = models.CharField(max_length=10)
     ech = models.IntegerField()
     delta = models.IntegerField()
-    geom = models.GeometryField(srid=2154)
+    geom = models.GeometryField(srid=4326)
 
     def __str__(self):
         return (f"Expertise({self.daterun:%Y-%m-%d}, {self.pol}, ech {self.ech}"

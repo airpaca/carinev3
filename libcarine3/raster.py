@@ -7,6 +7,7 @@
 import io
 import logging
 import rasterio
+from rasterio import features
 import numpy
 import matplotlib.pyplot as plt
 import libcarine3
@@ -15,17 +16,28 @@ import libcarine3
 log = logging.getLogger('libcarinev3.raster')
 
 
-def gauss_from_point(x, y, x0, y0, diff):
-    """Application d'une gausienne circulaire autour de chaque point de 
-    diamètre `d` et d'intensité `diff` sur une grille de calcul."""
-    assert x.shape == y.shape
-    d = 0.075  # degrés (lat/lon)
-    z = (numpy.exp(-4
-                   * numpy.log(2)
-                   * ((x - x0) ** 2 + (y - y0) ** 2)
-                   / d ** 2)
-         * diff)
-    return numpy.flipud(z)
+def rasterize_zt(poly, distance, rstshape, rstaff):
+    """Création d'un raster d'une zone tampon autour d'un polygone.
+    
+    :param poly: Polygon.
+    :param distance: distance.
+    :param rstshape: shape of output.
+    :param rstaff: transformation of raster.
+    :return: numpy.array.
+    """
+    # Création de la zone tampon (en projection cartographique !)
+    if distance:
+        pbuf = poly.buffer(distance, epsg=2154).reproject(4326)
+    else:
+        pbuf = poly
+
+    # Rasterisation de la zone tampon
+    shapes = ((g, 1) for g in [pbuf])
+    rbuf = features.rasterize(shapes=shapes,
+                              out_shape=rstshape,
+                              transform=rstaff,
+                              all_touched=True)
+    return rbuf
 
 
 class Raster:
@@ -80,7 +92,7 @@ class Raster:
         :param dpi:
         :return: None or Pillow.Image if fn is None.
         """
-        data = numpy.flipud(self.r.read(1))
+        data = self.r.read(1)
         mask = (data == self.r.nodata)
         data = numpy.ma.array(data, mask=mask)
         del mask
@@ -88,10 +100,30 @@ class Raster:
 
         # Apply modifications
         for delta, geom in self.modifs:
-            data += gauss_from_point(self.x, self.y, geom[0], geom[1], delta)
+            modif = numpy.zeros(data.shape)
 
-        # data[100:200] += 100
-        log.debug(f"apply modification")
+            if geom.geom_type == 'Point':
+                g = libcarine3.Point(*geom.coords, epsg=4326)
+
+            elif geom.geom_type == 'Polygon':
+                g = libcarine3.Polygon(geom.coords[0], epsg=4326)
+
+            else:
+                raise NotImplementedError()
+
+            # Définition des zones tampons pour la décroissance
+            ztlims, ztxs, ztys = libcarine3.zt_sigmoide(d=10000, n=15)
+
+            ztlims = list(ztlims[1:][::-1]) + [0]
+            ztys = list(ztys[::-1]) + [1]
+            for d, pc in zip(ztlims, ztys):
+                rbuf = rasterize_zt(g, d, self.r.shape, self.r.affine)
+                modif[rbuf == 1] = delta * pc
+            data += modif
+            log.debug(f"apply modification {delta:+} in {g.wkt}")
+
+        # Limits
+        data[(data > -999) & (data < 0)] = 0
 
         # Create figure
         figsize = (data.shape[1] / dpi, data.shape[0] / dpi)
@@ -104,15 +136,15 @@ class Raster:
         cmap = libcarine3.aqvl
         vmin = 0
         vmax = libcarine3.VLS[self.pol] * 2
-        levels = numpy.linspace(0, vmax, 20, endpoint=True)
 
-        plt.contourf(data, cmap=cmap, vmin=vmin, vmax=vmax, levels=levels,
-                     extend='max')
+        plt.imshow(data, cmap=cmap, vmin=vmin, vmax=vmax, interpolation='none')
         log.debug("creating plot done!")
 
         # Export sous forme d'image
         f = open(fn, 'wb') if fn else io.BytesIO()
         fig.canvas.print_png(f)
+        fig.clf()
+        plt.close()
         if fn:
             f.close()
             log.debug(f"save image to {fn}")
@@ -135,8 +167,6 @@ class Raster:
         :param geom: Point or Polygon.
         """
         self.modifs.append((delta, geom))
-
-
 
 
 if __name__ == '__main__':

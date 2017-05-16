@@ -30,25 +30,36 @@ def application_js(request):
 
 def img_raster(request, pol, ech):
     """Raster as an image."""
-    # TODO: traitement selon pol et ech
     # TODO: ajouter transformation du raster en wgs84
-    # TODO: traitement si modification (cf base de données)
+
     # daterun = datetime.date.today()
     daterun = datetime.date(2017, 4, 20)  # to test...
+
+    # Read database and check for expertise
+    expertises = Expertise.objects.filter(daterun=daterun, pol=pol, ech=ech)
+    log.debug(expertises)
+
+    # Read raster
     fnrst = config.get_raster_path(daterun, pol, int(ech))
     r = libcarine3.Raster(fnrst, pol=libcarine3.from_name(pol))
-    # if modif:
-    #   r.alter(...)
+
+    # Apply expertise
+    for expertise in expertises:
+        r.alter(expertise.delta, expertise.geom)
+
+    # Return image
     return HttpResponse(r.to_png(dpi=75), content_type="image/png")
 
 
 def bbox_raster(request, pol, ech):
     """Bounding box of the raster."""
-    # TODO: traitement selon pol et ech
+
     # daterun = datetime.date.today()
     daterun = datetime.date(2017, 4, 20)  # to test...
+
     fnrst = config.get_raster_path(daterun, pol, int(ech))
     r = libcarine3.Raster(fnrst, pol=libcarine3.from_name(pol))
+
     xmin, ymin, xmax, ymax = r.bbox
     return JsonResponse(dict(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax))
 
