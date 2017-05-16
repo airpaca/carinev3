@@ -112,7 +112,7 @@ class Raster:
                 raise NotImplementedError()
 
             # Définition des zones tampons pour la décroissance
-            ztlims, ztxs, ztys = libcarine3.zt_sigmoide(d=10000, n=15)
+            ztlims, ztxs, ztys = libcarine3.zt_sigmoide(d=10000, n=30)
 
             ztlims = list(ztlims[1:][::-1]) + [0]
             ztys = list(ztys[::-1]) + [1]
