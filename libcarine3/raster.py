@@ -55,7 +55,7 @@ class Raster:
             log.error("cannot reconize pollutant!")
             raise libcarine3.Carinev3Error("cannot reconize pollutant!")
         self.pol = pol
-        self.modifs = list()
+        self.expertises = list()
 
     def __del__(self):
         """Close raster."""
@@ -99,14 +99,21 @@ class Raster:
         log.debug(f"read data from raster {self.fn}")
 
         # Apply modifications
-        for delta, geom in self.modifs:
+        for expertise in self.expertises:
             modif = numpy.zeros(data.shape)
 
-            if geom.geom_type == 'Point':
-                g = libcarine3.Point(*geom.coords, epsg=4326)
+            # Use mask if mn or mx
+            # FIXME: comment faire le traitement avec les bornes min et max
+            if expertise.mx:
+                mk = (data >= expertise.mx)
+            else:
+                mk = (data > 0)
 
-            elif geom.geom_type == 'Polygon':
-                g = libcarine3.Polygon(geom.coords[0], epsg=4326)
+            if expertise.geom.geom_type == 'Point':
+                g = libcarine3.Point(*expertise.geom.coords, epsg=4326)
+
+            elif expertise.geom.geom_type == 'Polygon':
+                g = libcarine3.Polygon(expertise.geom.coords[0], epsg=4326)
 
             else:
                 raise NotImplementedError()
@@ -118,9 +125,14 @@ class Raster:
             ztys = list(ztys[::-1]) + [1]
             for d, pc in zip(ztlims, ztys):
                 rbuf = rasterize_zt(g, d, self.r.shape, self.r.affine)
-                modif[rbuf == 1] = delta * pc
+                modif[(rbuf == 1) & mk] = expertise.delta * pc
+
             data += modif
-            log.debug(f"apply modification {delta:+} in {g.wkt}")
+            log.debug(f"apply modification {expertise.delta:+} in {g.wkt}")
+
+            # FIXME: traitement avec l'utilisation des limites min et max
+            if expertise.mx:
+                pass
 
         # Limits
         data[(data > -999) & (data < 0)] = 0
@@ -160,20 +172,9 @@ class Raster:
         """
         return list(self.r.bounds)
 
-    def alter(self, delta, geom):
-        """Alter raster.
+    def add_expertises(self, expertises):
+        """Add expertises.
         
-        :param delta: concentration to add.
-        :param geom: Point or Polygon.
+        :param expertises: list of Expertises object.
         """
-        self.modifs.append((delta, geom))
-
-
-if __name__ == '__main__':
-
-    # Test
-    r = Raster("/home/jv/azur_data/wgs84_ldv2/"
-               "raster_PACA_NO2_20_04_2017_jp0.tif",
-               libcarine3.NO2)
-    r.alter(100, (5.39, 43.29))
-    r.to_png("/tmp/rgb.png", dpi=100)
+        self.expertises += expertises

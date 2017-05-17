@@ -46,10 +46,7 @@ def img_raster(request, pol, ech):
     # Read raster
     fnrst = config.get_raster_path(daterun, pol, int(ech))
     r = libcarine3.Raster(fnrst, pol=libcarine3.from_name(pol))
-
-    # Apply expertise
-    for expertise in expertises:
-        r.alter(expertise.delta, expertise.geom)
+    r.add_expertises(expertises)
 
     # Return image
     return HttpResponse(r.to_png(dpi=75), content_type="image/png")
@@ -70,7 +67,10 @@ def bbox_raster(request, pol, ech):
 
 def list_modifications(request, pol, ech):
     """Liste des modifications."""
+
     daterun = datetime.date.today()
+    daterun = DATE_TEST  # test
+
     objs = Expertise.objects.filter(daterun=daterun, pol=pol, ech=ech)
     data = dict(daterun=daterun, pol=pol, ech=int(ech),
                 modifs=[e.json for e in objs])
