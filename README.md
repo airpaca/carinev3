@@ -15,6 +15,47 @@ Traitement en série :
 
     for fn in $( ls raster_PACA_*_??_??_????_j??.tif ); do gdalwarp -t_srs EPSG:4326 -ts 2500 0 -r bilinear ${fn}  wgs84_ld/${fn}; done
 
+Configuration de la localisation des rasters dans le fichier `config.py`
+
+
+## Installation
+
+Clonage du dépôt et installation des dépendances
+
+    git clone airpaca@vmli-cal2:/home/airpaca/git/carinev3.git
+    cd carinev3
+    python3.6 -m venv .env
+    source .env/bin/activate
+    pip install -r requirements.txt
+
+Création d'une base vierge
+
+    echo "CREATE DATABASE carinev3" | psql -h<host> -U<user>
+
+Migration dans la base de données
+
+    python manage.py migrate
+    
+Lancement du serveur de développement
+
+    python manage.py runserver
+    
+L'application est disponible à l'adresse [http://localhost:8100](http://localhost:8100).
+
+
+## Urls
+
+Index : `/raster/`
+
+Raster sous la forme d'une image : `/raster/img/raster_<pol>_ech<ech>.png`
+
+Enveloppe du raster : `/raster/bbox/raster_<pol>_ech<ech>.json`
+
+Liste des modifications : `/raster/modifications/<pol>/ech<ech>/list.json`
+    
+Enregistrement des modifications (requête `POST`) : `/raster/alter_raster/`
+
+
 
 ## Communication
 
