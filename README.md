@@ -30,7 +30,11 @@ Clonage du dépôt et installation des dépendances
 
 Création d'une base vierge
 
-    echo "CREATE DATABASE carinev3" | psql -h<host> -U<user>
+    echo "CREATE DATABASE carinev3" | psql -h<host> -U<user> -d<postgres>
+
+Modification des paramètres de connexion à la base de données
+    
+    Dans settings.py
 
 Migration dans la base de données
 
@@ -39,6 +43,10 @@ Migration dans la base de données
 Lancement du serveur de développement
 
     python manage.py runserver
+
+Si on utilise un serveur distant le, rajouter dans allowed hosts de carinev3.settings.py
+
+    python manage.py runserver host:port
     
 L'application est disponible à l'adresse [http://localhost:8100](http://localhost:8100).
 
