@@ -44,12 +44,12 @@ Lancement du serveur de développement
 
     python manage.py runserver
 
-Si on utilise un serveur distant le, rajouter dans allowed hosts de carinev3.settings.py
+L'application est disponible à l'adresse [http://localhost:8100](http://localhost:8100).
+
+Si on utilise un serveur distant le, rajouter dans allowed hosts de carinev3/settings.py
 
     python manage.py runserver host:port
     
-L'application est disponible à l'adresse [http://localhost:8100](http://localhost:8100).
-
 
 ## Urls
 
