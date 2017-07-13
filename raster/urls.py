@@ -20,11 +20,29 @@ urlpatterns = [
 
     # Raster as an image (to Leaflet)
     # .. img/raster_<pol>_ech<ech>.png
-    url(r'^img/raster_(?P<pol>[a-zA-Z0-9]+)_ech(?P<ech>-?[0-9]+).png$',
+    url(r'^img/raster_(?P<id>[0-9]+).png$',
         views.img_raster, name='img_raster'),
 
     # Bounding box of the raster (JSON)
     # .. bbox/raster_<pol>_ech<ech>.json
-    url(r'^bbox/raster_(?P<pol>[a-zA-Z0-9]+)_ech(?P<ech>-?[0-9]+).json$',
+    url(r'^bbox/raster_(?P<id>[0-9]+).json$',
         views.bbox_raster, name='bbox_raster'),
+	
+	
+	#couches vecteurs
+	   
+	url(r'^sites_fixes.json$',
+        views.sites_fixes, name='sites_fixes'),
+
+	url(r'^reg_aura$',
+        views.reg_aura, name='reg_aura'),
+	url(r'^epci_aura$',
+        views.epci_aura, name='epci_aura'),
+
+	url(r'^source_url$',
+        views.source_url, name='source_url'),
+			#dummy	
+	url(r'^check_statut$',
+        views.check_statut, name='check_statut'),
+
 ]

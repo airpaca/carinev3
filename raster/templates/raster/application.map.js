@@ -5,9 +5,231 @@ var corr_type = "";
 var corr_coords = [];
 var corr_value = "";
 
+date = new Date()
+var jp0 = date.toISOString().slice(5,10);
+date.setDate(date.getDate()-1)
+var jm1= date.toISOString().slice(5,10);
+date.setDate(date.getDate()-1)
+var jm2 = date.toISOString().slice(5,10);
+
 /* Création de la carte */
-var map = L.map('map', { zoomControl:false }, {layers: []}).setView([43.9, 6.0], 8);    
-map.attributionControl.addAttribution('CARINE v3 &copy; AIR PACA - 2017</a>'); 
+var map = L.map('map', { zoomControl:false }, {layers: []}).setView([45, 5.0], 8);    
+map.attributionControl.addAttribution('CARINE v3 &copy; ATMO Aura - 2017</a>'); 
+
+/*2eme frame*/
+var map2 = L.map('map2', { zoomControl:false }, {layers: []}).setView([45, 5.0], 8);    
+map2.attributionControl.addAttribution('CARINE v3 - ATMO Aura - 2017</a>'); 
+
+function onMapMove(e){
+	map2.panTo(map.getCenter())
+}
+function onMapZoom(e){
+	map2.setZoom(map.getZoom())
+}
+L.control.scale().addTo(map);
+/* activation de la navigation simultanée, declenché par clic dans le menu */
+function toggleNav(){
+	console.log('toggleNav triggered')
+
+	if (map._events.move.length >1 ){
+		console.log('remove')
+		map._events.zoom.pop()
+		map._events.move.pop()
+	}
+	else {
+		map.on('zoom',onMapZoom)
+		map.on('move',onMapMove)
+	}
+
+}
+
+/* gestionnaire de couches */
+var activeLayer1;
+var activeLayer2;
+//obsolete?
+var baseLayers = {
+  
+};
+var overlayLayers1 = {
+
+};
+var overlayLayers2 = {
+
+};
+var vectorLayers = {	
+}
+// --- init ----
+/* checksources temp*/
+var liste_sources;
+
+
+$.ajax({
+	url: '{% url "source_url"  %}',
+	success : function(msg){
+		//j=JSON.parse(msg)
+		console.log(msg)
+		liste_sources=msg;
+		k=Object.keys(msg)
+		for (i=0;i<k.length;i++) {
+			ind=k[i]
+			ob=msg[ind]
+			id_but='lay_btn_'+ind.toString()
+			cls=ob.pol.toLowerCase()
+		
+			html_btn='<a href="#" class="list-group-item point-item baselayer"  id="'+id_but+'"> <h4 class="list-group-item-heading" >'+ob.pol+'</h4>J ' + ob.ech.toString() + '    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>'
+
+			var block_id;
+			if (ob.is_default_source==true){
+				overlayLayers1[id_but]={'id_source' :  ind , 'obj' : ob}
+				sel='#sidemenu > .' + cls
+				$(sel).append(html_btn)
+				if (ob.statut!=true){
+					$("#"+id_but + "  > .badge").css("background-color","red")
+
+				}
+				
+			}
+			else {
+				overlayLayers2[id_but]={'id_source' :  ind , 'obj' : ob}
+				sel='#sidemenu2 > .' + cls
+
+			}
+		
+
+		}
+
+		dic = getTypeDic('PM10','ada');
+		buildTable(dic)
+
+
+	}
+});
+function getTypeDic(poll,type){
+	//reformate le liste source en un dictionnaire facilement utilisable pour construire le tableau
+	//chaque ech (supporte pas les id negatif)
+	type_dic={0:{},1:{},2:{},3:{}};
+	for (s in liste_sources) {		
+		obj=liste_sources[s]
+		//console.log(obj)
+		if ((obj.type==type) && (obj['pol']==poll)){	
+			
+			ech=obj['ech']+1
+			run=obj['intrun']
+			type_dic[ech][run]=s;
+		}
+	}
+	return type_dic;
+}
+function buildTable(type_dic){
+	
+	//TODO : a mettre dynamique selon  les polluants echeances etc..
+	$(".table > thead").remove()
+	$(".table > tbody").remove()
+	$(".table").append("<thead class='thead-inverse'><tr><th></th><th>"+jm2+"</th><th>"+jm1+"</th><th>"+jp0+"</th><tr></thead>")
+	$(".table").append("<tbody></tbody>")
+	for (i in type_dic){
+		$(".table > tbody").append("<tr id='tr_"+i.toString()+"'><th scope='row'>"+(i-1).toString()+"</th></tr>")
+		for (run in type_dic[i]){
+			//console.log(run)
+			// pour inverser l'ordre des colonnes du tableaux :
+			reverse_ind =(run-2)*(-1)
+			//console.log(reverse_ind)
+			id_source=type_dic[i][reverse_ind]
+			//console.log(id_source)
+			
+			var col='red';	
+			if (liste_sources[id_source].statut==true){
+				col='green'
+			}
+			is_source=''
+			for (id_but in overlayLayers1){
+				//console.log(overlayLayers1[id_but]['id_source'])
+				if (overlayLayers1[id_but]['id_source']==id_source){
+					is_source=' is_source'	
+				}
+			}
+			$("#tr_" + i.toString()).append("<td class='"+col+is_source+"' id=run_"+id_source+"></td>")
+		}	
+	}
+	td_clic()
+}
+/*function poll_clic(poll) {
+	$(function() {
+		$("#poll_switch_2 > ."+poll).click(			
+			function(){
+				dic=getTypeDic(poll,'ada')
+				buildTable(dic)
+			}
+		)	
+	});
+}*/
+$(function() {
+	$("#poll_switch_2 > .NO2").click(			
+		function(){
+			dic=getTypeDic("NO2",'ada')
+			buildTable(dic)
+		}
+	)	
+});
+$(function() {
+	$("#poll_switch_2 > .O3").click(			
+		function(){
+			dic=getTypeDic("O3",'ada')
+			buildTable(dic)
+		}
+	)	
+});
+$(function() {
+	$("#poll_switch_2 > .PM10").click(			
+		function(){
+			dic=getTypeDic("PM10",'ada')
+			buildTable(dic)
+		}
+	)	
+});
+function td_clic() {
+	$(".table > tbody > tr > td").click(function(){
+		
+		if ( activeLayer2 != null) {
+			map2.removeLayer(activeLayer2)
+		}
+		id_source=($(this)[0].id).substr(-3,3)
+		url="/raster/img/raster_"+id_source+".png";
+		$.ajax({
+			url: "/raster/bbox/raster_"+id_source+".json",
+			success : function(msg){
+				anchors = [
+					[msg['ymax'], msg['xmin']],	//haut gauche
+					[msg['ymax'], msg['xmax']],	//haut droite
+					[msg['ymin'], msg['xmax']],	//bas droite
+					[msg['ymin'], msg['xmin']] 	//bas gauche
+				];
+				lay = L.imageTransform(url, anchors,{opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});	
+				lay.addTo(map2)
+				activeLayer2=lay;
+			}
+		})
+
+		//console.log(url_bounds)
+
+	})
+};
+
+/*function addLayer(id) {
+	ob=liste_sources[id]
+	console.log(ob)
+	if (ob.statut==true){
+		
+		lay = L.imageTransform("{% url 'img_raster' id=298  %}", anchors, {opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});
+		lay.addTo(map)
+		overlayLayers[id]={"objet": lay, "polluant": 'pm10', "echeance": "j-1"}
+		
+
+	}
+}*/
+
+
+
 
 /* Chargement du fond de carte */
 var mapbox_light = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoicmh1bSIsImEiOiJjaWx5ZmFnM2wwMGdidmZtNjBnYzVuM2dtIn0.MMLcyhsS00VFpKdopb190Q', {
@@ -18,103 +240,285 @@ var mapbox_light = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}
     id: 'mapbox.light',
     opacity: 1.,
 });   
-// mapbox_light.addTo(map);
-
+mapbox_light.addTo(map);
+var mapbox_light2 = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoicmh1bSIsImEiOiJjaWx5ZmFnM2wwMGdidmZtNjBnYzVuM2dtIn0.MMLcyhsS00VFpKdopb190Q', {
+    maxZoom: 18,
+    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+        '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+        'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+    id: 'mapbox.light',
+    opacity: 1.,
+});   
+mapbox_light2.addTo(map2);
+/*
 var Hydda_Full = L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
 	maxZoom: 18,
 	attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 });
+var Hydda_Full2 = L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
+	maxZoom: 18,
+	attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+});
 Hydda_Full.addTo(map);
-
+Hydda_Full2.addTo(map2);*/
 /* Déclaration de l'emprise max */
 var	bounds = new L.LatLngBounds( 
-    new L.LatLng(42.9374, 3.52073), // SW  L.LatLng(42.92986796194353,4.220712166125205)
-    new L.LatLng(44.0938, 7.54861)  // NE  L.LatLng(45.17322865209258,7.804443841248857)
+   // new L.LatLng(44.1154926129760483, 2.0628781476760838), // SW  L.LatLng(42.92986796194353,4.220712166125205)
+   // new L.LatLng(46.8042870493686962, 7.1855613116475361)  // NE  L.LatLng(45.17322865209258,7.804443841248857)
 );
-map.fitBounds(bounds);
-
+//map.fitBounds(bounds);
+//2.0628781476760838,44.1154926129760483 : 7.1855613116475361,46.8042870493686962
 /* Ajout des cartes de prévi */
-var anchors = [
-    [44.442106, 4.220713],	//haut gauche
-    [44.442106, 7.576920],	//haut droite
-    [42.937183, 7.576920],	//bas droite
-    [42.937183, 4.220713] 	//bas gauche
-];
 
-var layer_no2jm1 = L.imageTransform("{% url 'img_raster' pol='NO2' ech=-1 %}", anchors, {opacity:0.7, attribution: 'Cartes de pollution: airpaca'});
-var layer_no2jp0 = L.imageTransform("{% url 'img_raster' pol='NO2' ech=0 %}", anchors, {opacity:0.7, attribution: 'Cartes de pollution: airpaca'});
-var layer_no2jp1 = L.imageTransform("{% url 'img_raster' pol='NO2' ech=1 %}", anchors, {opacity:0.7, attribution: 'Cartes de pollution: airpaca'});
-var layer_no2jp2 = L.imageTransform("{% url 'img_raster' pol='NO2' ech=2 %}", anchors, {opacity:0.7, attribution: 'Cartes de pollution: airpaca'});
-var layer_pm10jm1 = L.imageTransform("{% url 'img_raster' pol='PM10' ech=-1 %}", anchors, {opacity:0.7, attribution: 'Cartes de pollution: airpaca'});
-var layer_pm10jp0 = L.imageTransform("{% url 'img_raster' pol='PM10' ech=0 %}", anchors, {opacity:0.7, attribution: 'Cartes de pollution: airpaca'});
-var layer_pm10jp1 = L.imageTransform("{% url 'img_raster' pol='PM10' ech=1 %}", anchors, {opacity:0.7, attribution: 'Cartes de pollution: airpaca'});
-var layer_pm10jp2 = L.imageTransform("{% url 'img_raster' pol='PM10' ech=2 %}", anchors, {opacity:0.7, attribution: 'Cartes de pollution: airpaca'});
+
+
+
+
+
+function onEachFeature(feature, layer) {
+		var popupContent="";
+		if (feature.properties && feature.properties.nom) {
+			popupContent += feature.properties.nom;
+		}
+
+		layer.bindPopup(popupContent);
+	}
+
+
+var myStyle = {
+    "color": "#ff7800",
+    "weight": 2,
+    "opacity":1,
+	"fillOpacity":0
+};
+
+
+
+
+
 
 /* Affichage d'origine */
-layer_no2jp0.addTo(map);	
+//layer_no2jp0.addTo(map);	
 
 /* Ajout des couches dans un dictionnaire des couches */
-var baseLayers = {
-    'mapbox_light': mapbox_light,
-};
-var overlayLayers = {
-    'layer_no2jm1': {"objet": layer_no2jm1, "polluant": "no2", "echeance": "j-1"},
-    'layer_no2jp0': {"objet": layer_no2jp0, "polluant": "no2", "echeance": "j+0"},
-    'layer_no2jp1': {"objet": layer_no2jp1, "polluant": "no2", "echeance": "j+1"},
-    'layer_no2jp2': {"objet": layer_no2jp2, "polluant": "no2", "echeance": "j+2"},
-    'layer_pm10jm1': {"objet": layer_pm10jm1, "polluant": "pm10", "echeance": "j-1"},
-    'layer_pm10jp0': {"objet": layer_pm10jp0, "polluant": "pm10", "echeance": "j+0"},
-    'layer_pm10jp1': {"objet": layer_pm10jp1, "polluant": "pm10", "echeance": "j+1"},
-    'layer_pm10jp2': {"objet": layer_pm10jp2, "polluant": "pm10", "echeance": "j+2"},
-};
 
+var vlGroup=L.layerGroup()
+vlGroup.addTo(map)
+var vlGroup2=L.layerGroup()
+vlGroup2.addTo(map2)
 // Enregistrement du polluant et de l'échéance par defaut
 var corr_pollutant = "no2";
 var corr_echeance = "pm10";
 
 /* Fonction de gestion des couches */
 $(function() {
-    $('.list-group-item').click( function() {
-        
-        /* Gestion de la liste des couches */
-        
-        // Boutons actifs
-        $(this).addClass('active').siblings().removeClass('active');
-        
-        if ($(this).closest('div').attr('id') == "no2"){
-            $("#pm10 a").removeClass('active');
-        };
-        if ($(this).closest('div').attr('id') == "pm10"){
-            $("#no2 a").removeClass('active');
-        };        
+    $('.baselayer').click( function() {
+			console.log("clic baselayer")
+			$(this).next().removeClass('hide');
+			/* Gestion de la liste des couches */
+			
+			// Boutons actifs
+			$(this).addClass('active').siblings().removeClass('active');
+			
+			if ($(this).closest('div').attr('id') == "no2"){
+				$("#pm10 a").removeClass('active');
+			};
+			if ($(this).closest('div').attr('id') == "pm10"){
+				$("#no2 a").removeClass('active');
+			};        
+			if ($(this).closest('div').attr('id') == "no2-2"){
+				$("#pm10-2 a").removeClass('active');
+			};
+			if ($(this).closest('div').attr('id') == "pm10-2"){
+				$("#no2-2 a").removeClass('active');
+			};   
+			// Chevrons
+			$("a .glyphicon-chevron-right").addClass('hide');		
+			$("#" + $(this)[0].id + " .glyphicon-chevron-right").removeClass('hide');
+		
+			// // légendes
+			// $("[class*=lgd_]").addClass('hide');	
+			// $("." + $(this)[0].id.replace("layer", "lgd")).removeClass('hide'); 
+			
 
-        // Chevrons
-        $("a .glyphicon-chevron-right").addClass('hide');		
-        $("#" + $(this)[0].id + " .glyphicon-chevron-right").removeClass('hide');
-    
-        // // légendes
-        // $("[class*=lgd_]").addClass('hide');	
-        // $("." + $(this)[0].id.replace("layer", "lgd")).removeClass('hide'); 
-        
-    
-        /* Gestion de l'affichage des couches */
-        
-        // Suppression des couches actives
-        for (alayer in overlayLayers) {
-            if (!($(this)[0].id == alayer)){
-                map.removeLayer(overlayLayers[alayer]["objet"]);
-            };
-        };		
-        
-        // Ajout de la couche choisie
-        overlayLayers[$(this)[0].id]["objet"].addTo(map);
-        
-        // Récupération du polluant et de l'échéance en cours d'utilisation
-        corr_pollutant = overlayLayers[$(this)[0].id]["polluant"];
-        corr_echeance = overlayLayers[$(this)[0].id]["echeance"];
+			/* Gestion de l'affichage des couches */
+			
+			// Suppression des couches actives
+			// condition pour traiter les 2 map-block séparément
+			if ($(this).closest("#map-block1").length == 1) {
+				id_but=$(this)[0].id
+				
+				//null si on a pas encore initialisé (inutile si on affiche un polluant par defaut)
+				if ( activeLayer1 != null) {
+					map.removeLayer(activeLayer1)
+				}
+				id_source = overlayLayers1[id_but].id_source
+				url="/raster/img/raster_"+id_source.toString()+".png";
+				console.log(url)
+				lay = L.imageTransform(url, anchors, {opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});		
+				lay.addTo(map)
+				activeLayer1=lay;
+				//overlayLayers[$(this)[0].id]["objet"].addTo(map);
+	
+			}
+ 			else if ($(this).closest("#map-block2").length == 1) {
+				id_but=$(this)[0].id
+				//null si on a pas encore initialisé (inutile si on affiche un polluant par defaut)
+				if ( activeLayer2 != null) {
+					map2.removeLayer(activeLayer2)
+				}
+				id_source = overlayLayers2[id_but].id_source
+				url="/raster/img/raster_"+id_source.toString()+".png";
+				lay = L.imageTransform(url, anchors, {opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});		
+				lay.addTo(map2)
+				activeLayer2=lay;
+				};		
+			
+			// Ajout de la couche choisie
+			
+			
+			// Récupération du polluant et de l'échéance en cours d'utilisation
+//			corr_pollutant = overlayLayers[$(this)[0].id]["polluant"];
+//			corr_echeance = overlayLayers[$(this)[0].id]["echeance"];
 
-    });
-});	
+
+
+	});
+});
+var reg_aura;
+$.ajax({
+	url: '{% url "reg_aura"  %}',
+	success : function(msg){
+		//j=JSON.parse(msg)
+		
+
+		reg_aura = L.geoJSON(
+			msg,
+			{
+				onEachFeature: onEachFeature,
+				style : myStyle
+			}
+		)
+
+		vectorLayers['reg_aura']= {'objet' : reg_aura}
+		//clone grace au plugin clonelayer pour permettre d'afficher sur les 2 frames
+		var  reg_aura_2 = cloneLayer(reg_aura);
+		vectorLayers['reg_aura_2']= {'objet' : reg_aura_2}
+
+	}
+});
+/* var epci_aura;
+$.ajax({
+	url: '{% url "epci_aura"  %}',
+	success : function(msg){
+		//j=JSON.parse(msg)
+		
+
+		epci_aura = L.geoJSON(
+			msg,
+			{
+				onEachFeature: onEachFeature,
+				style: function(feature) {
+					 return {
+						color : "#000000",
+						weight: 1,
+						opacity: 1,
+						fillOpacity: 0
+					}
+				}
+			}
+		)
+
+		vectorLayers['epci_aura']= {'objet' : epci_aura}
+				//clone grace au plugin clonelayer pour permettre d'afficher sur les 2 frames
+		var  epci_aura_2 = cloneLayer(epci_aura);
+		vectorLayers['epci_aura_2']= {'objet' : epci_aura_2}
+		setTimeout(console.log(vectorLayers),20000)
+		
+	}
+}); */
+var layer_sites_fixes;
+$.ajax({
+	url: '{% url "sites_fixes"  %}',
+	success : function(msg){
+		
+		layer_sites_fixes = L.geoJSON(msg,{
+			onEachFeature: onEachFeature,
+			style :  function(feature) {
+				return {
+				radius: 1,
+				fillColor: "#ff7800",
+				color: "#000",
+				weight: 1,
+				opacity: 1,
+				fillOpacity: 0.8
+				}
+			}
+		})
+		
+		vectorLayers['layer_sites_fixes']= {'objet' : layer_sites_fixes}
+		//clone grace au plugin clonelayer pour permettre d'afficher sur les 2 frames
+		var  layer_sites_fixes_2 = cloneLayer(layer_sites_fixes);
+		vectorLayers['layer_sites_fixes_2']= {'objet' : layer_sites_fixes_2}
+
+	}
+});
+$(function() {
+    $('.vector-layer').children().click( function() {
+		var id = $(this).attr('id')
+
+		if ($(this).closest("#map-block1").length == 1){
+			ob=vectorLayers[id]['objet']
+			if (map.hasLayer(ob)){
+				console.log(ob)
+				ob.removeFrom(map)
+			}
+			else {
+				
+				ob.addTo(map)
+			}
+		}
+		if ($(this).closest("#map-block2").length == 1){
+			ob=vectorLayers[id]['objet']
+			console.log(ob)
+			if (map2.hasLayer(ob)){
+				
+				ob.removeFrom(map2)
+			}
+			else {
+				
+				ob.addTo(map2)
+			}
+		}
+	})
+})
+/*cacher les onglets fine échelle au clic sur la croix*/
+/*
+$(function(){
+	$('.hide-fine-btn').click(function (){
+		$(this).parent().addClass('hide');
+	})
+})
+$(function(){
+	$('.show-fine-btn').click(function (){
+		// Ajout de la couche choisie
+        overlayLayers[$(this).parent()[0].id]["objet"].addTo(map);
+	})
+	
+})
+*/
+/* Vincent : ajout de couches vectorielles  :
+TODO : ajout d'un dictionnaire de couches vectorielles
+Ajout d'un modèle type vector.py
+Ajout des éléments d'interface
+Ajout des events 
+Couches envisagées à minima:
+	- Région
+	- Zonage reg
+	- Communes ou EPCI
+	- sites
+	- établissement industriels
+*/
 
 /* Fonctions éxecutées on click */
 map.on('click', function(e) {   
@@ -277,10 +681,10 @@ $("#submitFormCorr").click(function (e) {
             // type: corr_type,
             // coords: corr_coords,
             // value: corr_value    
-            type: 'point',
+          /*  type: 'point',
             delta: 5,
             lon: 6,
-            lat: 45  
+            lat: 45*/  
         },
         dataType: 'json',
         // beforeSend:function( jqXHR, settings){

@@ -3,7 +3,7 @@
 
 """Create fake data..."""
 
-
+"""
 import datetime
 
 import django
@@ -12,7 +12,7 @@ django.setup()
 from raster.models import Expertise
 
 
-dr = datetime.date(2017, 5, 15)
+dr = datetime.date(2000,10,10)
 
 
 # Clean up database
@@ -51,3 +51,4 @@ poly = ('POLYGON((5.5858 43.2775, 5.5824 43.2721, 5.5983 43.2622, '
         '5.6131 43.2737, 5.5989 43.2822, 5.5858 43.2775))')
 e = Expertise(daterun=dr, pol='PM10', ech=1, delta=-50, mn=40, geom=poly)
 e.save()
+"""

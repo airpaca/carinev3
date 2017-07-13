@@ -15,6 +15,7 @@
         <meta name="author" content="romain.souweine@airpaca.org">
         
         <!-- Chargement des feuilles de stype CSS -->
+
         <link href="{% static 'raster/css/bootstrap.min.css' %}" rel="stylesheet">
         <link href="{% static 'raster/lib/customScroll/css/jquery.mCustomScrollbar.css' %}" rel="stylesheet">
         <link href="{% static 'raster/css/style.default.css' %}" rel="stylesheet">
@@ -80,116 +81,182 @@
                 </ul>
             </div><!-- /.navbar-collapse -->
         </nav>
+		<div  class="map-block" id="map-block1">
+			<!-- Déclaration de la carte -->
+		
+			<div class="visible-lg visible-md">
 
-        <!-- Déclaration de la carte -->
-        <div id="map" ></div>
+				<!-- Barre de recherches
+				<div id="search-box">
+					<form class="form-inline" role="form">
+						<div class="form-group">
+							<label class="sr-only" for="searchText">Search</label>
+							<input type="text" class="form-control input-sm" id="searchText" placeholder="Rechercher ...">
+						</div>
+						<button type="submit" class="btn btn-default btn-sm">
+							<i class="glyphicon glyphicon-search"></i>
+						</button>
+					</form>
+				</div>v
+				-->
 
-        <div class="visible-lg visible-md">
+				<!-- Side Bar -->
+				<div id="sidemenu" class="well">
 
-            <!-- Barre de recherches
-            <div id="search-box">
-                <form class="form-inline" role="form">
-                    <div class="form-group">
-                        <label class="sr-only" for="searchText">Search</label>
-                        <input type="text" class="form-control input-sm" id="searchText" placeholder="Rechercher ...">
-                    </div>
-                    <button type="submit" class="btn btn-default btn-sm">
-                        <i class="glyphicon glyphicon-search"></i>
-                    </button>
-                </form>
-            </div>
-            -->
+					<!-- Sidebar Options -->
+					<div class="btn-group btn-group-justified btn-group-sm">
+						<a class="btn btn-default"> <i class="glyphicon glyphicon-fullscreen"></i> Fit in Window </a>
+						<a class="btn btn-default"> <i class="glyphicon glyphicon-filter"></i> Filtrer </a>
+						<a onclick="toggleNav()" class="btn btn-default"> <i class="glyphicon glyphicon-lock"></i> Navigation simultanée </a>
+						
+					</div>
 
-            <!-- Side Bar -->
-            <div id="sidemenu" class="well">
+					<!-- Sidebar Separator -->
+					<div class="divider10"></div>
 
-                <!-- Sidebar Options -->
-                <div class="btn-group btn-group-justified btn-group-sm">
-                    <a class="btn btn-default"> <i class="glyphicon glyphicon-fullscreen"></i> Fit in Window </a>
-                    <a class="btn btn-default"> <i class="glyphicon glyphicon-filter"></i> Filtrer </a>
-                </div>
+					<!-- Sidebar Panel
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<a>Sort By</a>
+						</div>
+					</div>
+					-->
 
-                <!-- Sidebar Separator -->
-                <div class="divider10"></div>
+					<!-- Liste des couches -->
+					<div class="list-group point-list-view no2" id="no2">
 
-                <!-- Sidebar Panel
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        <a>Sort By</a>
-                    </div>
-                </div>
-                -->
+					</div>
+					<div class="divider10"></div>
+					<div class="list-group point-list-view pm10" id="pm10">
 
-                <!-- Liste des couches -->
-                <div class="list-group point-list-view" id="no2">
-                    <a href="#"class="list-group-item point-item" id="layer_no2jm1"> <h4 class="list-group-item-heading" >NO2</h4>J-1     <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item active" id="layer_no2jp0"> <h4 class="list-group-item-heading" >NO2</h4>J+0     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_no2jp1"> <h4 class="list-group-item-heading" >NO2</h4>J+1     <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_no2jp2"> <h4 class="list-group-item-heading" >NO2</h4>J+2     <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
-                </div>
-                <div class="divider10"></div>
-                <div class="list-group point-list-view" id="pm10">
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jm1"> <h4 class="list-group-item-heading" >PM10</h4>J-1     <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jp0"> <h4 class="list-group-item-heading" >PM10</h4>J+0     <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jp1"> <h4 class="list-group-item-heading" >PM10</h4>J+1     <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jp2"> <h4 class="list-group-item-heading" >PM10</h4>J+2     <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
-                </div>
-                <div class="divider10"></div>
-                <!--
-                <div class="list-group point-list-view">
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jm1"> <h4 class="list-group-item-heading" >O3</h4>J-1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jp0"> <h4 class="list-group-item-heading" >O3</h4>J+0     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jp1"> <h4 class="list-group-item-heading" >O3</h4>J+1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jp2"> <h4 class="list-group-item-heading" >O3</h4>J+2     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                </div>
-                <div class="divider10"></div>
-                <div class="list-group point-list-view">
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jm1"> <h4 class="list-group-item-heading" >SO2</h4>J-1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jp0"> <h4 class="list-group-item-heading" >SO2</h4>J+0     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jp1"> <h4 class="list-group-item-heading" >SO2</h4>J+1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jp2"> <h4 class="list-group-item-heading" >SO2</h4>J+2     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                </div>
 
-                <div class="list-group point-list-view">
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jm1"> <h4 class="list-group-item-heading" >Multi Polluants</h4>J-1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jp0"> <h4 class="list-group-item-heading" >Multi Polluants</h4>J+0     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jp1"> <h4 class="list-group-item-heading" >Multi Polluants</h4>J+1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                    <a href="#"class="list-group-item point-item" id="layer_pm10jp2"> <h4 class="list-group-item-heading" >Multi Polluants</h4>J+2     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
-                </div>
-                -->
-                <!-- Liste des couches v2
-                <div class="list-group point-list-view">
-                    <h5>Dioxydes d'azote</h5>
-                    <a href="#" class="list-group-item active lyr_no2_jm1" id="layer_no2jm1">
-                    Calcul NO2 J-1
-                    <span class="glyphicon glyphicon-chevron-right"></span>
-                    <span class="badge">Ready</span>
-                    </a>
-                    <img src="data/echelleno2.png" class="img-responsive lgd_no2jm1 hide" alt="Echelle">
-                    <a href="#" class="list-group-item active lyr_no2_jp0" id="layer_no2jp0">
-                    Prévision NO2 J+0
-                    <span class="glyphicon glyphicon-chevron-right"></span>
-                    <span class="badge">Ready</span>
-                    </a>
-                    <img src="data/echelleno2.png" class="img-responsive lgd_no2jp0 hide" alt="Echelle">
-                    <h5>Particules fines 10µ</h5>
-                    <a href="#" class="list-group-item active lyr_pm10_jm1" id="layer_pm10jm1">
-                    Calcul PM10 J-1
-                    <span class="glyphicon glyphicon-chevron-right"></span>
-                    <span class="badge">Ready</span>
-                    </a>
-                    <img src="data/echelleno2.png" class="img-responsive lgd_pm10jm1 hide" alt="Echelle">
-                    <a href="#" class="list-group-item active lyr_pm10_jm1" id="layer_pm10jp0">
-                    Prévision PM10 J+0
-                    <span class="glyphicon glyphicon-chevron-right"></span>
-                    <span class="badge">Ready</span>
-                    </a>
-                    <img src="data/echelleno2.png" class="img-responsive lgd_pm10jp0 hide" alt="Echelle">
-                </div>
-                -->
-            </div>
-        </div>
+					</div>
+				
+					<div class="divider_vect"></div>
+					<div class="list-group point-list-view vector-layer" id="vect">
+						<a href="#" class="list-group-item point-item" id="reg_aura" > <h4 class="list-group-item-heading" >Régions</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
+						<a href="#" class="list-group-item point-item" id="epci_aura"> <h4 class="list-group-item-heading" >Epcis</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
+						<a href="#" class="list-group-item point-item" id="layer_sites_fixes" > <h4 class="list-group-item-heading" >Sites fixes</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
+					</div>
+					<div class="divider_vect"></div>
+					<!--
+					<div class="list-group point-list-view">
+						<a href="#"class="list-group-item point-item" id="layer_pm10jm1"> <h4 class="list-group-item-heading" >O3</h4>J-1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
+						<a href="#"class="list-group-item point-item" id="layer_pm10jp0"> <h4 class="list-group-item-heading" >O3</h4>J+0     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
+						<a href="#"class="list-group-item point-item" id="layer_pm10jp1"> <h4 class="list-group-item-heading" >O3</h4>J+1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
+						<a href="#"class="list-group-item point-item" id="layer_pm10jp2"> <h4 class="list-group-item-heading" >O3</h4>J+2     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
+					</div>
+					<div class="divider10"></div>
+					<div class="list-group point-list-view">
+						<a href="#"class="list-group-item point-item" id="layer_pm10jm1"> <h4 class="list-group-item-heading" >SO2</h4>J-1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
+						<a href="#"class="list-group-item point-item" id="layer_pm10jp0"> <h4 class="list-group-item-heading" >SO2</h4>J+0     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
+						<a href="#"class="list-group-item point-item" id="layer_pm10jp1"> <h4 class="list-group-item-heading" >SO2</h4>J+1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
+						<a href="#"class="list-group-item point-item" id="layer_pm10jp2"> <h4 class="list-group-item-heading" >SO2</h4>J+2     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
+					</div>
 
+					<div class="list-group point-list-view">
+						<a href="#"class="list-group-item point-item" id="layer_pm10jm1"> <h4 class="list-group-item-heading" >Multi Polluants</h4>J-1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
+						<a href="#"class="list-group-item point-item" id="layer_pm10jp0"> <h4 class="list-group-item-heading" >Multi Polluants</h4>J+0     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
+						<a href="#"class="list-group-item point-item" id="layer_pm10jp1"> <h4 class="list-group-item-heading" >Multi Polluants</h4>J+1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
+						<a href="#"class="list-group-item point-item" id="layer_pm10jp2"> <h4 class="list-group-item-heading" >Multi Polluants</h4>J+2     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
+					</div>
+					-->
+					<!-- Liste des couches v2
+					<div class="list-group point-list-view">
+						<h5>Dioxydes d'azote</h5>
+						<a href="#" class="list-group-item active lyr_no2_jm1" id="layer_no2jm1">
+						Calcul NO2 J-1
+						<span class="glyphicon glyphicon-chevron-right"></span>
+						<span class="badge">Ready</span>
+						</a>
+						<img src="data/echelleno2.png" class="img-responsive lgd_no2jm1 hide" alt="Echelle">
+						<a href="#" class="list-group-item active lyr_no2_jp0" id="layer_no2jp0">
+						Prévision NO2 J+0
+						<span class="glyphicon glyphicon-chevron-right"></span>
+						<span class="badge">Ready</span>
+						</a>
+						<img src="data/echelleno2.png" class="img-responsive lgd_no2jp0 hide" alt="Echelle">
+						<h5>Particules fines 10µ</h5>
+						<a href="#" class="list-group-item active lyr_pm10_jm1" id="layer_pm10jm1">
+						Calcul PM10 J-1
+						<span class="glyphicon glyphicon-chevron-right"></span>
+						<span class="badge">Ready</span>
+						</a>
+						<img src="data/echelleno2.png" class="img-responsive lgd_pm10jm1 hide" alt="Echelle">
+						<a href="#" class="list-group-item active lyr_pm10_jm1" id="layer_pm10jp0">
+						Prévision PM10 J+0
+						<span class="glyphicon glyphicon-chevron-right"></span>
+						<span class="badge">Ready</span>
+						</a>
+						<img src="data/echelleno2.png" class="img-responsive lgd_pm10jp0 hide" alt="Echelle">
+					</div>
+					-->
+					<!-- couches vectorielles -->
+
+				</div>
+			<div id="map"></div>
+			</div>
+		</div> <!--fin map block 1 -->
+		<div class="map-block" id="map-block2">
+
+			<div class="visible-lg visible-md">
+
+				<!-- Barre de recherches
+				<div id="search-box">
+					<form class="form-inline" role="form">
+						<div class="form-group">
+							<label class="sr-only" for="searchText">Search</label>
+							<input type="text" class="form-control input-sm" id="searchText" placeholder="Rechercher ...">
+						</div>
+						<button type="submit" class="btn btn-default btn-sm">
+							<i class="glyphicon glyphicon-search"></i>
+						</button>
+					</form>
+				</div>v
+				-->
+
+				<!-- Side Bar -->
+				<div id="sidemenu2" class="well">
+					<!-- Sidebar Options -->
+					<div class="btn-group btn-group-justified btn-group-sm">
+						<a class="btn btn-default"> <i class="glyphicon glyphicon-fullscreen"></i> Fit in Window </a>
+						<a class="btn btn-default"> <i class="glyphicon glyphicon-filter"></i> Filtrer </a>
+					</div>
+
+					<!-- Sidebar Separator -->
+					<div class="divider10"></div>
+					<div id="poll_switch_2" class="btn-group btn-group-justified btn-group-sm">
+						<a id="no2_switch" class="btn btn-default NO2"> <i></i>NO<sub>2</sub> </a>
+						<a id="o3_switch" class="btn btn-default O3"> <i></i>0<sub>3</sub> </a>
+						<a id="pm10_switch" class="btn btn-default PM10"> <i></i>PM10</a>
+						
+					</div>
+					<div class="list-group point-list-view" id="no2-2">
+						<table class="table table-responsive">
+
+
+							
+						</table>
+							
+					</div>
+					<div class="divider10"></div>
+					<div class="list-group point-list-view pm10" id="pm10-2">
+
+					
+					</div>
+										<div class="divider_vect"></div>
+					<div class="list-group point-list-view vector-layer" id="vect">
+						<a href="#" class="list-group-item point-item"  id="reg_aura_2" > <h4 class="list-group-item-heading" >Régions</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
+						<a href="#" class="list-group-iem point-item" id="epci_aura_2" > <h4 class="list-group-item-heading" >Epcis</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
+						<a href="#" class="list-group-item point-item"  id="layer_sites_fixes_2"> <h4 class="list-group-item-heading" >Sites fixes</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
+					</div>
+					<div class="divider_vect"></div>
+
+				</div>
+							<!-- Déclaration de la carte -->
+			<div id="map2"></div>
+			</div>
+		</div>
         <!-- Modal popup de correction -->
         <div id="modal_corr_form" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-sm">
@@ -284,6 +351,8 @@
         <!-- customScoll -->
         <script src="{% static 'raster/lib/customScroll/js/jquery.mCustomScrollbar.min.js' %}"></script>
         <script src="{% static 'raster/lib/customScroll/js/jquery.mousewheel.min.js' %}"></script>
+		<script src="{% static 'raster/lib/leaflet-clonelayer-master/index.js' %}"></script>
+		<script src="{% static 'raster/lib/leaflet-greyscale.js' %}"></script>
 
         <!-- Application principale -->
         <script src="{% url 'application_js' %}" type="text/javascript" charset="utf-8"></script>

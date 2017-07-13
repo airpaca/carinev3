@@ -25,7 +25,7 @@ SECRET_KEY = '!jhytmr+xnd63ep!%qk$22bvl08)3b)r9i88ju!#d6ed-d$(n2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+	
 ]
 
 MIDDLEWARE = [
@@ -79,9 +81,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'carinev3',
-        'USER': 'jv',
-        'PASSWORD': 'jv',
-        'HOST': '172.16.13.182',
+        'USER': 'vjulier',
+        'PASSWORD': 'vju.2017',
+        'HOST': 'localhost',
     }
 }
 
