@@ -27,22 +27,23 @@ urlpatterns = [
     # .. bbox/raster_<pol>_ech<ech>.json
     url(r'^bbox/raster_(?P<id>[0-9]+).json$',
         views.bbox_raster, name='bbox_raster'),
-	
-	
-	#couches vecteurs
-	   
-	url(r'^sites_fixes.json$',
+    
+    
+    #couches vecteurs
+       
+    url(r'^sites_fixes.json$',
         views.sites_fixes, name='sites_fixes'),
 
-	url(r'^reg_aura$',
+    url(r'^reg_aura$',
         views.reg_aura, name='reg_aura'),
-	url(r'^epci_aura$',
+    url(r'^epci_aura$',
         views.epci_aura, name='epci_aura'),
 
-	url(r'^source_url$',
+    #appelé au chargement de l'appli pour initialiser les couches
+    url(r'^source_url$',
         views.source_url, name='source_url'),
-			#dummy	
-	url(r'^check_statut$',
+
+    url(r'^check_statut$',
         views.check_statut, name='check_statut'),
 
 ]
