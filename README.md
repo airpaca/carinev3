@@ -56,14 +56,16 @@ Si on utilise un serveur distant le, rajouter dans allowed hosts de carinev3/set
 Index : `/raster/`
 
 Raster sous la forme d'une image : `/raster/img/raster_<pol>_ech<ech>.png`
+edit 20-07: nouvelle url : `/raster/img/raster_<id>.png`
+=> on passe l'id de l'objet TypeSourceRaster qui contient les infos de polluant / ech / run / type 
 
 Enveloppe du raster : `/raster/bbox/raster_<pol>_ech<ech>.json`
+edit 20-07: nouvelle url : `/raster/bbox/raster_<id>.json`
+=> pareil, on passe l'id
 
 Liste des modifications : `/raster/modifications/<pol>/ech<ech>/list.json`
     
 Enregistrement des modifications (requête `POST`) : `/raster/alter_raster/`
-
-
 
 ## Communication
 
