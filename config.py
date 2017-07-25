@@ -18,7 +18,6 @@ elif aasqa == "atmoaura":
     DIR_RASTERS = '/home/vjulier/raster_source'
     raster_prefix = 'AURA'
     
-    
 NO2 = 1
 O3 = 2
 PM10 = 3

@@ -137,6 +137,9 @@
                         <a href="#" class="list-group-item point-item" id="layer_sites_fixes" > <h4 class="list-group-item-heading" >Sites fixes</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
                     </div>
                     <div class="divider_vect"></div>
+					<div class='active_layer_div' id='active_layer_div1'>
+						<p class='active_layer_p alert alert-info' id='active_layer_p1'></p>
+					</div>
                     <!--
                     <div class="list-group point-list-view">
                         <a href="#"class="list-group-item point-item" id="layer_pm10jm1"> <h4 class="list-group-item-heading" >O3</h4>J-1     <span class="glyphicon glyphicon-chevron-right"></span><span class="badge">Ready</span></a>
@@ -230,27 +233,50 @@
                         <a id="pm10_switch" class="btn btn-default PM10"> <i></i>PM10</a>
                         
                     </div>
-                    <div class="list-group point-list-view" id="no2-2">
-                        <table class="table table-responsive">
-
-
-                            
-                        </table>
-                            
+                    <div class="list-group point-list-view">
+                        <table class="table table-responsive t2">
+                        </table>         
                     </div>
                     <div class="divider10"></div>
-                    <div class="list-group point-list-view pm10" id="pm10-2">
-
-                    
+					<p class="other_head"></p>
+                    <div class="list-group point-list-view" id="other_layers" >      
                     </div>
-                                        <div class="divider_vect"></div>
+					
+						<div id='switch_source_div' class='form-group'>
+								<button id="hide_switch_btn" onclick='remove_switch_form()'> <i class="glyphicon glyphicon-remove"></i></button>
+								<div class="form-group">
+									<label class="form-control" for="switch_input">
+										Source à remplacer : 
+									</label>
+									<select class="form-control" id="switch_input" placeholder='choisissez dans la liste'  name="browser">
+									</select>
+								</div>
+								<div class="form-group">
+									<label class="form-control" for="new_source">
+										Nouvelle source :
+									</label>							
+									<select style='-webkit-appearance: none;' class="form-control" id="new_source"  name="new_source">
+										
+									</select>
+								</div>
+							<button id="validate_switch_btn" onclick='validate_switch_btn()'> <i class="glyphicon glyphicon-ok"></i> Valider le changement</button>
+						</div>
+					
+					
+					<button id='switch_source_btn' class="btn btn-default btn-sm" onclick='switch_source()'>
+						<span > <i class="glyphicon glyphicon-asterisk"></i> Changer de source </span>
+					</button>
+
+                    <div class="divider_vect"></div>
                     <div class="list-group point-list-view vector-layer" id="vect">
                         <a href="#" class="list-group-item point-item"  id="reg_aura_2" > <h4 class="list-group-item-heading" >Régions</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
                         <a href="#" class="list-group-iem point-item" id="epci_aura_2" > <h4 class="list-group-item-heading" >Epcis</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
                         <a href="#" class="list-group-item point-item"  id="layer_sites_fixes_2"> <h4 class="list-group-item-heading" >Sites fixes</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
                     </div>
                     <div class="divider_vect"></div>
-
+					<div class='active_layer_div' id='active_layer_div2'>
+						<p class='active_layer_p alert alert-info' id='active_layer_p2'></p>
+					</div>
                 </div>
                             <!-- Déclaration de la carte -->
             <div id="map2"></div>

@@ -103,4 +103,19 @@ class TypeSourceRaster(models.Model):
         # d=dict([('url',self.url),('is_source',self.is_source),('statut',self.statut)])
         # return d
     
-        
+ # class Previ(models.Model):
+ 
+	# date_previ=models.DateField(default=None)	
+	# pm10_0=models.ForeignKey('TypeSourceRaster',default=None)
+	# pm10_1=models.ForeignKey('TypeSourceRaster',default=None)
+	# pm10_2=models.ForeignKey('TypeSourceRaster',default=None)
+	# o3_0=models.ForeignKey('TypeSourceRaster',default=None)
+	# o3_1=models.ForeignKey('TypeSourceRaster',default=None)
+	# o3_2=models.ForeignKey('TypeSourceRaster',default=None)
+	# no2_0=models.ForeignKey('TypeSourceRaster',default=None)
+	# no2_1=models.ForeignKey('TypeSourceRaster',default=None)
+	# no2_2=models.ForeignKey('TypeSourceRaster',default=None)	
+	# validee=False
+	
+	
+	

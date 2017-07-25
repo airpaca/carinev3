@@ -44,8 +44,20 @@ def check_statut(request,id):
     ob=TypeSourceRaster.objects.filter(id=id)[0]
     statut = ob.checkStatut()
     return HttpResponse(statut)
-
-
+def getMoreSources(request,id):
+	ob=TypeSourceRaster.objects.filter(id=id)[0]
+	samepoll=TypeSourceRaster.objects.filter(pol=ob.pol)
+	sameech=TypeSourceRaster.objects.filter(ech=ob.ech)
+	samerun=TypeSourceRaster.objects.filter(intrun=ob.intrun)
+	#pas trouvé de moyen plus simple mais bon, ça fait le boulot:
+	#on recup toutes les sources dispo pour le même pol/ech/run
+	obs={}
+	for i in samepoll:
+		if i in sameech:
+			if i in samerun:
+				i.statut=i.checkStatut()
+				obs[i.id]=i.json
+	return JsonResponse(obs)
 def img_raster(request,id):
     """Raster as an image."""
     # TODO: ajouter transformation du raster en wgs84
@@ -63,7 +75,7 @@ def img_raster(request,id):
     r.add_expertises(expertises)
     
     # Return image
-    return HttpResponse(r.to_png(None,100), content_type="image/png")
+    return HttpResponse(r.to_png(None,300), content_type="image/png")
 def sites_fixes(request):
     conn = psycopg2.connect("host="+logins.host+  " dbname="+logins.dbname +  " user="+logins.user+" password=" + logins.password )
     cur=conn.cursor()
@@ -127,9 +139,9 @@ def list_modifications(request,id):
 
     daterun = datetime.date.today()
     daterun = DATE_TEST  # test
-
-    objs = Expertise.objects.filter(daterun=daterun, pol=pol, ech=ech)
-    data = dict(daterun=daterun, pol=pol, ech=int(ech),
+    source=TypeSourceRaster.objects.filter(id=id)
+    objs = Expertise.objects.filter(id_source=source)
+    data = dict(source, pol=pol, ech=int(ech),
                 modifs=[e.json for e in objs])
     return JsonResponse(data)
 

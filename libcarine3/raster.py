@@ -142,7 +142,7 @@ class Raster:
         log.debug(data.shape[0],data.shape[1])
         figsize = (data.shape[1] /dpi, data.shape[0]/dpi)
 
-        fig = plt.figure(frameon=False, figsize=figsize,dpi=dpi)
+        fig = plt.figure(frameon=False, figsize=figsize, dpi = dpi)
         ax = fig.add_axes([0, 0, 1, 1])
         ax.axis('off')
 

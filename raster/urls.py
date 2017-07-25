@@ -15,7 +15,7 @@ urlpatterns = [
 
     # Url to GET a list of modifications
     # .. modifications/<pol>/ech<ech>/list.json
-    url(r'^modifications/(?P<pol>[a-zA-Z0-9]+)/ech(?P<ech>-?[0-9]+)/list.json$',
+    url(r'^modifications/(?P<id>[0-9]+)/list.json$',
         views.list_modifications, name='list_modifications'),
 
     # Raster as an image (to Leaflet)
@@ -43,6 +43,9 @@ urlpatterns = [
     url(r'^source_url$',
         views.source_url, name='source_url'),
 
+    url(r'^getMoreSources/(?P<id>[0-9]+).json$',
+        views.getMoreSources, name='getMoreSources'),
+		
     url(r'^check_statut$',
         views.check_statut, name='check_statut'),
 

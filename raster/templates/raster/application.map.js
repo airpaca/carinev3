@@ -5,6 +5,8 @@ var corr_type = "";
 var corr_coords = [];
 var corr_value = "";
 
+var lib_ech=["j-1","j+0","j+1","j+2"]
+
 // init des dates de j0 à j-2 pour afficher dans le tableau de droite
 var date = new Date()
 var jp0 = date.toISOString().slice(5,10);
@@ -71,9 +73,8 @@ var liste_sources;
 
 
 ///// --- init ----
-//init successive de :
-//liste_source
-//liste_source={
+//init successive de liste_source
+//liste_source=[{
 //		id : {
 //		daterun : "18_07_2017",
 // 		ech:-1,
@@ -83,7 +84,7 @@ var liste_sources;
 //		statut:true,
 //		type:"ada",
 //		url:"//home/vjulier/raster_...jm1_ada.tif",
-//		__proto__ : Object}
+//		__proto__ : Object}]
 
 
 $.ajax({
@@ -135,8 +136,8 @@ function layer_but_clic() {
     $('.baselayer').click( function() {
 			console.log("clic baselayer")
 			$(this).next().removeClass('hide');
-			/* Gestion de la liste des couches */
-			
+
+			/* Gestion de la liste des couches */		
 			// Boutons actifs
 			$(this).addClass('active').siblings().removeClass('active');	
 			if ($(this).closest('div').attr('id') == "no2"){
@@ -162,7 +163,7 @@ function layer_but_clic() {
 				id_but=$(this)[0].id
 				//null si on a pas encore initialisé (inutile si on affiche un polluant par defaut)
 				if ( activeLayer1 != null) {
-					map.removeLayer(activeLayer1)
+					map.removeLayer(activeLayer1[1])
 				}
 				id_source = overlayLayers1[id_but].id_source
 				url="/raster/img/raster_"+id_source+".png";
@@ -179,7 +180,12 @@ function layer_but_clic() {
 						];
 						lay = L.imageTransform(url, anchors, {opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});		
 						lay.addTo(map)
-						activeLayer1=lay;
+						activeLayer1=[id_source,lay];
+						
+						console.log(id_source.toString())
+						var tbl=meta_source_tbl(liste_sources[id_source])
+						$('#active_layer_div1 > table').remove()
+						$('#active_layer_div1').append(tbl)
 					}
 				})	
 			}
@@ -206,20 +212,19 @@ function getTypeDic(poll,type){
 }
 function buildTable(type_dic){
 	//TODO : a mettre dynamique selon  les polluants echeances etc.. (pas urgent ceci dit..)
-	$(".table > thead").remove()
-	$(".table > tbody").remove()
-	$(".table").append("<thead class='thead-inverse'><tr><th></th><th>"+jm2+"</th><th>"+jm1+"</th><th>"+jp0+"</th><tr></thead>")
-	$(".table").append("<tbody></tbody>")
+	$(".t2 > thead").remove()
+	$(".t2 > tbody").remove()
+	$(".t2").append("<thead class='thead-inverse'><tr><th></th><th>"+jm2+"</th><th>"+jm1+"</th><th>"+jp0+"</th><tr></thead>")
+	$(".t2").append("<tbody></tbody>")
 	for (i in type_dic){
-		$(".table > tbody").append("<tr id='tr_"+i.toString()+"'><th scope='row'>"+(i-1).toString()+"</th></tr>")
+		$(".t2 > tbody").append("<tr id='tr_"+i.toString()+"'><th scope='row'>"+(i-1).toString()+"</th></tr>")
 		for (run in type_dic[i]){
 			//console.log(run)
 			// pour inverser l'ordre des colonnes du tableaux :
 			var reverse_ind =(run-2)*(-1)
 			//console.log(reverse_ind)
 			var id_source=type_dic[i][reverse_ind]
-			//console.log(id_source)
-			
+			//console.log(id_source)	
 			var col='red';	
 			if (liste_sources[id_source].statut==true){
 				col='green'
@@ -268,11 +273,40 @@ $(function() {
 // - maj de la variable activeLayer2
 // function associée aux cases du tableau quand on le refresh
 function td_clic() {
-	$(".table > tbody > tr > td").click(function(){
-		if ( activeLayer2 != null) {
-			map2.removeLayer(activeLayer2)
-		}
+	$(".t2 > tbody > tr > td").click(function(){
 		var id_source=($(this)[0].id).substr(-3,3)
+		o=liste_sources[id_source]
+		$('#other_layers > a').remove()
+		$('#other_layers > p').remove()
+		$.ajax({
+			url: "getMoreSources/"+id_source+".json",
+			success : function(msg){
+				console.log(msg)
+				var k=Object.keys(msg)
+				$('#other_layers').append('<p>Autres sources pour le'+o.daterun+' à ' + lib_ech[o.ech+1] + '</p>')
+				//on parse chaque source
+				for (i=0;i<k.length;i++) {
+					//construction du menu de gauche (du map-block1)
+					var ind=k[i]
+					var ob=msg[ind]
+					console.log(ind)
+					id_but='tr_'+ind.toString()
+					if (!(ob.type==o.type)){
+						var html_btn='<a href="#" class="list-group-item point-item other_layers"  id="'+id_but+'"> <h4 class="list-group-item-heading" >'+ob.type+'</h4>J ' + ob.ech.toString() + '    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>'
+						console.log(ob)				
+						$('#other_layers').append(html_btn)
+						if (ob.statut!=true){
+							$("#"+id_but + "  > .badge").css("background-color","red")
+						}
+					}
+				}
+				other_layers_clic()
+			}	
+		})
+		if ( activeLayer2 != null) {
+			map2.removeLayer(activeLayer2[1])
+		}
+		
 		var url="/raster/img/raster_"+id_source+".png";
 		$.ajax({
 			url: "/raster/bbox/raster_"+id_source+".json",
@@ -285,15 +319,78 @@ function td_clic() {
 				];
 				var lay = L.imageTransform(url, anchors,{opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});	
 				lay.addTo(map2)
-				activeLayer2=lay;
+				activeLayer2=[id_source,lay];
+				console.log(id_source.toString())
+				var tbl=meta_source_tbl(liste_sources[id_source])
+				$('#active_layer_div2 > table').remove()
+				$('#active_layer_div2').append(tbl)
 			}
 		})
 		//console.log(url_bounds)
 	})
 };
+
+function other_layers_clic() {
+	$(".other_layers").click(function(){
+		var id_source=($(this)[0].id).substr(-3,3)
+		
+		if (liste_sources[id_source]['type']!='chim'){
+			if ( activeLayer2 != null) {
+				map2.removeLayer(activeLayer2[1])
+			}
+			var url="/raster/img/raster_"+id_source+".png";
+			$.ajax({
+				url: "/raster/bbox/raster_"+id_source+".json",
+				success : function(msg){
+					var anchors = [
+						[msg['ymax'], msg['xmin']],	//haut gauche
+						[msg['ymax'], msg['xmax']],	//haut droite
+						[msg['ymin'], msg['xmax']],	//bas droite
+						[msg['ymin'], msg['xmin']] 	//bas gauche
+					];
+					var lay = L.imageTransform(url, anchors,{opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});	
+					lay.addTo(map2)
+					activeLayer2=[id_source,lay];
+					console.log(id_source.toString())
+					var tbl=meta_source_tbl(liste_sources[id_source])
+					$('#active_layer_div2 > table').remove()
+					$('#active_layer_div2').append(tbl)
+				}
+			})
+		}
+		else if (liste_sources[id_source]['type']!='chim'){
+			//TODO : comment faire pour la fine
+		}
+	})
+		
+}
 /* --------- FIN DU MAP-BLOCK2 -------- */
 
-
+function meta_source_tbl(obj){
+	var tbl='<table class="table t_meta"><tbody><tr><th scope="row">Polluant : </th><td>'+obj.pol+'</td></tr><tr><th scope="row">Modèle : </th><td>'+obj.type+'</td></tr><tr><th scope="row">Date run </th><td>'+obj.daterun+'</td></tr><tr><th scope="row">Echeance </th><td>'+lib_ech[obj.ech+1]+'</td></tr></tbody></table>';
+	console.log(tbl)
+	return tbl
+}
+function switch_source() {
+	old_sources=['NO2 j+0','NO2 j+1','O3 j+0','O3 j+1','PM10 j+0','PM10 j+1']
+	$('#switch_input > option').remove()
+	for (i=0 ;i<old_sources.length; i++) {
+		val=old_sources[i]
+		$('#switch_input').append('<option value='+val +'>'+val+'</option>')
+	}
+	id_new_source=activeLayer2[0];
+	ob=liste_sources[id_new_source]
+	str_source=ob.pol + " / " + ob.daterun + " / "+ lib_ech[ob.ech+1] + " / " + ob.type
+	$("#new_source > option").remove()
+	$('#switch_source_div').css('display','block')
+	$("#new_source").append("<option value='1' selected disabled hidden>"+str_source+"</option>")
+}
+function remove_switch_form() {
+	$('#switch_source_div').css('display','none')
+}
+function validate_switch_btn(){
+	alert('toto')
+}
 /* Chargement du fond de carte */
 // comme toutes les couches, on est obligé de l'instancier une fois par objet map...
 var mapbox_light = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoicmh1bSIsImEiOiJjaWx5ZmFnM2wwMGdidmZtNjBnYzVuM2dtIn0.MMLcyhsS00VFpKdopb190Q', {
