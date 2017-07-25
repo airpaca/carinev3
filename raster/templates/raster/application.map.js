@@ -304,7 +304,7 @@ var mapbox_light = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}
     id: 'mapbox.light',
     opacity: 1.,
 });   
-//mapbox_light.addTo(map);
+mapbox_light.addTo(map);
 var mapbox_light2 = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoicmh1bSIsImEiOiJjaWx5ZmFnM2wwMGdidmZtNjBnYzVuM2dtIn0.MMLcyhsS00VFpKdopb190Q', {
     maxZoom: 18,
     attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
@@ -313,7 +313,7 @@ var mapbox_light2 = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y
     id: 'mapbox.light',
     opacity: 1.,
 });   
-//mapbox_light2.addTo(map2);
+mapbox_light2.addTo(map2);
 
 
 /* Déclaration de l'emprise max */

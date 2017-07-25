@@ -3,25 +3,31 @@
 
 """Configuration."""
 
-
 import os
 
-#stockage de tout le bazar
-DIR_RASTERS = '/home/vjulier/raster_source'
+# Déclaration de l'aasqa [airpaca, atmoaura]
+aasqa = "airpaca" 
 
-
+# Création automatique des variables selon l'aasqa
+if aasqa == "airpaca":
+    geom_field = "geom"
+    DIR_RASTERS = '/home/airpaca/azur_data_test_carine'
+    files_raster = 'raster_AURA_{pol}_{daterun:%d_%m_%Y}_j{prefx}{absech}_{type}.tif'
+elif aasqa == "atmoaura":
+    geom_field = "the_geom"
+    DIR_RASTERS = '/home/vjulier/raster_source'
+    files_raster = 'raster_AURA_{pol}_{daterun:%d_%m_%Y}_j{prefx}{absech}_{type}.tif'
+    
+    
 NO2 = 1
 O3 = 2
 PM10 = 3
 PM25 = 4
 IQA = 10
 
-
 POLLUTANTS = [NO2, O3, PM10, PM25, IQA]
 
-
 VLS = {NO2: 200, O3: 180, PM10: 50, PM25: 50}
-
 
 def from_name(name):
     """Constante from pollutant name."""
@@ -37,7 +43,6 @@ def from_name(name):
         return IQA
     return None
 
-
 def get_raster_path(daterun, pol, ech, type):
 	"""Get path of a specific raster."""
 
@@ -45,5 +50,5 @@ def get_raster_path(daterun, pol, ech, type):
 	absech = abs(ech)
 	path = os.path.join(
 		DIR_RASTERS,
-		f'raster_AURA_{pol}_{daterun:%d_%m_%Y}_j{prefx}{absech}_{type}.tif')
+		f'%s' % files_raster)
 	return path

@@ -32,7 +32,14 @@ Création d'une base vierge
 
     echo "CREATE DATABASE carinev3" | psql -h<host> -U<user> -d<postgres>
 
-Modification des paramètres de connexion à la base de données
+Création d'un fichier logins.py à la racine avec les paramètres de connexion à la base de données
+
+    host = "..."
+    dbname = "..."
+    user = "..."
+    password = "..."
+    
+Modification des paramètres utilisateur 
     
     Dans settings.py
 
