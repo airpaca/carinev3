@@ -6,7 +6,7 @@
 import os
 
 # Déclaration de l'aasqa [airpaca, atmoaura]
-aasqa = "airpaca" 
+aasqa = "atmoaura" 
 
 # Création automatique des variables selon l'aasqa
 if aasqa == "airpaca":
