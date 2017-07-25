@@ -89,7 +89,27 @@ html, body {
     border : 2px solid black;
 }
 /* end table du sidemenu2 */
+/* form switch source*/
+#hide_switch_btn{
+	position : absolute;
+	top : -15px;
+	right : -15px;
+}
+#switch_source_div{
+	background-color : #eeeeee;
+	display : none;
+	position : fixed;
+	top: 30%;
+	left: 70%;
+	border : 1px solid black;
+	padding : 1px;
 
+}
+
+#validate_switch_btn {
+	width : 100%;
+}
+/* end switch source */
 .point-list-view {
     /*overflow-y: scroll;*/
 }

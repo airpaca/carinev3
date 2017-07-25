@@ -10,6 +10,7 @@ import os
 DIR_RASTERS = '/home/vjulier/raster_source'
 
 
+
 NO2 = 1
 O3 = 2
 PM10 = 3
