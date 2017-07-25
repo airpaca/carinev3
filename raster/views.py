@@ -79,7 +79,7 @@ def img_raster(request,id):
 def sites_fixes(request):
     conn = psycopg2.connect("host="+logins.host+  " dbname="+logins.dbname +  " user="+logins.user+" password=" + logins.password )
     cur=conn.cursor()
-    req = "select id_site,nom_site,st_X(st_transform(the_geom,4326))as x,st_Y(st_transform(the_geom,4326)) as y from sites_fixes"
+    req = "select id_site,nom_site,st_X(st_transform(" + config.geom_field + ",4326))as x,st_Y(st_transform(" + config.geom_field + ",4326)) as y from sites_fixes"
     cur.execute(req)
     res=cur.fetchall();
     conn.close()
@@ -96,7 +96,10 @@ def sites_fixes(request):
 def reg_aura(request):
     conn = psycopg2.connect("host="+logins.host+  " dbname="+logins.dbname +  " user="+logins.user+" password=" + logins.password )
     cur=conn.cursor()
-    req = "select id_zone,lib_zone,st_asgeojson(st_transform(the_geom,4326)) as the_geom from zones where id_zone=2038 or id_zone=0"
+    if config.aasqa == "atmoaura":
+        req = "select id_zone,lib_zone,st_asgeojson(st_transform(" + config.geom_field + ",4326)) as the_geom from zones where id_zone=2038 or id_zone=0"
+    elif config.aasqa == "airpaca":
+        req = "select id_zone,lib_zone,st_asgeojson(st_transform(" + config.geom_field + ",4326)) as the_geom from zones where id_zone=0"
     cur.execute(req)
     res=cur.fetchall();
     conn.close()
@@ -109,7 +112,7 @@ def reg_aura(request):
 def epci_aura(request):
     conn = psycopg2.connect("host="+logins.host+  " dbname="+logins.dbname +  " user="+logins.user+" password=" + logins.password )
     cur=conn.cursor()
-    req = "select id_zone,lib_zone,st_asgeojson(the_geom) as the_geom from temp_epci_2017_aura_4326"
+    req = "select id_zone,lib_zone,st_asgeojson(" + config.geom_field + ") as " + config.geom_field + " from temp_epci_2017_aura_4326"
     cur.execute(req)
     res=cur.fetchall();
     conn.close()
@@ -143,11 +146,15 @@ def list_modifications(request,id):
     return JsonResponse(data)
 
 
-@require_POST
+# @require_POST
 #TODO modif obj tsr
 def alter_raster(request):
     """Route to alter the raster."""
 
+    print("**************************************************************")
+    print("ALTER RASTER")
+    print("**************************************************************")
+    
     def error(message):
         """Return a error JSON response."""
         log.error(message)

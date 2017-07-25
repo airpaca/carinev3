@@ -711,13 +711,14 @@ $("#submitFormCorr").click(function (e) {
         type: "POST",
         // crossDomain : true,
         // headers:{ 'Access-Control-Allow-Origin':'http://vmli-grass:5100/alter/raster', 'Access-Control-Allow-Headers': 'x-requested-with' },
+        // headers: { "X-CSRFToken": getCookie("csrftoken") },
         url: "{% url 'alter_raster' %}",
         data: { 
-            // polluant: corr_pollutant, 
-            // echeance: corr_echeance,
-            // type: corr_type,
-            // coords: corr_coords,
-            // value: corr_value    
+            polluant: corr_pollutant, 
+            echeance: corr_echeance,
+            type: corr_type,
+            coords: corr_coords,
+            value: corr_value    
           /*  type: 'point',
             delta: 5,
             lon: 6,
@@ -740,14 +741,15 @@ $("#submitFormCorr").click(function (e) {
             
         },
         error: function (request, error) {
+            console.log(request);
+            
             console.log("ERROR");
             console.log(arguments);
             console.log("Ajax error: " + error);
             $("#error_tube").show();
         },        
     });    
-    
-    
+ 
 });	
 
 /* Fonction éxécutée lors de l'annulation de l'envoi du formulaire de correction */
