@@ -134,11 +134,15 @@ def list_modifications(request,id):
     return JsonResponse(data)
 
 
-@require_POST
+# @require_POST
 #TODO modif obj tsr
 def alter_raster(request):
     """Route to alter the raster."""
 
+    print("**************************************************************")
+    print("ALTER RASTER")
+    print("**************************************************************")
+    
     def error(message):
         """Return a error JSON response."""
         log.error(message)

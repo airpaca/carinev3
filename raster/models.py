@@ -4,6 +4,7 @@ import json
 from django.contrib.gis.db import models
 import datetime
 
+
 # Create your models here.
 class Expertise(models.Model):
 
@@ -55,7 +56,8 @@ class TypeSourceRaster(models.Model):
         absech = abs(self.ech)
         path = os.path.join(
             config.DIR_RASTERS,
-            f'raster_AURA_{self.pol}_{daterun:%d_%m_%Y}_j{prefx}{absech}_{self.type}.tif')
+            # f'raster_AURA_{self.pol}_{daterun:%d_%m_%Y}_j{prefx}{absech}_{self.type}.tif')
+            f'raster_{config.raster_prefix}_{self.pol}_{daterun:%d_%m_%Y}_j{prefx}{absech}_{self.type}.tif')
         return path
     
     def checkStatut(self):

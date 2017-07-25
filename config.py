@@ -12,11 +12,11 @@ aasqa = "airpaca"
 if aasqa == "airpaca":
     geom_field = "geom"
     DIR_RASTERS = '/home/airpaca/azur_data_test_carine'
-    files_raster = 'raster_AURA_{pol}_{daterun:%d_%m_%Y}_j{prefx}{absech}_{type}.tif'
+    raster_prefix = 'PACA'
 elif aasqa == "atmoaura":
     geom_field = "the_geom"
     DIR_RASTERS = '/home/vjulier/raster_source'
-    files_raster = 'raster_AURA_{pol}_{daterun:%d_%m_%Y}_j{prefx}{absech}_{type}.tif'
+    raster_prefix = 'AURA'
     
     
 NO2 = 1
@@ -43,12 +43,12 @@ def from_name(name):
         return IQA
     return None
 
-def get_raster_path(daterun, pol, ech, type):
-	"""Get path of a specific raster."""
+# def get_raster_path(daterun, pol, ech, type):
+	# """Get path of a specific raster."""
 
-	prefx = 'm' if ech < 0 else 'p'
-	absech = abs(ech)
-	path = os.path.join(
-		DIR_RASTERS,
-		f'%s' % files_raster)
-	return path
+	# prefx = 'm' if ech < 0 else 'p'
+	# absech = abs(ech)
+	# path = os.path.join(
+		# DIR_RASTERS,
+		# f'%s' % files_raster)
+	# return path
