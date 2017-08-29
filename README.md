@@ -104,4 +104,6 @@ POST :
      ]
     }
     
-    
+## sous indices
+La formule (qui consiste à modifier des subsets d'une array numpy) se trouve dans libcarine3.merge_tools.py   
+=> pour faciliter la maintenance inter-aasqa, réfléchir à un moyen de mettre  ça dans le fichier de conf

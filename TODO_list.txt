@@ -1,6 +1,6 @@
 - Init quotidienne trop dangereuse en phase de prod:
-            - ajouter une initialisation quotidienne indépendante de l'accès à la GUI
-            - ajouter un check pdt le runtime pour ne pas bugger sur une absence d'instance de prev pour une date donnée
+        - ajouter une initialisation quotidienne indépendante de l'accès à la GUI
+        - ajouter un check pdt le runtime pour ne pas bugger sur une absence d'instance de prev pour une date donnée
             
 - Ajouter J+2 dans les sources (menu gauche)
 - Changer l'affichage des dates dans la GUI : changer les timestamps en dates lisibles (un truc du genre new Date(timestamp) doit fonctionner)
@@ -34,4 +34,9 @@
     - enregistrer le nom utilisateur
     - déclencher le call vers SMILE
 
-    
+- ajouter la possiblité de corriger les cartes par zone prédéfinie
+
+###special aura (mais probablement un truc similaire chez PACA?)
+- gestion de la purge des fichiers dans /raster_source
+- gérer la tâche incron qui va s'occupoer de fusionner la fine échelle avec le fond 1km downsamplé. PS: peut-être plus intéressant de l'aisser l'utilisateur déclencher ça manuellement via l'interface. 
+(sous-entendu : la tâche incron va attendre que toutes dalles sont arrivées alors que l'utilisateurs pourra déclencher même si tout n'est pas là)
