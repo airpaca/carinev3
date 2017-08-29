@@ -3,16 +3,13 @@
   
 ## Données d'entrées
 
-Les rasters en entrée doivent, pour l'instant, être en projection WGS84 avec 
-la valeur -999.
-Un rééchantillonnage est aussi nécessaire.
+Les rasters en entrée doivent, pour l'instant, être en projection 3857
+Un rééchantillonnage est aussi nécessaire pour l'affichage dans carine(chez AURA : taille de pixel temporairement fixée à 71.25 en 3857 en attendant de gérer le bug (memory leak de mpl, j'ai perdu la ref du tcket) ).
 
-Faire un prétraitement sur les rasters :
-
+Faire un prétraitement sur les rasters (à modif pour le 3857) :
     gdalwarp -t_srs EPSG:4326 -ts 2500 0 -r bilinear raster_PACA_NO2_20_04_2017_jp0.tif wgs84_ld/raster_PACA_NO2_20_04_2017_jp0.tif
 
 Traitement en série :
-
     for fn in $( ls raster_PACA_*_??_??_????_j??.tif ); do gdalwarp -t_srs EPSG:4326 -ts 2500 0 -r bilinear ${fn}  wgs84_ld/${fn}; done
 
 Configuration de la localisation des rasters dans le fichier `config.py`
@@ -38,7 +35,8 @@ Création d'un fichier logins.py à la racine avec les paramètres de connexion 
     dbname = "..."
     user = "..."
     password = "..."
-    
+     
+  
 Modification des paramètres utilisateur 
     
     Dans settings.py
@@ -57,19 +55,29 @@ Si on utilise un serveur distant le, rajouter dans allowed hosts de carinev3/set
 
     python manage.py runserver host:port
     
+# uPDATE EN PHASE DE DEV:
+    - a chaque acces a /raster :
+        - carine initialise les instances de prev pour la journée aucune n'existe
+    - DONC : si carine n'a pas été lancé certains jours (we par exemeple), besoin de lancer ça manuellement :
+        => /raster/init_today_<id_des_jours_a_initialiser>
+        avec :
+            - hier = 1
+            - avant-hier = 2
+            - ...
+        #check TODO list
 
+    
 ## Urls
 
 Index : `/raster/`
 
-Raster sous la forme d'une image : `/raster/img/raster_<pol>_ech<ech>.png`
-edit 20-07: nouvelle url : `/raster/img/raster_<id>.png`
+Raster sous la forme d'une image : `url : `/raster/img/raster_<id>.png`
 => on passe l'id de l'objet TypeSourceRaster qui contient les infos de polluant / ech / run / type 
 
-Enveloppe du raster : `/raster/bbox/raster_<pol>_ech<ech>.json`
-edit 20-07: nouvelle url : `/raster/bbox/raster_<id>.json`
+Enveloppe du raster : `nouvelle url : `/raster/bbox/raster_<id>.json`
 => pareil, on passe l'id
 
+#TODO => url modifiée
 Liste des modifications : `/raster/modifications/<pol>/ech<ech>/list.json`
     
 Enregistrement des modifications (requête `POST`) : `/raster/alter_raster/`

@@ -1,0 +1,37 @@
+- Init quotidienne trop dangereuse en phase de prod:
+            - ajouter une initialisation quotidienne indépendante de l'accès à la GUI
+            - ajouter un check pdt le runtime pour ne pas bugger sur une absence d'instance de prev pour une date donnée
+            
+- Ajouter J+2 dans les sources (menu gauche)
+- Changer l'affichage des dates dans la GUI : changer les timestamps en dates lisibles (un truc du genre new Date(timestamp) doit fonctionner)
+- Ajouter des repères pour mieux identifier les couches du menu de droite qui sont des sources (dans le menu de gauche donc)
+- Refaire le contrôle qui synchronise la navigation dans les deux fenêtres
+- Finir l'api et régler ça avec Marie Pinet:
+    - /api/get_indice_com
+    - /api/get_commentaire
+    - /api/get_raster
+
+    - pour AURA:
+        mettre en place l'api Air2Go
+    
+- Terminer les stats:
+    - indice com : 
+       - fonction rasterstat
+            => gérer l'import de la table des communes (geom::3857 / code_insee / pop)
+            => gérer le raster de pop, sa pondération et le calcul de l'indice
+    - stats 'reglementaires':
+        - pop exposée / zone
+        - surf exposée / zone 
+        - > valeur absolue et %
+        - > importer les dispositifs rélgementaires (geom / id_disp / pop)
+    - mettre tout ça dans l'onglet statistiques de l'interface
+    
+    
+- Régler le bouton 'Valider' la prévi
+    - check que toutes les cartes sont dispos
+    - s'assurer dela disponibilité des API
+    - lancer le process de merge fine echelle + 1km + corrections
+    - enregistrer le nom utilisateur
+    - déclencher le call vers SMILE
+
+    
