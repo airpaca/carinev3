@@ -35,7 +35,8 @@ Création d'un fichier logins.py à la racine avec les paramètres de connexion 
     dbname = "..."
     user = "..."
     password = "..."
-     
+  
+Si besoin, éditer et utiliser add_sources.py pour initialiser les TypeSourceRaster (on peut le faire par l'inteface admin mais ça peut prendre booooocoup de temps)  
   
 Modification des paramètres utilisateur 
     
