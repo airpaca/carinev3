@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    
+        <!-- 
+        Template bootstrap pour SIG: https://github.com/luckynvic/GIS-Web-Template        
+        -->
+    
+        <!-- Infos générales -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <title>Carine v3 login</title>
+        <meta name="author" content="vjulier@atmo-aura.fr">
+        
+        <!-- Chargement des feuilles de stype CSS -->
+
+        <link href="{% static 'raster/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'raster/lib/customScroll/css/jquery.mCustomScrollbar.css' %}" rel="stylesheet">
+        <link href="{% static 'raster/css/connexion_default.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'raster/css/style.css' %}"/>
+        <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
+        <!-- API Google Maps
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHyrW7AhUa3J8sm7iLofM5PzbLmj_j2wo" type="text/javascript"></script>
+        -->
+        
+    </head>
+    
+    <body>
+<div class="panel  main-title">
+  <div class="panel-heading">Connexion</div>
+
+</div>
+<div class="mid-content">
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+        <script src="http://code.jquerygeo.com/jquery.geo-1.0.0-rc1.1.min.js"></script>
+
+        <!-- Bootstrap -->
+        <script src="{% static 'raster/lib/bootstrap-3.3.7-dist/js/bootstrap.min.js' %}"></script>
+
+        <!-- customScoll -->
+        <script src="{% static 'raster/lib/customScroll/js/jquery.mCustomScrollbar.min.js' %}"></script>
+        <script src="{% static 'raster/lib/customScroll/js/jquery.mousewheel.min.js' %}"></script>
+</html>
+
