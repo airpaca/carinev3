@@ -8,23 +8,29 @@ var corr_value = "";
 var lib_ech=["j-1","j+0","j+1","j+2"]
 var polls={}
 var echs={}
-function getTsp(delta){
-    //Init des dates (corrsepondances timestamp / runs)
-    var date = new Date()
-    var now =date.getTime()/1000
-    var hours = date.getHours()
-    var minutes = date.getMinutes()
-    var secondes = date.getSeconds()
-    var offset = (hours*3600+minutes*60+secondes)
-    // pour se debarrasser de l'arrondi (qui donne parfois +1sec)
-    tsp = (Math.round(Math.round(now-offset)/10)*10)-delta*86400
-    //console.log(tsp)
-    return tsp
-}
-today=getTsp(0)
-yesterday=getTsp(1)
-yyesterday=getTsp(2)
+// function getTsp(delta){
+//    Init des dates (corrsepondances timestamp / runs)
+    // now=new Date()
+    // y=now.getFullYear()
+    // m=now.getMonth()
+    // day=now.getDay()
+    // d=Date.UTC(y,m,day,0,0,0)
+    // tsp = d/1000-delta*86400
 
+    // return tsp
+// }
+// today=getTsp(0)
+// yesterday=getTsp(1)
+// yyesterday=getTsp(2)
+$.ajax({
+    url: '{% url "getTsp" %}',
+    async : false,
+    success : function(msg){
+        today=msg['t']
+        yesterday=msg['y']
+        yyesterday=msg['yy']
+    }
+});
 
 console.log(today,yesterday,yyesterday)
 var runs={}
@@ -32,9 +38,13 @@ runs[today]=0
 runs[yesterday]=1
 runs[yyesterday]=2
 // init des dates de j0 à j-2 pour afficher dans le tableau de droite
-var jp0 = new Date(today*1000).toISOString().slice(5,10);
-var jm1= new Date(yesterday*1000).toISOString().slice(5,10);
-var jm2 = new Date(yyesterday *1000).toISOString().slice(5,10);
+/* var jp0 = (new Date(today*1000).getDay()+1).toString()+ '-' + (new Date(today*1000).getMonth()+1).toString() ;
+var jm1 = (new Date(yesterday*1000).getDay()+1).toString()+ '-' + (new Date(yesterday*1000).getMonth()+1).toString() ;
+var jm2 = (new Date(yyesterday*1000).getDay()+1).toString()+ '-' + (new Date(yyesterday*1000).getMonth()+1).toString() ; */
+var jp0 = 'Auj'
+var jm1 = 'Hier'
+var jm2 = 'Av-Hier'
+console.log(jp0,jm1,jm2)
 var dumb=0;
 
 
@@ -94,6 +104,7 @@ var vectorLayers = {
 var liste_sources;
 var prevs;
 var active_poll_right_table;
+var active_poll_left
 ///// --- init ----
 //init successive de liste_source
 //liste_source=[{
@@ -120,6 +131,7 @@ function check_statut() {
         async : false,
         success : function(msg){
             //j=JSON.parse(msg)
+            console.log(msg)
             liste_sources=msg;
         }
     });
@@ -146,9 +158,13 @@ function update_source(id_prev,id){
     id_but='lay_btn_'+id_prev.toString()
     overlayLayers1[id_but]=id
     $.ajax({
-        url: '/raster/source/update_'+id_prev.toString()+'_'+id.toString(),
+        url: '{% url "update_source"  %}',
+        data : {
+            id_prev : id_prev,
+            id : id
+        },
         success : function(msg){
-            console.log(msg)
+            //console.log(msg)
         }
     });   
     var col;  
@@ -163,8 +179,24 @@ function update_source(id_prev,id){
 /* --------- DEBUT MAP-BLOCK1 ---------- */
 /* Fonction de creation du menu de gestion des couches */
 function buildLeftMenu() {
-    var rll=$('#sidemenu > .raster-menu-left')
+        //init sur PM10 ada
     for (i in prevs) {
+        if (typeof i === undefined){
+            console.log("i => undefined")
+        }
+        else {
+            var pol=prevs[i][0]
+            if (pol.toLowerCase() != 'multi'){
+                if ($('#'+pol.toLowerCase()+'_switch_1').length<1){
+                    $('#poll_switch_1').append('<a id="'+pol.toLowerCase()+'_switch_1" class="btn btn-default '+pol+'"> <i></i>'+pol+'</sub> </a>')
+                    init_switch_1(pol)
+                    //console.log(pol)
+                }
+            }
+        }
+    }
+    var rll=$('#sidemenu > .raster-menu-left')
+    /*for (i in prevs) {
         if (typeof i === undefined){
             console.log("i => undefined")
         }
@@ -177,8 +209,8 @@ function buildLeftMenu() {
                 }
             }
         }
-    }   
-    for (i in prevs) {
+    }   */
+/*     for (i in prevs) {
         if (typeof i === undefined){
             console.log('prev undifed')
         }
@@ -192,28 +224,66 @@ function buildLeftMenu() {
             overlayLayers1[id_but]={}
             }
         }
-    }   
+    }   */ 
+     $("#poll_switch_1 > .NO2").click()
 
-    layer_but_clic()
 }
+function init_switch_1(poll) {
+    //console.log(poll)
+     ref="#poll_switch_1 > ."+ poll
+     
+     $("#poll_switch_1 > ."+ poll).click(           
+        function(){
+            $("#poll_switch_1 > .active").removeClass('active')
+            $("#poll_switch_1 > ."+ poll).addClass('active')
+            active_poll_left_table=poll;
+            var sel='#sidemenu > .raster-menu-left '
+            $("#left-raster-group").remove()
+            $(sel).append("<div id='left-raster-group'></div>")
+            for (p in prevs) {
+                pol = prevs[p][0]
+                ech = prevs[p][1]
+                if (pol==poll){
+                    //console.log(p)
+                    //console.log(pol)
+                    //console.log(ech)
 
-$.ajax({
-    url: '{% url "check_sources"  %}',
-    success : function(msg){
-        //j=JSON.parse(msg)
-        //console.log(msg)
-        //les cles du dic 'liste_source' sont l'id de la source
-        var k=Object.keys(msg)
-        //on parse chaque source
-        for (i=0;i<k.length;i++) {
-            //construction du menu de gauche (du map-block1)
-            var id_prev=k[i]
-            var id=msg[id_prev] 
-            update_source(id_prev,id)
+                    id_but='lay_btn_'+p.toString()
+                    cls=pol
+                    var html_btn='<a href="#" class="list-group-item point-item baselayer"  id="'+id_but+'"> <h4 class="list-group-item-heading" >'+cls+'</h4>J ' + ech.toString()+ '    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>'           
+                    $("#left-raster-group").append(html_btn)
+                    //overlayLayers1[id_but]={}
 
+                }
+            }
+            check_sources()
+            layer_but_clic()
+            divider='<div class="divider10"></div>'
+            var sel='#sidemenu > .raster-menu-left '
+            $("#left-raster-group").append(divider)
+            
         }
-    }
-});
+    )  
+};
+function check_sources () {
+    $.ajax({
+        url: '{% url "check_sources"  %}',
+        success : function(msg){
+            //j=JSON.parse(msg)
+            //console.log(msg)
+            //les cles du dic 'liste_source' sont l'id de la source
+            var k=Object.keys(msg)
+            //on parse chaque source
+            for (i=0;i<k.length;i++) {
+                //construction du menu de gauche (du map-block1)
+                var id_prev=k[i]
+                var id=msg[id_prev] 
+                update_source(id_prev,id)
+
+            }
+        }
+    });
+}
 /* function build_left_menu(msg) {
     
     //les cles du dic 'liste_source' sont l'id de la source
@@ -270,50 +340,65 @@ function layer_but_clic() {
             // condition pour traiter les 2 map-block séparément
             if ($(this).closest("#map-block1").length == 1) {
                 id_but=$(this)[0].id
+                console.log('id_but_prev : ' + id_but.toString())
                 //null si on a pas encore initialisé (inutile si on affiche un polluant par defaut)
-                if ( activeLayer1 != null) {
-                    map.removeLayer(activeLayer1[1])
-                }
-                id_source = overlayLayers1[id_but]
-                
-                //workaround pour faire passer la variable id ds l'url
-                url_img='{% url 'img_raster' id='0' %}'
-                url_bbox='{% url 'bbox_raster' id='0' %}'
-
-                img=url_img.slice(0,url_img.length-5)+id_source.toString()+'.png'
-                bbox=url_bbox.slice(0,url_bbox.length-6)+id_source.toString()+'.json'
-                console.log(bbox)
-                console.log(img)
-
-                // s1="'{% "
-                // s2=" %}'"
-                // s3=s1 + s + s2
-                // console.log(s1 + s + s2)
-                $.ajax({
-                    //recup de scoins de la carte necessaires pour que leaflet affiche le png
-                    url:bbox,
-                    
-                    success : function(msg){
-                        anchors = [
-                            [msg['ymax'], msg['xmin']], //haut gauche
-                            [msg['ymax'], msg['xmax']], //haut droite
-                            [msg['ymin'], msg['xmax']], //bas droite
-                            [msg['ymin'], msg['xmin']]  //bas gauche
-                        ];
-                        console.log(anchors)
-                        lay = L.imageTransform(img, anchors, {opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});     
-                        lay.addTo(map)
-                        activeLayer1=[id_source,lay];
-                        
-                        console.log(id_source.toString())
-                        var tbl=meta_source_tbl(liste_sources[id_source])
-                        $('#active_layer_div1 > table').remove()
-                        $('#active_layer_div1').append(tbl)
-                    }
-                })  
+                switch_map_1(id_but)
             }
     });
 };
+
+function switch_map_1(id_but){
+    
+    if ( activeLayer1 != null) {
+        map.removeLayer(activeLayer1[1])
+        console.log(activeLayer1[1])
+    }
+    id_source = overlayLayers1[id_but]
+    
+    console.log('id_source : ' + id_source.toString())
+    //workaround pour faire passer la variable id ds l'url
+    url_img='{% url 'img_raster' id='0' %}'
+    url_bbox='{% url 'bbox_raster' id='0' %}'
+
+    img=url_img.slice(0,url_img.length-5)+id_source.toString()+'.png'
+    bbox=url_bbox.slice(0,url_bbox.length-6)+id_source.toString()+'.json'
+
+
+    // s1="'{% "
+    // s2=" %}'"
+    // s3=s1 + s + s2
+    // console.log(s1 + s + s2)
+    $.ajax({
+        //recup de scoins de la carte necessaires pour que leaflet affiche le png
+        url:bbox,
+        
+        success : function(msg){
+            anchors = [
+                [msg['ymax'], msg['xmin']], //haut gauche
+                [msg['ymax'], msg['xmax']], //haut droite
+                [msg['ymin'], msg['xmax']], //bas droite
+                [msg['ymin'], msg['xmin']]  //bas gauche
+            ];
+            //console.log(anchors)
+            lay = L.imageTransform(img, anchors, {opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});     
+            lay.addTo(map)
+            activeLayer1=[id_source,lay];
+            
+            //console.log(id_source.toString())
+            var tbl=meta_source_tbl(liste_sources[id_source])
+            $('#active_layer_div1 > table').remove()
+            $('#active_layer_div1').append(tbl)
+        },
+        error : function(msg) {
+            alert(msg)
+        },
+          statusCode: {
+    404: function() {
+      alert( "page not found" );
+    }
+  }
+    }) 
+}
 /* ---------- FIN MAP-BLOCK1 ------------ */
 
 
@@ -330,12 +415,13 @@ function buildRightMenu(){
             if ($('#'+pol.toLowerCase()+'_switch').length<1){
                 $('#poll_switch_2').append('<a id="'+pol.toLowerCase()+'_switch" class="btn btn-default '+pol+'"> <i></i>'+pol+'</sub> </a>')
                 init_switch_2(pol)
+                $("#poll_switch_2 > .NO2").addClass('active')
             }
         }
     }
-    dic=getTypeDic('PM10','ada')
+    dic=getTypeDic('NO2','ada')
     buildTable(dic)    
-    active_poll_right_table="PM10";
+    active_poll_right_table="NO2";
 }
 function getTypeDic(poll,type){
 
@@ -344,17 +430,17 @@ function getTypeDic(poll,type){
     var type_dic={0:{},1:{},2:{},3:{}};
     for (s in liste_sources) {      
         var obj=liste_sources[s]
-
-        if ((obj.type==type) && (obj['pol']==poll)){            
+        if ((obj.type==type) && (obj['pol']==poll)){
+            console.log(obj)
             var ech=obj['ech']+1
             var tsp=obj['daterun']
             //console.log(tsp)
+            console.log(tsp)
             run=runs[tsp]
             console.log(run)
-            
+            console.log(obj['pol'])
             //console.log(run)
-            type_dic[ech][run]=s;
-           
+            type_dic[ech][run]=s;           
         }
     }
     console.log(type_dic)
@@ -368,13 +454,17 @@ function buildTable(type_dic){
     $(".t2").append("<tbody></tbody>")
     for (i in type_dic){
         $(".t2 > tbody").append("<tr id='tr_"+i.toString()+"'><th scope='row'>"+(i-1).toString()+"</th></tr>")
+        console.log(i)
         for (run in type_dic[i]){
             //console.log(run)
+            console.log(run)
             // pour inverser l'ordre des colonnes du tableaux :
             var reverse_ind =(run-2)*(-1)
             //console.log(reverse_ind)
-            var id_source=type_dic[i][reverse_ind]
-              
+            console.log(type_dic)
+            var id_source=0
+            id_source=type_dic[i][reverse_ind]
+            
             var col;  
             
             if (liste_sources[id_source].statut==true){        
@@ -401,6 +491,8 @@ function init_switch_2(poll) {
      ref="#poll_switch_2 > ."+ poll
      $("#poll_switch_2 > ."+ poll).click(           
         function(){
+            $("#poll_switch_2 > .active").removeClass('active')
+            $("#poll_switch_2 > ."+ poll).addClass('active')
             active_poll_right_table=poll;
             if (poll!='MULTI'){
                
@@ -415,6 +507,7 @@ function init_switch_2(poll) {
         }
     )  
 };
+
 function refresh_right_table(){
     poll=active_poll_right_table
     check_statut()
@@ -436,6 +529,8 @@ function refresh_right_table(){
 // function associée aux cases du tableau quand on le refresh
 function td_clic() {
     $(".t2 > tbody > tr > td").click(function(){
+        $(".t2 > tbody > tr >  .active").removeClass('active')
+        $(this).addClass('active')
         var id_source=($(this)[0].id).split("_")[1]
         o=liste_sources[id_source]
         $('#other_layers > a').remove()
@@ -466,7 +561,7 @@ function td_clic() {
             }   
         })
         if (o.statut == false){
-            alert('Pas de carte '+o.pol + ' disponible pour le '+ o.daterun + ', échéance à '+ lib_ech[o.ech+1] + ', source : ' + o.type + " (code couleur rouge). Si d'autres sources sont disponible pour ce run / échéance / polluant, elles s'afficheront en vers dans l'onglet \"autres sources\" qui apparait en cliquant sur uen case du tableau" )
+            //alert('Pas de carte '+o.pol + ' disponible pour le '+ o.daterun + ', échéance à '+ lib_ech[o.ech+1] + ', source : ' + o.type + " (code couleur rouge). Si d'autres sources sont disponible pour ce run / échéance / polluant, elles s'afficheront en vers dans l'onglet \"autres sources\" qui apparait en cliquant sur uen case du tableau" )
         }
         else {
             if ( activeLayer2 != null) {
@@ -489,13 +584,25 @@ function td_clic() {
                         [msg['ymin'], msg['xmax']], //bas droite
                         [msg['ymin'], msg['xmin']]  //bas gauche
                     ];
-                    var lay = L.imageTransform(img, anchors,{opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});  
+                    var lay = L.imageTransform(img, anchors,{opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'}); 
+
                     lay.addTo(map2)
                     activeLayer2=[id_source,lay];
                     console.log(id_source.toString())
                     var tbl=meta_source_tbl(liste_sources[id_source])
                     $('#active_layer_div2 > table').remove()
                     $('#active_layer_div2').append(tbl)
+                },            
+                error : function(msg) {
+                    alert(msg)
+                }, 
+                statusCode: {
+                    404: function() {
+                        alert( "page not found" );
+                    },
+                    500: function() {
+                        alert( "server internal error" );
+                    },
                 }
             })
         }
@@ -505,35 +612,40 @@ function td_clic() {
 
 function other_layers_clic() {
     $(".other_layers").click(function(){
-        var id_source=($(this)[0].id).split("-")[2]
+        var id_source=($(this)[0].id).split("_")[1]
+        console.log(id_source)
+
+        if ( activeLayer2 != null) {
+            map2.removeLayer(activeLayer2[1])
+        }
+        var url="/raster/img/raster_"+id_source+".png";
+        $.ajax({
+            url: "/raster/bbox/raster_"+id_source+".json",
+            success : function(msg){
+                var anchors = [
+                    [msg['ymax'], msg['xmin']], //haut gauche
+                    [msg['ymax'], msg['xmax']], //haut droite
+                    [msg['ymin'], msg['xmax']], //bas droite
+                    [msg['ymin'], msg['xmin']]  //bas gauche
+                ];
+                var lay = L.imageTransform(url, anchors,{opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});  
+                lay.addTo(map2)
+                activeLayer2=[id_source,lay];
+                console.log(id_source.toString())
+                var tbl=meta_source_tbl(liste_sources[id_source])
+                $('#active_layer_div2 > table').remove()
+                $('#active_layer_div2').append(tbl)
+            },
+            error : function(msg) {
+                alert(msg)
+            },  statusCode: {
+    404: function() {
+      alert( "page not found" );
+    }
+  }
+        })
         
-        if (liste_sources[id_source]['type']!='chim'){
-            if ( activeLayer2 != null) {
-                map2.removeLayer(activeLayer2[1])
-            }
-            var url="/raster/img/raster_"+id_source+".png";
-            $.ajax({
-                url: "/raster/bbox/raster_"+id_source+".json",
-                success : function(msg){
-                    var anchors = [
-                        [msg['ymax'], msg['xmin']], //haut gauche
-                        [msg['ymax'], msg['xmax']], //haut droite
-                        [msg['ymin'], msg['xmax']], //bas droite
-                        [msg['ymin'], msg['xmin']]  //bas gauche
-                    ];
-                    var lay = L.imageTransform(url, anchors,{opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});  
-                    lay.addTo(map2)
-                    activeLayer2=[id_source,lay];
-                    console.log(id_source.toString())
-                    var tbl=meta_source_tbl(liste_sources[id_source])
-                    $('#active_layer_div2 > table').remove()
-                    $('#active_layer_div2').append(tbl)
-                }
-            })
-        }
-        else if (liste_sources[id_source]['type']!='chim'){
-            //TODO : comment faire pour la fine
-        }
+
     })
         
 }
@@ -588,11 +700,15 @@ function remove_switch_form() {
     $('#switch_source_div').css('display','none')
 }
 function validate_switch_btn(){
+
     id_prev=$("#switch_input > option:selected").val()
     id=$("#new_source > option:selected").val()
     console.log('id_prev : ' + id_prev)
     console.log('id : '+ id)
     update_source(id_prev,id)
+    id_but=$(".active")[1].id
+    switch_map_1(id_but)
+    console.log(id_but)
 }
 function remove_multi_form() {
     $("#multi_div").hide()
@@ -634,12 +750,16 @@ function multi_form_show(){
             if (pol.toLowerCase()!='multi'){
                 
                 ech=prevs[i][1]
+                console.log(ech)
                 overlayButId="lay_btn_"+i.toString()
+                console.log(overlayButId)
                 id_source=overlayLayers1[overlayButId]
+                console.log(id_source)
                 src=liste_sources[id_source ]
                 lib=lib_ech[ech+1].toString()
+                console.log(lib)
                 id_row='tr_'+ech.toString()+"_"+pol.toLowerCase()
-
+                console.log(id_row)
                 $("#"+id_row+" > .td_poll_source").text(src['pol'])
                 $("#"+id_row+" > .td_type").text(src['type'])
                 $("#"+id_row+" > .td_date").text(src['daterun'])
@@ -851,6 +971,11 @@ map.on('click', function(e) {
             success : function(msg){
                 //j=JSON.parse(msg)
                 console.log(msg)
+                console.log(msg['val'])
+                var popup = L.popup()
+                .setLatLng(coords)
+                .setContent('valeur brute corrigée : ' + msg['val'][0].toString()+ ' <br/>  sous indice : ' + msg['val'][1].toString())
+                .openOn(map);
                 //les cles du dic 'liste_source' sont l'id de la source
                 var k=Object.keys(msg)
 
@@ -876,7 +1001,11 @@ map2.on('click', function(e) {
             url:url2,
             success : function(msg){
                 //j=JSON.parse(msg)
-                console.log(msg)
+                console.log(msg['val'])
+                var popup = L.popup()
+                .setLatLng(coords)
+                .setContent('valeur brute corrigée : ' + msg['val'][0].toString()+ ' <br/>  sous indice : ' + msg['val'][1].toString())
+                .openOn(map2);
                 //les cles du dic 'liste_source' sont l'id de la source
                 var k=Object.keys(msg)
 
@@ -1073,7 +1202,8 @@ $("#submitFormCorr").click(function (e) {
                     $('#active_layer_div1 > table').remove()
                     $('#active_layer_div1').append(tbl)
                 }
-            })              
+            })      
+  
         
         },
         error: function (request, error) {
@@ -1163,4 +1293,121 @@ function test(){
             $("#error_tube").show();
         },        
     }); 
+}
+function get_stats_reg(){
+    url_img='{% url 'calcul_stats_reg' id='2090' %}'
+    $.ajax({
+        url : url_img,
+        success: 
+            function(msg){
+                alert(msg)
+            }
+    })
+    
+}
+
+function export_low(id_prev){
+    url_img='{% url 'img_raster' id='0' %}'
+}
+function launch_commentaire(ech){
+    $("#commentaire-div").show()
+    $("#echeance-input").val(ech)
+    $("#mask").show()
+}
+function remove_commentaire_form() {
+    $("#commentaire-div").hide()
+    $("#mask").hide()
+}
+function valid_commentaire(){
+    var csrftoken = getCookie('csrftoken');
+    ech=$('#echeance-input').val()
+    console.log(ech)
+    comm=$('#commentaire-text-input').val()
+    console.log(comm)
+    $("#commentaire-div").hide()
+    $("#mask").hide()
+    $.ajax({   
+        type: "POST",
+        headers: { "X-CSRFToken": csrftoken },    
+        url: '{% url "save_commentaire"   %}',
+        data: {
+            date_prev:today,
+            commentaire:comm
+        },
+        //dataType: 'json',
+        success: function(msg){
+
+            console.log(msg)
+        }
+
+    })
+}
+function export_low() {
+    for (i in overlayLayers1){
+        id_source= overlayLayers1[i]
+        id_prev=i.split('_')[2]
+        console.log(id_source)
+        $.ajax ({
+         async : false,
+          url: '{% url "export_low" %}',
+          data : {
+            id_source:id_source,
+            id_prev:id_prev
+          }
+        })      
+    }
+}
+function export_low_val() {
+    for (i in overlayLayers1){
+        id_source= overlayLayers1[i]
+        id_prev=i.split('_')[2]
+        console.log(id_source)
+        $.ajax ({
+         async : false,
+          url: '{% url "export_low_val" %}',
+          data : {
+            id_source:id_source,
+            id_prev:id_prev
+          }
+        })      
+
+    }
+}
+function export_hd() {
+    n=0
+    for (i in overlayLayers1){
+       
+        if (n<2){
+            id_source= overlayLayers1[i]
+            
+            id_prev=i.split('_')[2]
+            console.log(id_source)
+            $.ajax ({
+              async : true,
+              url: '{% url "merge_fine" %}',
+              data : {
+                id_source:id_source,
+                id_prev:id_prev
+              }
+            })
+
+            n+=1
+        }
+        else  {
+            id_source= overlayLayers1[i]
+            
+            id_prev=i.split('_')[2]
+            console.log(id_source)
+            $.ajax ({
+              async : false,
+              url: '{% url "merge_fine" %}',
+              data : {
+                id_source:id_source,
+                id_prev:id_prev
+              }
+            })
+        n=0
+        }
+
+    }   
 }

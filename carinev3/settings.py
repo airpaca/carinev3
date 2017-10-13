@@ -25,8 +25,21 @@ SECRET_KEY = '!jhytmr+xnd63ep!%qk$22bvl08)3b)r9i88ju!#d6ed-d$(n2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"
+# 'inf-carine3',
+# '172.16.0.0/16',
+# '192.168.37.0/24',
+  # '192.168.37.154',
+ # '91.216.209.163',
+ # '195.54.62.175',
+ # '195.54.62.174' , 
+# '62.23.35.34',
+# '62.23.35.35',
+# '62.23.35.36',
+# '62.23.35.37', 
+# '62.23.35.38', 
+ # '82.224.176.163'
+ ]
 
 
 # Application definition
@@ -118,7 +131,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT= '/var/www/html/carinev3/raster/lib_static/'
+STATIC_ROOT= '/var/www/html/dev/raster/lib_static/'
+
+LOGIN_URL='accounts/login/'
+
 # Logging
 
 LOGGING = {

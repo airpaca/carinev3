@@ -88,9 +88,10 @@ html, body {
 }
 
 .table tbody  tr  td:hover {
-    opacity : 0.7;
+    opacity : 0.5;
 }
-#sidemenu2 table td .yes_source {
+
+.table table td .yes_source {
     opacity : 0.8;
     border : 1px solid black;
 
@@ -275,4 +276,26 @@ body.modal-open {
 .prev_col {
     background-color: #dddddd;
     border : 1px solid black;
+}
+#commentaire-div {
+
+    width : 1000px;
+    height :1000px;
+    position : fixed;
+    top: 0px;
+    left : 0px;
+    z-index: 100; 
+    vertical-align : middle;
+    display : none;
+
+}
+.commentaire-div2 {
+    top: 50%;
+    position: relative;
+    left: 50%;
+    height : 500px;
+    
+}
+.commentaire-div2  input{
+    
 }

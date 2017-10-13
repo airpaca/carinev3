@@ -12,13 +12,34 @@ import datetime
 import time
 
 
+
 def getSec():
     d=datetime.datetime.now()
-    sec=(d.hour*3600)+(d.minute*60) + d.second
+    sec=datetime.datetime.now()-(d.hour*3600)+(d.minute*60) + d.second
     return sec
     
 def getTimestamp(delta):
-    sec_jour=3600*24
-    sec=getSec()
-    tsp=int(time.time()-sec-(sec_jour*delta))
+    n=datetime.datetime.now()
+    m=n.month
+    y=n.year
+    d=n.day
+    #mieux vaut enlever (86400*delta)a la fin que faire d-delta ici.
+    #bug sur les jours negatifs (ex 2017 / 09 / (01-2)=> error 500) 
+    date = datetime.date(y,m,d)
+    print(date)
+    tt=date.timetuple()
+    print(tt)
+    
+    tsp = int(time.mktime(tt))-(86400*delta)
+    return tsp
+
+def getTimestampFromDate(date):
+    y=int(date[0:4])
+    m=int(date[4:6])
+    d=int(date[6:8])
+    date = datetime.date(y,m,d)
+    print(date)
+    tt=date.timetuple()
+    print(tt)
+    tsp = int(time.mktime(tt))
     return tsp

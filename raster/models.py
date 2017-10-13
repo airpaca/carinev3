@@ -5,7 +5,7 @@ from django.contrib.gis.db import models
 import datetime
 import django.utils.timezone
 import libcarine3.timestamp
-
+from django.contrib.auth.models import User
 
 class TypeSourceRaster(models.Model):
     #value pour intrun à check dans getdate
@@ -60,6 +60,7 @@ class Prev(models.Model):
     pol=models.CharField(max_length=10,null=True)
     ech=models.IntegerField(null=True)
     src=models.ForeignKey(Source,on_delete=models.SET_NULL,null=True)
+
     def json(self):
         return dict(date_prev=self.date_prev,pol=self.pol,ech=self.ech,src=self.src.url())
 class Expertise(models.Model):
@@ -71,6 +72,9 @@ class Expertise(models.Model):
     mx = models.IntegerField(default=None, null=True)  # limit max des concentrations à modifier
     geom = models.GeometryField(srid=3857)
     ssup = models.IntegerField(default=None, null=True)  # sueil sup a pas dépasser
+    smin = models.IntegerField(default=None, null=True)
+    user = models.ForeignKey(User,default=None, null=True)
+    active = models.BooleanField(default=True)
     def __str__(self):
         return ("Expertise="+str(self.id)+", source = " + str(self.target.id))
 
@@ -81,20 +85,16 @@ class Expertise(models.Model):
         return dict(delta=self.delta, mn=self.mn, mx=self.mx,
                     geom=json.loads(self.geom.json))        
 
-class IndiceComVersion(models.Model):
-    date_mep=models.IntegerField()
-    detail=models.CharField(max_length=200,default="")
-    def __str__(self):
-        return self.detail
+
         
 class IndiceCom(models.Model):
-    version=models.ForeignKey(IndiceComVersion,default=None)
-    concentration=models.FloatField()
     indice=models.FloatField()
-    source=models.ForeignKey(Source)
-
+    prev=models.ForeignKey(Prev,null=True)
+    code_insee=models.CharField(max_length=20,default="00000")
+    def json_less(self):
+        return(dict(code_commune=str(self.code_insee),indice=str(self.indice)))    
     def __str__(self):
-        return 'TODO'
+        return self.json_less()
 
 class DepassementReg(models.Model):
     source=models.ForeignKey(Source)
@@ -102,3 +102,15 @@ class DepassementReg(models.Model):
     resultat=models.BooleanField()
     def __str__(self):
         return self.str(id_zone)
+        
+class DatePrev(models.Model):
+    date_prev=models.IntegerField(default=libcarine3.timestamp.getTimestamp(0))
+    commentaire=models.CharField(max_length=10000,null=True,default=None)
+    previsionniste=models.CharField(max_length=100,null=True,default=None)
+class Polluant(models.Model):
+    nom=models.CharField(max_length=10,null=True,default=None)
+    lib=models.CharField(max_length=100,null=True,default=None)
+    val=models.IntegerField(default=None,null=True)
+    vls=models.FloatField(default=None,null=True)
+    ale=models.FloatField(default=None,null=True)
+    colormap= models.CharField(max_length=1000,null=True,default=None)

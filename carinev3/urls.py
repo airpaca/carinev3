@@ -19,5 +19,7 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^raster/', include('raster.urls')),
+    url(r'^api-web/', include('raster.api_web_urls')),
+    url(r'^api-air2go/', include('raster.api_air2go_urls')),
     url(r'^admin/', admin.site.urls)
 ]

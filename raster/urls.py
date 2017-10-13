@@ -1,9 +1,12 @@
 from django.conf.urls import url
 from . import views
+import django.contrib.auth 
+from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
-
+    #default login
+    url(r'accounts/login/$', auth_views.LoginView.as_view(),name='login'),
     # Index
     url(r'^$', views.index, name='index'),
 
@@ -49,11 +52,9 @@ urlpatterns = [
     url(r'^api/pixel_(?P<id>[0-9]+)_(?P<x>[0-9]+)_(?P<y>[0-9]+)$',
         views.get_pixel, name='get_pixel'),   
     #sources
-    url(r'^source/update_(?P<id_prev>[0-9]+)_(?P<id>[0-9]+)$',
+    url(r'^source/update$',
         views.update_source, name='update_source'),
-    url(r'^api/get_indice_com/$',
-        views.get_indice_com, name='get_indice_com'),   
-    
+
     ###couches vecteurs    
     url(r'^sites_fixes.json$',
         views.sites_fixes, name='sites_fixes'),
@@ -72,5 +73,36 @@ urlpatterns = [
         
     url(r'^check_statut$',
         views.check_statut, name='check_statut'),
+        
+    url(r'^img/stats_reg_(?P<id>[0-9]+)$',
+        views.calcul_stats_reg, name='calcul_stats_reg'),
+        
+       # .. img/raster_ech<ech>.png => multi polluant
+    url(r'^img/export_low$',
+        views.export_low, name='export_low'), 
+        
+       # .. img/raster_ech<ech>.png => multi polluant
+    url(r'^img/export_low_val$',
+        views.export_low_val, name='export_low_val'), 
+        
+    url(r'^getTsp$',
+        views.getTsp, name='getTsp'), 
+        
+    url(r'^save_commentaire/$',
+        views.save_commentaire, name='save_commentaire'), 
+    
+    
+    url(r'^export_hd/$',
+        views.export_hd, name='export_hd'),    
+    url(r'^merge_fine$',
+        views.merge_fine, name='merge_fine'),  
+    url(r'^merge_mi_fine$',
+        views.merge_mi_fine, name='merge_mi_fine'),
+
+    url (r'^mylogout/$',views.mylogout,name='mylogout'),
+    url(r'^fake$',
+        views.fake, name='fake'),   
+    url(r'^get_expertises$',
+        views.get_expertise, name='get_expertise'),
 
 ]

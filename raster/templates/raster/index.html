@@ -32,19 +32,19 @@
         <!-- Barre de navigation -->
         <nav class="navbar navbar-default nav-fixed-top" role="navigation" id="app-nav-bar" >
             <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+            <div class="navbar-header" >
+                <!--<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
-                </button>
+                </button>-->
                 <a class="navbar-brand" href="#">CARINE v3</a>
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
-                <ul class="nav navbar-nav">
+                <!--<ul class="nav navbar-nav">
                     <li class="active">
                         <a href="#">Home</a>
                     </li>
@@ -70,15 +70,65 @@
                         <a href="aide.html">Aide</a>
                     </li>
 
-                </ul>
+                </ul> -->
 
                 <ul class="nav navbar-nav navbar-right">
                     <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
                     <li>
-                        <a href="login.html">Login</a>
+                        <a href="{% url 'mylogout' %}">Logout</a>
                     </li>
 
                 </ul>
+            </div><!-- /.navbar-collapse -->
+        </nav>
+        
+        <!-- Barre d'outils -->
+        <nav class="navbar navbar-default nav-fixed-top" role="navigation" id="tools-nav-bar" >
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                    <li >
+                        <a  onclick="multi_form_show()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Calcul du multipolluants</a>
+                    </li>
+                    <li >
+                        <a  onclick="get_stats_reg()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Statistiques réglementaires</a>
+                    </li>
+                    <li >
+                     
+                        <a onclick="launch_commentaire(1)" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i>Ecrire le commentaire</a>
+                    </li>
+                    <li>
+                        <div class="dropdown" style="height : 100%;">
+                            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                Export des cartes du jour
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+
+                                <li><a onclick="export_low_val()" href="#" title="Lien 2">Basse définition valeurs</a></li>
+                                <li><a onclick="export_low()" href="#" title="Lien 2">Basse définition RGB</a></li>
+                                <li><a onclick="export_hd()" href="#" title="Lien 2">Haute définition RGB</a></li>
+
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <a  onclick="validPrevis()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> VALIDER LA PREVISION </a>    
+                    </li>
+                
+
+                </ul>
+
             </div><!-- /.navbar-collapse -->
         </nav>
 	<div id="englob">
@@ -112,7 +162,12 @@
                         <a onclick="toggleNav()" class="btn btn-default"> <i class="glyphicon glyphicon-lock"></i> Navigation simultanée </a>
                         
                     </div>
+                    <div id="poll_switch_1" class="btn-group btn-group-justified btn-group-sm">
+
+                        
+                    </div>
                     <div class='raster-menu-left'>
+
                     <!-- Sidebar Separator -->
                         <div class="divider10"></div>
 
@@ -133,10 +188,10 @@
 					<div class='active_layer_div' id='active_layer_div1'>
 						<p class='active_layer_p alert alert-info' id='active_layer_p1'></p>
 					</div>
-					<div class="btn-group btn-group-justified btn-group-sm">
+<!-- 					<div class="btn-group btn-group-justified btn-group-sm">
                         <a  onclick="multi_form_show()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Calcul du multipolluants (0 pr test) </a>
                         <a  onclick="validPrevis()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> VALIDER LA PREVISION </a>                        
-                    </div>
+                    </div> -->
 
 
 
@@ -300,7 +355,18 @@
                 </div>
             </div>
         </div>
+        <div id="commentaire-div" class="form-group row">
+          
+          <label for="commentaire-text-input" class="col-2 col-form-label">Text</label>
+          <div class="col-10 commentaire-div2">
+            <button class="del_form" id="hide_multi_btn" onclick="remove_commentaire_form()"> <i class="glyphicon glyphicon-remove"></i></button>
+            <textarea class="form-control" rows="3" placeholder="What's up?"  id="commentaire-text-input"></textarea>
+            <input class="form-control hide" type="text" value="" id="echeance-input">
+            <button  class="btn btn-primary" id="valid_commentaire" onclick="valid_commentaire()">Valider le commentaire</button>
+          </div>
+        </div>
         <div id="mask">
+        
         </div>
                     <div id="multi_div" class="list-group point-list-view">
                         <div id="multi_tbl_div">
@@ -398,6 +464,33 @@
                                         <!-- checkbox -->
                                     </tr>
                                     <tr id="tr_1_o3">
+                                        <!-- th -->
+                                        <td class="prev_col td_poll_prev">O3</td>
+                                        <td class="td_poll_source"></td>
+                                        <td class="td_type"></td>
+                                        <td class="td_date"></td>
+                                        <td class="td_ech_source"></td>
+                                        <!-- checkbox -->
+                                    </tr>
+                                    <tr id="tr_2_no2">
+                                        <th class="prev_col" rowspan="3" scope="row">+2</th>
+                                        <td class="prev_col td_poll_prev">NO2</td>
+                                        <td class="td_poll_source"></td>
+                                        <td class="td_type"></td>
+                                        <td class="td_date"></td>
+                                        <td class="td_ech_source"></td>
+                                        <td rowspan="3" class="td_valid" id="run_+2"><input id="checkBox+2" type="checkbox"></td>
+                                    </tr>
+                                    <tr id="tr_2_pm10">
+                                        <!-- th -->
+                                        <td class="prev_col td_poll_prev">PM10</td>
+                                        <td class="td_poll_source"></td>
+                                        <td class="td_type"></td>
+                                        <td class="td_date"></td>
+                                        <td class="td_ech_source"></td>
+                                        <!-- checkbox -->
+                                    </tr>
+                                    <tr id="tr_2_o3">
                                         <!-- th -->
                                         <td class="prev_col td_poll_prev">O3</td>
                                         <td class="td_poll_source"></td>
