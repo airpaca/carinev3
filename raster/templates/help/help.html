@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    
+        <!-- 
+        Template bootstrap pour SIG: https://github.com/luckynvic/GIS-Web-Template        
+        -->
+    
+        <!-- Infos générales -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <title>Carine v3</title>
+        <meta name="author" content="vjulier@atmo-aura.fr">
+        
+        <!-- Chargement des feuilles de stype CSS -->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
+        <link href="{% static 'raster/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'raster/lib/customScroll/css/jquery.mCustomScrollbar.css' %}" rel="stylesheet">
+        <link href="{% static 'raster/css/style.default.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'raster/css/style.css' %}"/>
+
+        <script type="text/javascript"> </script>
+        <!-- API Google Maps
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHyrW7AhUa3J8sm7iLofM5PzbLmj_j2wo" type="text/javascript"></script>
+        -->
+        
+    </head>
+    
+    <body>
+        <!-- Barre de navigation -->
+        <nav class="navbar navbar-default nav-fixed-top" role="navigation" id="app-nav-bar" >
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header" >
+                <!--<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>-->
+                <a class="navbar-brand" href="{% url 'index' %}">CARINE v3</a>
+
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
+                    <li>
+                        <a href="{% url 'mylogout' %}">Logout</a>
+                    </li>
+
+                </ul>
+                                <ul class="nav navbar-nav navbar-right">
+                    <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
+                    <li>
+                        <a href="{% url 'help' %}">Help</a>
+                    </li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </nav>
+                <!-- Barre d'outils -->
+        <nav class="navbar navbar-default nav-fixed-top" role="navigation" id="tools-nav-bar" >
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                    <li >
+                        <a  onclick="show_FAQ()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> FAQ</a>
+                    </li>
+                    <!-- <li > -->
+                        <!-- <a  onclick="launch_async(get_stats_reg)" data-toggle="tooltip" title="calcul les stats pour toutes les cartes (environ 1min)" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Statistiques réglementaires (toutes)</a> -->
+                    <!-- </li> -->
+                    <!-- <li > -->
+                        <!-- <a  onclick="get_indice_com()" data-toggle="tooltip" title="calcul les indices pour toutes les cartes (environ 3min). Pas indispensable car recalculé à la validation finale" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Indices communaux</a> -->
+                    <!-- </li> -->
+
+                
+
+                </ul>
+
+            </div><!-- /.navbar-collapse -->
+        </nav>
+        <div id="content">
+            <div id="faq_div">
+                <div class="list-group-item point-item question_div">
+                        <strong>Un échec apparait dans la popup des résultats du calcul multipolluants</strong>
+                    <div class="question_content_div">
+                       
+                            <ul>
+                                <li> le prétraitement des sources réalisé à la réception des fichiers mod a peut-être échoué.</li>
+                                Solution :
+                                <ul>
+                                    <li>aller dans outils/préparation des sources
+                                    <li>lancer l'opération, qui va durer environ 30sec et regénérer des fichiers corrects.
+                                    <li>pour vérifier : recalculer les multipolluants (au moins celui en échec)
+                                </ul>
+                            </ul>
+                    </div>
+                </div>
+
+                <div class="list-group-item point-item question_div">
+                    <strong>Simplement rediffuser le commentaire sans tout recalculer</strong>
+                    <div class="question_content_div">
+                        <ul>
+                        
+                        Solution :
+                            <ul>
+                            <li>Reécrire le commentaire et valider</li>
+                            <li>cliquer sur outils/Rediffuser
+                            <li>la commande va simplement prévenir SMILE qu'un nouveau commentaire est enregistré dans la base et prêt à être diffuser.</br>
+                            Le nouveau commentaire sera visible sur le site web au maximum 15min après la rediffusion. </li>
+                        </ul>
+                        </ul>
+                     </div>
+                </div>
+                <div class="list-group-item point-item question_div">
+                    <strong>Visualiser ce qui sort du serveur de tuiles sans attendre le site web</strong>
+                    <div class="question_content_div">
+                        <ul>
+                        
+                        Solution :
+                            <ul>
+                            <li><a href="file://atmo//dfs//Sig/temp/vincent/carine/openlayers.html" target="_blank">Par ici : file://atmo//dfs//Sig/temp/vincent/carine/openlayers.html</a></li>
+
+                            <li>Vous voyez ici ce qui émit par le serveur de tuiles pour les différentes échéances.</br>
+                            Si il n'y a rien pour une échéance, c'est que le fichier n'est pas encore arrivé sur le serveur (ce qui permet également de vérifier l'avancée du calcul).
+                            </li>
+                        </ul>
+                        </ul>
+                     </div>
+                </div>
+            </div> 
+        </div>
+     </body></html>
+     
+        <!-- Application principale -->
+        <script src="{% url 'help_js' %}" type="text/javascript" charset="utf-8"></script>

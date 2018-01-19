@@ -1,0 +1,128 @@
+/*
+.leaflet-draw .leaflet-control-container{
+    padding-top:50%;
+    margin-top:50%;
+}
+*/
+
+.leaflet-left{
+    padding-left:17%;
+    padding-top:1%;
+}
+
+h4 {
+    display: inline;
+}
+
+
+.btn-group-vertical{
+	width: 250px;
+}
+
+h5 {
+	text-align: center;
+	font-weight: bold;
+}
+
+.badge {
+background-color: #398439;
+}
+
+.bottom_sidebar_button {
+    position: absolute;
+    display: inline-block;
+    bottom: 0;
+	width:250px;
+    text-align: center;
+    /*
+    background-color: #FF8800;
+    font-size: 14px;
+    color: #CC0000;
+    */
+}
+
+
+
+/*  Navbar
+    http://stackoverflow.com/questions/18529274/change-navbar-color-in-twitter-bootstrap-3
+--------------------------------------------------------------------------------------------------*/
+
+/* navbar */
+.navbar-defaut{
+    background-color: #263238;
+    border-color: #263238;
+    min-height: 50px;
+    cursor: pointer;
+    border-bottom: 2px;
+}
+/* Title */
+.navbar-defaut .navbar-brand {
+    color: #37474F;
+}
+.navbar-defaut .navbar-brand:hover,
+.navbar-defaut .navbar-brand:focus {
+    color: #eff4ff;
+    background-color: #37474F; 
+}
+/* Link */
+.navbar-defaut .navbar-nav > li > a {
+    color: #eff4ff;
+    background-color: #37474F;
+}
+.navbar-defaut .navbar-nav > li > a:hover,
+.navbar-defaut .navbar-nav > li > a:focus {
+    color: #FF8800;
+    background-color: #37474F;
+}
+.navbar-defaut .navbar-nav > .active > a,
+.navbar-defaut .navbar-nav > .active > a:hover,
+.navbar-defaut .navbar-nav > .active > a:focus {
+    color: #eff4ff;
+    background-color: #00695c;
+}
+.navbar-defaut .navbar-nav > .open > a,
+.navbar-defaut .navbar-nav > .open > a:hover,
+.navbar-defaut .navbar-nav > .open > a:focus {
+    color: #eff4ff;
+    background-color: #00695c;
+}
+/* Caret */
+.navbar-defaut .navbar-nav > .dropdown > a .caret {
+    border-top-color: #603cba;
+    border-bottom-color: #603cba;
+}
+.navbar-defaut .navbar-nav > .dropdown > a:hover .caret,
+.navbar-defaut .navbar-nav > .dropdown > a:focus .caret {
+    border-top-color: #333;
+    border-bottom-color: #333;
+}
+.navbar-defaut .navbar-nav > .open > a .caret,
+.navbar-defaut .navbar-nav > .open > a:hover .caret,
+.navbar-defaut .navbar-nav > .open > a:focus .caret {
+    border-top-color: #555;
+    border-bottom-color: #555;
+}
+/* Mobile version */
+.navbar-defaut .navbar-toggle {
+    border-color: #DDD;
+}
+.navbar-defaut .navbar-toggle:hover,
+.navbar-defaut .navbar-toggle:focus {
+    background-color: #00695c;
+}
+.navbar-defaut .navbar-toggle .icon-bar {
+    background-color: #00695c;
+}
+@media (max-width: 767px) {
+    .navbar-defaut .navbar-nav .open .dropdown-menu > li > a {
+        color: #eff4ff;
+    }
+    .navbar-defaut .navbar-nav .open .dropdown-menu > li > a:hover,
+    .navbar-defaut .navbar-nav .open .dropdown-menu > li > a:focus {
+          color: #eff4ff;
+    }
+}
+ 
+
+
+

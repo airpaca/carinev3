@@ -1,0 +1,459 @@
+html, body {
+    margin: 0;
+    height: 100%;
+    padding: 0;
+}
+.map-block {
+    height : 100%;
+	width : 49%;
+    padding-bottom:1px;
+    display : inline;
+    border : 1px solid #555;
+}
+
+.right-englob {
+	height : 100%;
+    width:49%;
+    padding-bottom:1px;
+    display : inline;
+    border : 1px solid #555;
+	vertical-align : top;
+}
+.toggle-right-mode {
+
+    position: absolute;
+    top: 8%;
+	right :0%;
+
+
+	z-index :10;
+}
+.right-btn{
+	display : none;
+}
+.navbar{
+	margin-bottom : 0px;
+}
+.map-div{
+	width: 75%;
+    height : 800px;
+    bottom: 0px;
+    margin-left : 1px;
+    display : inline-block;
+    z-index: 1;
+}
+#map{
+	
+	width : 100%;
+	height:100%;
+	z-index: 1;
+	display : inline-block;
+}
+#map2 {
+    /*height: 100%;*/
+    width: 75%;
+    height : 800px;
+    bottom: 0px;
+    margin-left : 1px;
+    display : inline-block;
+    z-index: 1;
+}
+#map-inset {
+    height: 200px;
+}
+#map img,#map2 img, #map-inset img {
+    max-width: none;
+}
+
+#map, #map2, #map-inset * {.box-sizing(content-box);
+}
+
+.coords_p {
+    height : 15px;
+    width : 100px;
+	
+}
+#sidemenu,#sidemenu2 {
+    vertical-align : top;
+    display : inline-block;
+    position: relative;
+    left: 5px;
+    width: 24%;
+    max-width : 280px;
+    opacity: 0.9;
+    filter: alpha(opacity=90); /* For IE8 and earlier */
+    padding: 5px;
+    overflow: hidden;
+    z-index: 10;
+}
+#search-box {
+    position: absolute;
+    top: 60px;
+    left: 280px;
+}
+#app-nav-bar {
+    /*position: absolute;*/
+    display: block;
+    width: 100%;
+}
+
+/*table du sidemenu2 */
+#sidemenu2 table td {
+    border : 2px solid #eeeeee;
+
+}
+
+.table tbody  tr  td:hover {
+    opacity : 0.5;
+}
+
+.table table td .yes_source {
+    opacity : 0.8;
+    border : 1px solid black;
+
+}
+.green {
+    background-color : green;
+}
+.red {
+    background-color : #ee3311;
+}
+.grey {
+    background-color : grey;
+}
+.yes_source {
+    border : 2px solid black;
+}
+/* end table du sidemenu2 */
+/* form switch source*/
+#hide_switch_btn{
+	position : absolute;
+	top : -15px;
+	right : -15px;
+}
+
+#switch_source_div{
+	background-color : #eeeeee;
+	display : none;
+	position : fixed;
+	top: 30%;
+	left: 70%;
+	border : 1px solid black;
+	padding : 1px;
+	z-index: 100;
+}
+
+#validate_switch_btn {
+	width : 100%;
+}
+/* end switch source */
+.point-list-view {
+    /*overflow-y: scroll;*/
+}
+.point-item:hover {
+    border-left: 5px solid rgb(66 , 139, 202);
+}
+
+.point-item h4 {
+    margin: 0 5px 0 0;
+    font-size : 1em;
+}
+
+.point-item {
+    padding-left: 10px;
+    border-left: 5px solid rgb(0, 0, 0,0.5);
+}
+
+.point-item.active {
+    color: white;
+}
+.point-item-thumbnail {
+    margin-bottom: 20px;
+}
+
+.point-info {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+#point-gallery-slide {
+    max-height: 200px;
+    min-height: 100px;
+}
+
+.form-signin {
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+}
+.form-signin .form-signin-heading, .form-signin .checkbox {
+    margin-bottom: 10px;
+}
+.form-signin .checkbox {
+    font-weight: normal;
+}
+.form-signin .form-control {
+    position: relative;
+    font-size: 16px;
+    height: auto;
+    padding: 10px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.form-signin .form-control:focus {
+    z-index: 2;
+}
+
+.form-signin input {
+    margin-bottom: 10px;
+}
+
+/*HELPER*/
+
+.divider10 {
+    height: 10px;
+    clear: both;
+}
+
+.margin-right-10 {
+    margin-right: 10px;
+}
+
+/* PLUGIN */
+.mCSB_container {
+    margin-right: 20px;
+}
+
+/*Overwrite bootstrap */
+
+body.modal-open {
+    margin-right: 0;
+}
+#mask {
+    display: none;
+    background-color: #eeeeee;
+    opacity : 0.5;
+    width : 100%;
+    height: 100%;
+    position : fixed;
+    top : 0px;
+    left : 0px;
+    z-index : 50;
+}
+#multi_div {
+    width : 100%;
+    height : 100%;
+    position : fixed;
+    top: 0px;
+    left : 0px;
+    z-index: 100;   
+    display : none;
+}
+#multi_tbl_div {
+    width : 80%;
+    margin:10%;
+    opacity:1;
+
+
+    text-align : right;
+}
+#multi_tbl td {
+    text-align : center;
+    vertical-align : middle;
+}
+#multi_tbl th {
+    text-align : center;
+    border : 2px solid black;
+    vertical-align : middle;
+    
+}
+#multi_tbl {
+    height : 100%;
+    width : 100%;
+        border : 1px solid #bbbbbb;
+    background-color : #eeeeee;
+}
+#hide_multi_btn{
+	position : relative;
+	top : 15px;
+	right : 15px;
+    
+}
+#hide_com_btn{
+	position : relative;
+	top : 15px;
+	right : 15px;
+    
+}
+.td_valid{
+    border : 1px solid #bbbbbb;
+    vertical-align: middle;
+    text-align : center;
+}
+.td_valid input {
+    vertical-align: middle;
+}
+.prev_col {
+    background-color: #dddddd;
+    border : 1px solid black;
+}
+#commentaire-div {
+
+    width : 1000px;
+    height :1000px;
+    position : fixed;
+    top: 0px;
+    left : 0px;
+    z-index: 100; 
+    vertical-align : middle;
+    display : none;
+
+}
+.commentaire-div2 {
+    top: 50%;
+    position: relative;
+    left: 50%;
+    height : 500px;
+    
+}
+.commentaire-div2  input{
+    
+}
+.msg {
+
+    position : fixed;
+    top: 50%;
+    left : 45%;
+    z-index: 100; 
+    vertical-align : middle;
+    display : none;
+	background-color :  #dddddd;
+	
+	
+}
+.msg-div {
+	min-width : 300px;
+}
+.clic-val-table th {
+	text-align : center;
+}
+.clic-val-table td {
+	text-align : center;
+}
+#stats_div {
+    width : 100%;
+    height : 100%;
+    position : fixed;
+    top: 0px;
+    left : 0px;
+    z-index: 100;   
+    display : none;
+}
+#stats_tbl_div {
+    width : 80%;
+    margin:10%;
+    opacity:1;
+
+
+    text-align : right;
+}
+.btn-fine{
+	display : inline-block;
+}
+.refresh-stats-btn{
+	background-color: #f3f3f3;
+}
+#hide_stats_btn{
+	position : relative;
+	top : 15px;
+	right : 15px;
+	z-index : 101;
+    
+}
+#stats_tbl td {
+    text-align : center;
+    vertical-align : middle;
+}
+#stats_tbl th {
+    text-align : center;
+    border : 2px solid black;
+    vertical-align : middle;
+    
+}
+#stats_tbl {
+    height : 100%;
+    width : 100%;
+        border : 1px solid #bbbbbb;
+    background-color : #eeeeee;
+}
+.tr_grey {
+	background-color : #cccccc;
+}
+.tr_orange {
+	background-color : #ff5e00;
+}
+.tr_red {
+	background-color : #ff0000;
+}
+.table-corr th {
+	font-size: 1em;
+	text-align : center;
+    border : 2px solid black;
+    vertical-align : middle;
+}
+.table_corr td {
+    text-align : center;
+    vertical-align : middle;
+}
+#confirm-valid-div{
+	border : 1px solid black;
+	padding : 5px;
+    position : fixed;
+    top: 50%;
+    left : 45%;
+    z-index: 100; 
+    vertical-align : middle;
+    display : none;
+	background-color :  #dddddd;	
+}
+.confirm-p{
+	margin : 5%;
+	text-align : center;
+}
+.confirm-btn-class {
+	margin-top : 5%;
+	margin-bottom : 5%;
+	margin-left: 25%;
+	margin-right : 25%;
+}
+.confirm-btn-class .confirm-btn{
+	display : inline-block;
+	text-align:center;
+	vertical-align : middle;
+
+}
+.td-legend {
+	width : 25px;;
+	height : 20px;
+}
+.td-legend-lib{
+	font-size : 0.6em;
+	border-left : 1px solid black;
+}
+#myProgress {
+    display : None;
+    width: 100%;
+    background-color: grey;
+}
+#myBar {
+    width: 1%;
+    height: 30px;
+    background-color: green;
+}
+#faq_div {
+    display : none;
+}
+.question_content_div {
+    display : none;
+}
