@@ -15,41 +15,42 @@ urlpatterns = [
     
     # Url to check les sources a diffuser (Prev.source)
     url(r'^get_init_info$', views.get_init_info, name='get_init_info'),
-    
-    # Url to init appli (Previ(date)    
-    url(r'^init_today_(?P<run>[0-2]+)$', views.init_today, name='init_today'),
-    
+
     # Url to check les sources a diffuser (Prev.source)
     url(r'^check_sources$', views.check_sources, name='check_sources'),
     
     # Url to POST modification
     url(r'^alter_raster/$', views.alter_raster, name='alter_raster'),
     url(r'^test_ajax$', views.test_ajax, name='test_ajax'),
-    # Url to GET a list of modifications
-    # .. modifications/<pol>/ech<ech>/list.json
-    #url(r'^modifications/(?P<id>[0-9]+)/list.json$',
-    #    views.list_modifications, name='list_modifications'),
 
-    
     # Raster info
     # .. info/raster_<pol>_ech<ech>.png
     url(r'^info/raster_(?P<id>[0-9]+).png$',
         views.info_raster, name='info_raster'),
     # Raster as an image (to Leaflet)
     # .. img/raster_<pol>_ech<ech>.png
-    url(r'^img/raster_(?P<id>[0-9]+).png$',
+    url(r'^img/raster_img$',
         views.img_raster, name='img_raster'),
-
+    
+    url(r'^img/merge_mi_fine$',
+        views.merge_mi_fine, name='merge_mi_fine'),
+    # .. img/raster_<pol>_ech<ech>.png
+    url(r'^img/raster_img_url$',
+        views.img_raster_url, name='img_raster_url'),    
+    url(r'^img/mi_fine_url$',
+        views.mi_fine_url, name='mi_fine_url'),   
     # .. img/raster_ech<ech>.png => multi polluant
-    url(r'^img/raster_multi_(?P<ech>[0-4]+).png$',
+    url(r'^img/raster_multi$',
         views.img_multi, name='img_multi'),
+    url(r'^img/raster_multi_unique$',
+        views.img_multi_unique, name='img_multi_unique'),
     # Bounding box of the raster (JSON)
     # .. bbox/raster_<pol>_ech<ech>.json
-    url(r'^bbox/raster_(?P<id>[0-9]+).json$',
+    url(r'^bbox/raster_bbox$',
         views.bbox_raster, name='bbox_raster'),
     
     #get_pixel(id,x,y)
-    url(r'^api/pixel_(?P<id>[0-9]+)_(?P<x>[0-9]+)_(?P<y>[0-9]+)$',
+    url(r'^api/pixel$',
         views.get_pixel, name='get_pixel'),   
     #sources
     url(r'^source/update$',
@@ -74,8 +75,11 @@ urlpatterns = [
     url(r'^check_statut$',
         views.check_statut, name='check_statut'),
         
-    url(r'^img/stats_reg_(?P<id>[0-9]+)$',
+    url(r'^img/calcul_stats_reg$',
         views.calcul_stats_reg, name='calcul_stats_reg'),
+                
+    url(r'^img/calcul_indice_com$',
+        views.calcul_indice_com, name='calcul_indice_com'),
         
        # .. img/raster_ech<ech>.png => multi polluant
     url(r'^img/export_low$',
@@ -102,7 +106,24 @@ urlpatterns = [
     url (r'^mylogout/$',views.mylogout,name='mylogout'),
     url(r'^fake$',
         views.fake, name='fake'),   
-    url(r'^get_expertises$',
-        views.get_expertise, name='get_expertise'),
 
+    url(r'^preprocess_files$',
+        views.preprocess_files, name='preprocess_files'),
+    url(r'^ws_smile$',
+        views.ws_smile, name='ws_smile'),   
+    url(r'^get_expertises$',
+        views.get_expertises, name='get_expertises'),
+    url(r'^set_expertises$',
+        views.set_expertises, name='set_expertises'),  
+    url(r'^launch_BQA$',
+        views.launch_BQA, name='launch_BQA'),
+    url(r'^launch_BQA_unique$',
+        views.launch_BQA_unique, name='launch_BQA_unique'),
+    url(r'^get_legend$',
+        views.get_legend, name='get_legend'),        
+    url(r'^help$',
+        views.help, name='help'),
+            url(r'^help_js$',
+        views.help_js, name='help_js') 
 ]
+

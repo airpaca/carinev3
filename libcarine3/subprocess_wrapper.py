@@ -1,24 +1,25 @@
 from raster.models import Polluant
 import subprocess
+import os
 import config
+from libcarine3 import write_log
 def gdaldem(fic):
-    ls=fic.split('_')
+
     new_name=fic.replace('_','__')
-    pol=ls[1].upper()
-    p=Polluant.objects.get(nom=pol)
-    print(p)   
     colormap_file='/var/www/html/carinev3/libcarine3/colormaps/normalize_colors.txt'
     # gdaldem color-relief slope.tif color-slope.txt slope-shade.ti
-    options=['gdaldem','color-relief',fic,colormap_file,new_name,'-co','compress=DEFLATE','-co','TILED=YES','-alpha','--config','GDAL_CACHEMAX','16384','-nearest_color_entry']   
-    print(options)
+    #write_log.append_log(new_name)
+    #write_log.append_log(colormap_file)
+    options=['gdaldem','color-relief',fic,colormap_file,new_name,'-co','compress=DEFLATE','-co','TILED=YES','-alpha','--config','GDAL_CACHEMAX','8192','-nearest_color_entry']   
+    
     #options.extend(argz)
-    msg=subprocess.call(options)   
+    a=subprocess.call(options)   
+    write_log.append_log(a)
     return  new_name
     
 def scp(fic):
-    dest=config.hd_dest
-    options=['scp','-p',fic,dest]
-    msg=subprocess.call(options)
+    
+    msg=subprocess.call(['/var/www/html/carinev3/send_file.sh',os.path.basename(fic)])
     return msg   
     
 def warp(argz):
@@ -27,5 +28,12 @@ def warp(argz):
     options = ['gdalwarp']
     options.extend(argz)
     # call gdalwarp 
-    msg=subprocess.check_call(options)
+    msg=subprocess.call(options)
+    #write_log.append_log(str(msg))
+    return msg
+
+
+
+def fake(fic):
+    msg=subprocess.call(['/var/www/html/carinev3/send_file.sh',os.path.basename(fic)])
     return msg

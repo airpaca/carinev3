@@ -1,4 +1,4 @@
-/* Variables globales pour stocker les paramètres de correction */
+/*riables globales pour stocker les paramtres de correction */
 var corr_pollutant = "";
 var corr_echeance = "";
 var corr_type = "";
@@ -8,20 +8,10 @@ var corr_value = "";
 var lib_ech=["j-1","j+0","j+1","j+2"]
 var polls={}
 var echs={}
-// function getTsp(delta){
-//    Init des dates (corrsepondances timestamp / runs)
-    // now=new Date()
-    // y=now.getFullYear()
-    // m=now.getMonth()
-    // day=now.getDay()
-    // d=Date.UTC(y,m,day,0,0,0)
-    // tsp = d/1000-delta*86400
 
-    // return tsp
-// }
-// today=getTsp(0)
-// yesterday=getTsp(1)
-// yyesterday=getTsp(2)
+var process_files=false
+var calc_multi=false
+
 $.ajax({
     url: '{% url "getTsp" %}',
     async : false,
@@ -31,24 +21,34 @@ $.ajax({
         yyesterday=msg['yy']
     }
 });
+function format_date(tsp){
+    d=new Date(tsp*1000)
+    console.log(d)
+    y=d.getFullYear()
+
+    m=d.getMonth()+1
+    d=d.getDate()
+    str = d.toString() +'/' + m.toString() + '/' + y.toString()
+    return str
+}
 
 console.log(today,yesterday,yyesterday)
 var runs={}
 runs[today]=0
 runs[yesterday]=1
 runs[yyesterday]=2
-// init des dates de j0 à j-2 pour afficher dans le tableau de droite
-/* var jp0 = (new Date(today*1000).getDay()+1).toString()+ '-' + (new Date(today*1000).getMonth()+1).toString() ;
-var jm1 = (new Date(yesterday*1000).getDay()+1).toString()+ '-' + (new Date(yesterday*1000).getMonth()+1).toString() ;
-var jm2 = (new Date(yyesterday*1000).getDay()+1).toString()+ '-' + (new Date(yyesterday*1000).getMonth()+1).toString() ; */
+
+// init des dates de j0  j-2 pour afficher dans le tableau de droite
+
 var jp0 = 'Auj'
 var jm1 = 'Hier'
 var jm2 = 'Av-Hier'
 console.log(jp0,jm1,jm2)
 var dumb=0;
-
-
-/* Création de la carte */
+var stats={};
+var ic={};
+var drawLayer;
+/* Creation de la carte */
 var map = L.map('map', { zoomControl:false }, {layers: []}).setView([45, 5.0], 8);    
 map.attributionControl.addAttribution('CARINE v3 &copy; ATMO Aura - 2017</a>'); 
 
@@ -67,7 +67,7 @@ function onMapZoom(e){
     map2.setZoom(map.getZoom())
 }
 
-/* activation de la navigation simultanée, declenché par clic dans le menu */
+/* activation de la navigation simultanee clench?ar clic dans le menu */
 function toggleNav(){
     console.log('toggleNav triggered')
 
@@ -100,31 +100,12 @@ var overlayLayers2 = {
 //dict de toutes les couches vecteurs
 var vectorLayers = {    
 }
-//dict de l'ensemble de ssources retournées par la vue 'source_url' (redondant overlayersX ? à voire)
+//dict de l'ensemble de ssources retourn? par la vue 'source_url' (redondant overlayersX ? ?oire)
 var liste_sources;
 var prevs;
 var active_poll_right_table;
 var active_poll_left
 ///// --- init ----
-//init successive de liste_source
-//liste_source=[{
-//      id : {
-//      daterun : "15200220600",
-//      ech:-1,
-//      intrun : 0,
-//      is_default_source: true,
-//      pol:"PM10",
-//      statut:true,
-//      type:"ada",
-//      url:"//home/vjulier/raster_...jm1_ada.tif",
-//      __proto__ : Object}]
-$.ajax({
-    url: '{% url "init_today" '0' %}',
-    async : false,
-    success : function(msg){
-        check_statut()       
-    }
-});
 function check_statut() {
     $.ajax({
         url: '{% url "check_statut" %}',
@@ -137,6 +118,7 @@ function check_statut() {
     });
 }
 
+check_statut() 
 $.ajax({    
     url: '{% url "get_init_info"  %}',
     async: false,
@@ -147,11 +129,12 @@ $.ajax({
         prevs=msg;
         buildLeftMenu()
         buildRightMenu()
+        // preprocess_files()
     }
 })    
 /*         //construction du menu de droite
         //defaut sur PM10 adaptstat
-        //reconstruit à chaque clic sur 
+        //reconstruit ?haque clic sur 
         var dic = getTypeDic('PM10','ada');
         buildTable(dic) */
 function update_source(id_prev,id){
@@ -159,6 +142,7 @@ function update_source(id_prev,id){
     overlayLayers1[id_but]=id
     $.ajax({
         url: '{% url "update_source"  %}',
+        async : false,
         data : {
             id_prev : id_prev,
             id : id
@@ -175,6 +159,15 @@ function update_source(id_prev,id){
         col='red'
     }
     $("#"+id_but + " > .badge").css('background-color',col)
+    var url='{% url "img_multi" %}'
+    // $.ajax({
+        // url: url,
+        // async : false,
+        // data : {
+            // ech : prevs[id_prev][1]+1            
+        // }
+    // })
+    // get_stats_reg()
 }
 /* --------- DEBUT MAP-BLOCK1 ---------- */
 /* Fonction de creation du menu de gestion des couches */
@@ -186,12 +179,11 @@ function buildLeftMenu() {
         }
         else {
             var pol=prevs[i][0]
-            if (pol.toLowerCase() != 'multi'){
-                if ($('#'+pol.toLowerCase()+'_switch_1').length<1){
-                    $('#poll_switch_1').append('<a id="'+pol.toLowerCase()+'_switch_1" class="btn btn-default '+pol+'"> <i></i>'+pol+'</sub> </a>')
-                    init_switch_1(pol)
-                    //console.log(pol)
-                }
+            if ($('#'+pol.toLowerCase()+'_switch_1').length<1){
+                $('#poll_switch_1').append('<a id="'+pol.toLowerCase()+'_switch_1" class="btn btn-default '+pol+'"> <i></i>'+pol+'</sub> </a>')
+                init_switch_1(pol)
+                //console.log(pol)
+                
             }
         }
     }
@@ -279,11 +271,11 @@ function check_sources () {
                 var id_prev=k[i]
                 var id=msg[id_prev] 
                 update_source(id_prev,id)
-
             }
         }
     });
 }
+preprocess_files()
 /* function build_left_menu(msg) {
     
     //les cles du dic 'liste_source' sont l'id de la source
@@ -314,7 +306,9 @@ function layer_but_clic() {
     $('.baselayer').click( function() {
             console.log("clic baselayer")
             $(this).next().removeClass('hide');
-
+			$(".table-corr").remove()
+            $(".div-fine").remove()
+			$("#table-legend").remove()
             /* Gestion de la liste des couches */       
             // Boutons actifs
             $(this).addClass('active').siblings().removeClass('active');  
@@ -337,12 +331,36 @@ function layer_but_clic() {
 
             /* Gestion de l'affichage des couches */        
             // Suppression des couches actives
-            // condition pour traiter les 2 map-block séparément
+            // condition pour traiter les 2 map-block s?r?nt
             if ($(this).closest("#map-block1").length == 1) {
                 id_but=$(this)[0].id
+                id_prev=id_but.split('_')[2]
+                id_source=overlayLayers1[id_but]
+				pol=prevs[id_prev][0]
+				
+                if (!($('#fine-btn-'+id_prev.toString()).length)){
+
+					$(this).after('<div class="div-fine" id="fine-btn-'+id_prev.toString()+'" onclick="merge_mi_fine('+id_prev+','+id_source+')"><button class="btn btn-secondary btn-fine"><i>Fine échelle</i></button></div>')
+					$(this).after('<div class="div-fine" id="exp-btn"><button  onclick="expMenu('+id_source+')" class="btn btn-secondary btn-fine"><i>Corrections</i></button></div>')
+                    $(this).after('<div class="div-fine" id="stats-btn-'+id_prev.toString()+'"><button  onclick="statsShow('+id_prev+')" class="btn btn-secondary btn-fine"><i>Stats reg.</i></button><button  onclick="get_stats_reg_unique('+id_prev+')" class="btn btn-secondary btn-fine refresh-stats-btn"> <i class="glyphicon glyphicon-refresh"></i></button></div>')
+					$(this).after('<table id="table-legend"><tbody></tbody></table>')
+					$.ajax({
+							//recup de scoins de la carte necessaires pour que leaflet affiche le png
+							url:'{% url "get_legend" %}',
+							async:false,
+							data : {
+								pol : pol
+							},
+							success : function(msg){
+
+								$("#table-legend > tbody ").append(msg)
+							}
+						})
+				  }
                 console.log('id_but_prev : ' + id_but.toString())
-                //null si on a pas encore initialisé (inutile si on affiche un polluant par defaut)
+                //null si on a pas encore initialis?inutile si on affiche un polluant par defaut)
                 switch_map_1(id_but)
+                
             }
     });
 };
@@ -357,11 +375,11 @@ function switch_map_1(id_but){
     
     console.log('id_source : ' + id_source.toString())
     //workaround pour faire passer la variable id ds l'url
-    url_img='{% url 'img_raster' id='0' %}'
-    url_bbox='{% url 'bbox_raster' id='0' %}'
 
-    img=url_img.slice(0,url_img.length-5)+id_source.toString()+'.png'
-    bbox=url_bbox.slice(0,url_bbox.length-6)+id_source.toString()+'.json'
+    url_bbox='{% url "bbox_raster" %}'
+
+    img=img_raster_url(id_source)
+
 
 
     // s1="'{% "
@@ -370,8 +388,10 @@ function switch_map_1(id_but){
     // console.log(s1 + s + s2)
     $.ajax({
         //recup de scoins de la carte necessaires pour que leaflet affiche le png
-        url:bbox,
-        
+        url: url_bbox,
+        data : {
+            id:id_source
+        },
         success : function(msg){
             anchors = [
                 [msg['ymax'], msg['xmin']], //haut gauche
@@ -388,15 +408,7 @@ function switch_map_1(id_but){
             var tbl=meta_source_tbl(liste_sources[id_source])
             $('#active_layer_div1 > table').remove()
             $('#active_layer_div1').append(tbl)
-        },
-        error : function(msg) {
-            alert(msg)
-        },
-          statusCode: {
-    404: function() {
-      alert( "page not found" );
-    }
-  }
+        }
     }) 
 }
 /* ---------- FIN MAP-BLOCK1 ------------ */
@@ -430,20 +442,20 @@ function getTypeDic(poll,type){
     var type_dic={0:{},1:{},2:{},3:{}};
     for (s in liste_sources) {      
         var obj=liste_sources[s]
-        if ((obj.type==type) && (obj['pol']==poll)){
-            console.log(obj)
+        if ((obj.type==type) && (obj['pol']==poll) && (obj['intrun']==0)){
+            // console.log(obj)
             var ech=obj['ech']+1
             var tsp=obj['daterun']
             //console.log(tsp)
-            console.log(tsp)
+
             run=runs[tsp]
-            console.log(run)
-            console.log(obj['pol'])
+            // console.log(run)
+            // console.log(obj['pol'])
             //console.log(run)
             type_dic[ech][run]=s;           
         }
     }
-    console.log(type_dic)
+    // console.log(type_dic)
     return type_dic;
 }
 function buildTable(type_dic){
@@ -454,14 +466,14 @@ function buildTable(type_dic){
     $(".t2").append("<tbody></tbody>")
     for (i in type_dic){
         $(".t2 > tbody").append("<tr id='tr_"+i.toString()+"'><th scope='row'>"+(i-1).toString()+"</th></tr>")
-        console.log(i)
+        // console.log(i)
         for (run in type_dic[i]){
             //console.log(run)
-            console.log(run)
+            // console.log(run)
             // pour inverser l'ordre des colonnes du tableaux :
             var reverse_ind =(run-2)*(-1)
             //console.log(reverse_ind)
-            console.log(type_dic)
+            // console.log(type_dic)
             var id_source=0
             id_source=type_dic[i][reverse_ind]
             
@@ -501,6 +513,7 @@ function init_switch_2(poll) {
             }
             else {
                 console.log('i_s_2')
+                console.log(poll)
                 var dic=getTypeDic(poll,'')
                 buildTable(dic)
             }
@@ -518,15 +531,16 @@ function refresh_right_table(){
     }
     else {
         console.log('i_s_2')
+        console.log(poll)
         var dic=getTypeDic(poll,'')
         buildTable(dic)
     }
 }
 //gestion du clic sur le tableau de gestion des couches:
-// - suppression de l'ancienne carte affichée
+// - suppression de l'ancienne carte affich?
 // - call de la nouvelle avec sa bounding box
 // - maj de la variable activeLayer2
-// function associée aux cases du tableau quand on le refresh
+// function associ?aux cases du tableau quand on le refresh
 function td_clic() {
     $(".t2 > tbody > tr > td").click(function(){
         $(".t2 > tbody > tr >  .active").removeClass('active')
@@ -540,7 +554,7 @@ function td_clic() {
             success : function(msg){
                 //console.log(msg)
                 var k=Object.keys(msg)
-                $('#other_layers').append('<p>Autres sources pour le'+o.daterun+' à ' + lib_ech[o.ech+1] + '</p>')
+                $('#other_layers').append('<p>Autres sources pour le '+format_date(parseInt(o.daterun))+' '+ lib_ech[o.ech+1] + '</p>')
                 //on parse chaque source
                 for (i=0;i<k.length;i++) {
                     //construction du menu de gauche (du map-block1)
@@ -549,11 +563,13 @@ function td_clic() {
                     //console.log(ind)
                     id_but='tr_'+ind.toString()
                     if (!(ob.type==o.type)){
-                        var html_btn='<a href="#" class="list-group-item point-item other_layers"  id="'+id_but+'"> <h4 class="list-group-item-heading" >'+ob.type+'</h4>J ' + ob.ech.toString() + '    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>'
-                        //console.log(ob)             
-                        $('#other_layers').append(html_btn)
-                        if (ob.statut!=true){
-                            $("#"+id_but + "  > .badge").css("background-color","red")
+                        if (!(ob.type == 'fine')){
+                            var html_btn='<a href="#" class="list-group-item point-item other_layers"  id="'+id_but+'"> <h4 class="list-group-item-heading" >'+ob.type+'</h4>J ' + ob.ech.toString() + '    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>'
+                            //console.log(ob)             
+                            $('#other_layers').append(html_btn)
+                            if (ob.statut!=true){
+                                $("#"+id_but + "  > .badge").css("background-color","red")
+                            }
                         }
                     }
                 }
@@ -561,22 +577,27 @@ function td_clic() {
             }   
         })
         if (o.statut == false){
-            //alert('Pas de carte '+o.pol + ' disponible pour le '+ o.daterun + ', échéance à '+ lib_ech[o.ech+1] + ', source : ' + o.type + " (code couleur rouge). Si d'autres sources sont disponible pour ce run / échéance / polluant, elles s'afficheront en vers dans l'onglet \"autres sources\" qui apparait en cliquant sur uen case du tableau" )
+            //alert('Pas de carte '+o.pol + ' disponible pour le '+ o.daterun + ', ??ce ?+ lib_ech[o.ech+1] + ', source : ' + o.type + " (code couleur rouge). Si d'autres sources sont disponible pour ce run / ??ce / polluant, elles s'afficheront en vers dans l'onglet \"autres sources\" qui apparait en cliquant sur uen case du tableau" )
         }
         else {
             if ( activeLayer2 != null) {
                 map2.removeLayer(activeLayer2[1])
             }
             //workaround pour faire passer la variable id ds l'url
-            url_img='{% url 'img_raster' id='0' %}'
-            url_bbox='{% url 'bbox_raster' id='0' %}'
+
+            url_bbox='{% url "bbox_raster" %}'
             
             
-            img=url_img.slice(0,url_img.length-5)+id_source.toString()+'.png'
-            bbox=url_bbox.slice(0,url_bbox.length-6)+id_source.toString()+'.json'
+            img=img_raster_url(id_source)
+            console.log(' ------- img -------- ')
             console.log(img)
+
+
             $.ajax({
-                url: bbox,
+                url: url_bbox,
+                data : {
+                    id:id_source
+                },
                 success : function(msg){
                     var anchors = [
                         [msg['ymax'], msg['xmin']], //haut gauche
@@ -585,24 +606,13 @@ function td_clic() {
                         [msg['ymin'], msg['xmin']]  //bas gauche
                     ];
                     var lay = L.imageTransform(img, anchors,{opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'}); 
-
+         
                     lay.addTo(map2)
                     activeLayer2=[id_source,lay];
-                    console.log(id_source.toString())
+   
                     var tbl=meta_source_tbl(liste_sources[id_source])
                     $('#active_layer_div2 > table').remove()
                     $('#active_layer_div2').append(tbl)
-                },            
-                error : function(msg) {
-                    alert(msg)
-                }, 
-                statusCode: {
-                    404: function() {
-                        alert( "page not found" );
-                    },
-                    500: function() {
-                        alert( "server internal error" );
-                    },
                 }
             })
         }
@@ -618,9 +628,17 @@ function other_layers_clic() {
         if ( activeLayer2 != null) {
             map2.removeLayer(activeLayer2[1])
         }
-        var url="/raster/img/raster_"+id_source+".png";
+        //workaround pour faire passer la variable id ds l'url
+
+        url_bbox='{% url "bbox_raster"  %}'
+        img = img_raster_url(id_source)
+        console.log(img)
+
         $.ajax({
-            url: "/raster/bbox/raster_"+id_source+".json",
+            url: url_bbox,
+                data : {
+                    id:id_source
+                },
             success : function(msg){
                 var anchors = [
                     [msg['ymax'], msg['xmin']], //haut gauche
@@ -628,7 +646,7 @@ function other_layers_clic() {
                     [msg['ymin'], msg['xmax']], //bas droite
                     [msg['ymin'], msg['xmin']]  //bas gauche
                 ];
-                var lay = L.imageTransform(url, anchors,{opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});  
+                var lay = L.imageTransform(img, anchors,{opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});  
                 lay.addTo(map2)
                 activeLayer2=[id_source,lay];
                 console.log(id_source.toString())
@@ -652,8 +670,10 @@ function other_layers_clic() {
 /* --------- FIN DU MAP-BLOCK2 -------- */
 
 function meta_source_tbl(obj){
-    var tbl='<table class="table t_meta"><tbody><tr><th scope="row">Polluant : </th><td>'+obj.pol+'</td></tr><tr><th scope="row">Modèle : </th><td>'+obj.type+'</td></tr><tr><th scope="row">Date run </th><td>'+obj.daterun+'</td></tr><tr><th scope="row">Echeance </th><td>'+lib_ech[obj.ech+1]+'</td></tr></tbody></table>';
-    console.log(tbl)
+    console.log(obj)
+    console.log(obj.daterun)
+    var tbl='<table class="table t_meta"><tbody><tr><th scope="row">Polluant : </th><td>'+obj.pol+'</td></tr><tr><th scope="row">Modèle : </th><td>'+obj.type+'</td></tr><tr><th scope="row">Date run </th><td>'+format_date(parseInt(obj.daterun))+'</td></tr><tr><th scope="row">Echeance </th><td>'+lib_ech[obj.ech+1]+'</td></tr></tbody></table>';
+    
     return tbl
 }
 function switch_source() {
@@ -662,7 +682,7 @@ function switch_source() {
             alert ('Pas de carte, pas de chocolat')
         }
         else {
-            alert("Veuillez tout d'abord sélectionner une carte valide dans la fenêtre de droite")
+            alert("Veuillez tout d'abord s?ctionner une carte valide dans la fen?e de droite")
             dumb+=1;
         }
     }
@@ -692,15 +712,14 @@ function switch_source() {
         ob=liste_sources[id_new_source]
         str_source=ob.pol + " / " + ob.daterun + " / "+ lib_ech[ob.ech+1] + " / " + ob.type
         $("#new_source > option").remove()
-        $('#switch_source_div').css('display','block')
+        $('#switch_source_div').show()
         $("#new_source").append("<option value="+id_new_source+" selected disabled hidden>"+str_source+"</option>")
     }
 }
 function remove_switch_form() {
-    $('#switch_source_div').css('display','none')
+    $('#switch_source_div').hide()
 }
 function validate_switch_btn(){
-
     id_prev=$("#switch_input > option:selected").val()
     id=$("#new_source > option:selected").val()
     console.log('id_prev : ' + id_prev)
@@ -715,21 +734,32 @@ function remove_multi_form() {
     $("#mask").hide()
 }
 function calculate_multi(){
+    $("#mask").hide()
+    $("#multi_div").hide()
+    show_msg()
     $("tr > .td_valid > input:checked").each(function(i){
         i=parseInt($(this).attr('id').slice(-2))+1
-        
-        var url="/raster/img/raster_multi_"+i.toString()+".png";
+        msg_add_content('<div class="row msg-div">Calcul du j'+i.toString()+' => en cours ...</div>')
+        var url='{% url "img_multi" %}'
+
         console.log(i)
         $.ajax({
-            url: url
+            url: url,
+            async : false,
+            data : {
+                ech : i             
+            }
             ,success : function(){
                 console.log('success multi => a check')
                 refresh_right_table()
+                msg_add_content('<div class="row msg-div">Calcul du j'+i.toString()+' => OK </div>')
+            }
+            ,error  : function () {
+                msg_add_content('<div class="row msg-div">Calcul du j'+i.toString()+' => Echec </div>')
             }
         })
     })
-    $("#mask").hide()
-    $("#multi_div").hide()
+
     // var url="/raster/img/raster_multi_0.png";
 
 }
@@ -768,36 +798,18 @@ function multi_form_show(){
             }
         }
     }
-                                            // <td class="td_poll_prev">O3</td>
-                                        // <td class="td_poll_source"></td>
-                                        // <td class="td_type"></td>
-                                        // <td class="td_date"></td>
-                                        // <td class="td_ech_source"></td>
-        // $(".t2 > thead").remove()
-    // $(".t2 > tbody").remove()
-    // $(".t2").append("<thead class='thead-inverse'><tr><th></th><th>"+jm2+"</th><th>"+jm1+"</th><th>"+jp0+"</th><tr></thead>")
-    // $(".t2").append("<tbody></tbody>")
-    // for (i in type_dic){
-        // $(".t2 > tbody").append("<tr id='tr_"+i.toString()+"'><th scope='row'>"+(i-1).toString()+"</th></tr>")
-                                    // <th rowspan="3" scope="row">-1</th>
-                                        // <td class="red not_source" id="run_tty1310"></td>
-                                        // <td class="red not_source" id="run_1ty258"></td>
-                                        // <td class="red not_source" id="run_1y206"></td>
-                                        // <td class="red not_source" id="run_tty1310"></td>
-                                        // <td class="red not_source" id="run_1ty258"></td>
-                                        // <td class="red not_source" id="run_1y206"></td>
-                                        // <td rowspan="3" class="red not_source" id="run_1zery206"><input id="checkBox" type="checkbox"></td>
 }
 
+     
 
 
 /* Chargement du fond de carte */
-// comme toutes les couches, on est obligé de l'instancier une fois par objet map...
+// comme toutes les couches, on est oblig?e l'instancier une fois par objet map...
 var mapbox_light = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoicmh1bSIsImEiOiJjaWx5ZmFnM2wwMGdidmZtNjBnYzVuM2dtIn0.MMLcyhsS00VFpKdopb190Q', {
     maxZoom: 18,
     attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-        'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        'Imagery ?<a href="http://mapbox.com">Mapbox</a>',
     id: 'mapbox.light',
     opacity: 1.,
 });   
@@ -806,14 +818,14 @@ var mapbox_light2 = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y
     maxZoom: 18,
     attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-        'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        'Imagery ?<a href="http://mapbox.com">Mapbox</a>',
     id: 'mapbox.light',
     opacity: 1.,
 });   
 mapbox_light2.addTo(map2);
 
 
-/* Déclaration de l'emprise max */
+/* D?aration de l'emprise max */
 /* var  bounds = new L.LatLngBounds( 
    new L.LatLng(44.1154926129760483, 2.0628781476760838), // SW  L.LatLng(42.92986796194353,4.220712166125205)
    new L.LatLng(46.8042870493686962, 7.1855613116475361)  // NE  L.LatLng(45.17322865209258,7.804443841248857)
@@ -823,7 +835,7 @@ map.fitBounds(bounds); */
 
 
 //fonction popup sur champ 'nom'
-//utilisé par les couches vecteurs
+//utilis?ar les couches vecteurs
 function onEachFeature(feature, layer) {
         var popupContent="";
         if (feature.properties && feature.properties.nom) {
@@ -833,7 +845,7 @@ function onEachFeature(feature, layer) {
         layer.bindPopup(popupContent);
     }
 
-// Enregistrement du polluant et de l'échéance par defaut
+// Enregistrement du polluant et de l'??ce par defaut
 
 
 
@@ -935,7 +947,7 @@ $(function() {
         }
     })
 })
-/*cacher les onglets fine échelle au clic sur la croix*/
+/*cacher les onglets fine ?elle au clic sur la croix*/
 /*
 $(function(){
     $('.hide-fine-btn').click(function (){
@@ -952,63 +964,105 @@ $(function(){
 */
 
 
-/* Fonctions éxecutées on click */
+/* Fonctions ?cut? on click */
 map.on('click', function(e) {   
     val=''
     coords = e.latlng;
     console.log(coords)
     if (activeLayer1===undefined){
-        console.log("pas de carte affichée... pas de carte... pas de concentration")
+        console.log("pas de carte affich?.. pas de carte... pas de concentration")
     }
     else {
         id_source=activeLayer1[0]
-        url='{% url 'get_pixel' id='0' x='0' y='0' %}'
-        url2='/raster/api/pixel_'+id_source.toString()+'_'+Math.round(coords['lng']*1000000).toString()+'_'+Math.round(coords['lat']*1000000).toString()
+        url='{% url 'get_pixel'  %}'
+        
         console.log(url)
         $.ajax({
 
-            url:url2,
+            url:url,
+            data : {
+                id : id_source,
+                x : Math.round(coords['lng']*1000000),
+                y : Math.round(coords['lat']*1000000)
+                
+            },
             success : function(msg){
-                //j=JSON.parse(msg)
-                console.log(msg)
-                console.log(msg['val'])
-                var popup = L.popup()
-                .setLatLng(coords)
-                .setContent('valeur brute corrigée : ' + msg['val'][0].toString()+ ' <br/>  sous indice : ' + msg['val'][1].toString())
-                .openOn(map);
-                //les cles du dic 'liste_source' sont l'id de la source
-                var k=Object.keys(msg)
+                // j=JSON.parse(msg)
+                // console.log(msg)
+                // console.log(msg['val'])
+                // var popup = L.popup()
+                // .setLatLng(coords)
+                // .setContent('valeur brute corrig?: ' + msg['val'][0].toString()+ ' <br/>  sous indice : ' + msg['val'][1].toString())
+                // .openOn(map);
+
+                // var k=Object.keys(msg)
+                $('#t1-v1').text(msg['val'][0].toString())
+                $('#t1-v2').text(msg['val'][1].toString())
 
             }
         });
     }
 
-});    
+});  
+/* map.on('mousemove', function(e) {   
+    val=''
+    coords = e.latlng;
+    if (activeLayer1===undefined){
+        console.log("pas de carte affich?.. pas de carte... pas de concentration")
+    }
+    else {
+        id_source=activeLayer1[0]
+        $.ajax({
+
+            url: '{% url 'indice_request'  %}',
+            data : {
+
+                x : coords['lng'],
+                y : coords['lat']
+                
+            },
+            success : function(msg){
+                // j=JSON.parse(msg)
+                console.log(msg)
+                // console.log(msg['val'])
+                // var popup = L.popup()
+                // .setLatLng(coords)
+                // .setContent('valeur brute corrig?: ' + msg['val'][0].toString()+ ' <br/>  sous indice : ' + msg['val'][1].toString())
+                // .openOn(map);
+
+                // var k=Object.keys(msg)
+                // $('#t1-v1').text(msg)
+
+            }
+        });
+    }
+
+});  */  
 map2.on('click', function(e) {   
     val=''
     coords = e.latlng;
     console.log(coords)
     if (activeLayer2===undefined){
-        console.log("pas de carte affichée... pas de carte... pas de concentration")
+        console.log("pas de carte affich?.. pas de carte... pas de concentration")
     }
     else {
         id_source=activeLayer2[0]
-        url='{% url 'get_pixel' id='0' x='0' y='0' %}'
-        url2='/raster/api/pixel_'+id_source.toString()+'_'+Math.round(coords['lng']*1000000).toString()+'_'+Math.round(coords['lat']*1000000).toString()
+        url='{% url 'get_pixel'  %}'
+       
         console.log(url)
         $.ajax({
 
-            url:url2,
+            url:url,
+            data : {
+                id : id_source,
+                x : Math.round(coords['lng']*1000000),
+                y : Math.round(coords['lat']*1000000)
+                
+            },
             success : function(msg){
                 //j=JSON.parse(msg)
-                console.log(msg['val'])
-                var popup = L.popup()
-                .setLatLng(coords)
-                .setContent('valeur brute corrigée : ' + msg['val'][0].toString()+ ' <br/>  sous indice : ' + msg['val'][1].toString())
-                .openOn(map2);
-                //les cles du dic 'liste_source' sont l'id de la source
-                var k=Object.keys(msg)
-
+                $('#t2-v1').text(msg['val'][0].toString())
+                $('#t2-v2').text(msg['val'][1].toString())
             }
         });
     }
@@ -1035,7 +1089,7 @@ map.addControl(new L.Control.Draw({
     position: 'topleft'
 }));
 
-// Action après dessin
+// Action apr?dessin
 map.on(L.Draw.Event.CREATED, function (event) {
     var layer = event.layer;
     var type = event.layerType;
@@ -1057,14 +1111,14 @@ map.on(L.Draw.Event.CREATED, function (event) {
     $('#modal_corr_form').modal('show');    
     ($('#ModalCorrTitle'))[0].innerText = "Correction de la carte " + corr_pollutant;
     ($('#corr_form_val'))[0].value = "";
-    ($('#corr_form_type'))[0][0].value = "Gaussienne - " + type;
-    ($('#corr_form_type'))[0][0].innerText = "Gaussienne - " + type;
+
     
-    /* Ajout de l'élément crée au groupe */
+    /* Ajout de l'?ment cr?au groupe */
     drawnItems.addLayer(layer);
+    drawLayer=layer
 });
 
-// Action après modification de forme
+// Action apr?modification de forme
 map.on('draw:edited', function (event) {
     var layers = event.layers;
     layers.eachLayer(function (layer) {
@@ -1075,47 +1129,47 @@ map.on('draw:edited', function (event) {
     });
 });
 
-/* Fonction éxécutée lors de l'envoi du formulaire de correction */ 
+/* Fonction ?cut?lors de l'envoi du formulaire de correction */ 
 $("#submitFormCorr").click(function (e) {
     console.log("envoi");
     
     e.preventDefault();
 
-    var corr_type = ($('#corr_form_type'))[0].value;
     var corr_value = ($('#corr_form_val'))[0].value;
     var corr_min = ($('#corr_form_min'))[0].value;
     var corr_max = ($('#corr_form_max'))[0].value;
-    var corr_ssup = ($('#corr_form_ssup'))[0].value;
+    // var corr_ssup = ($('#corr_form_ssup'))[0].value;
+	var corr_ssup=""
     var id_source=activeLayer1[0]
-    console.log("Vérification du formulaire");
+    console.log("V?fication du formulaire");
 
-    /* Vérification du formulaire */   
+    /* V?fication du formulaire */   
     if (corr_coords == "" || corr_coords == 'undefined' || corr_coords == []) {
         console.log("Erreur verif formulaire: coords");
-        $("#error_tube").show(); // FIXME: Pas crée
+        $("#error_tube").show(); // FIXME: Pas cr?
         return;
     };
     if (corr_value == "" || corr_value == 'undefined') {
         console.log("Erreur verif formulaire: valeur");
-        $("#error_tube").show(); // FIXME: Pas crée
+        $("#error_tube").show(); // FIXME: Pas cr?
         return;
     };
     if (corr_min == "" || corr_min == 'undefined' || corr_min == []) {
         console.log("Erreur verif formulaire: min : set min = 0");
         corr_min=0
-        //$("#error_tube").show(); // FIXME: Pas crée
+        //$("#error_tube").show(); // FIXME: Pas cr?
 
     };
     if (corr_max == "" || corr_max == 'undefined' || corr_max == []) {
         console.log("Erreur verif formulaire: max : set max = 9999");
         corr_max=9999
-        //$("#error_tube").show(); // FIXME: Pas crée
+        //$("#error_tube").show(); // FIXME: Pas cr?
 
     };
     if (corr_ssup == "" || corr_ssup == 'undefined' || corr_ssup == []) {
         console.log("Erreur verif formulaire: seuil sup : set ssup = 9999");
         corr_ssup=9999
-        //$("#error_tube").show(); // FIXME: Pas crée
+        $("#error_tube").show(); // FIXME: Pas cr?
 
     };
     console.log("***********************");
@@ -1127,9 +1181,9 @@ $("#submitFormCorr").click(function (e) {
     console.log("Maximum: " + corr_max);
     console.log("Seuil sup: " + corr_ssup);
     console.log("***********************");
-    var csrftoken = getCookie('csrftoken');
-    console.log(csrftoken);
-    $.ajaxSetup({   headers: {  "X-CSRFToken": csrftoken  }  });
+    // var csrftoken = getCookie('csrftoken');
+    // console.log(csrftoken);
+    // $.ajaxSetup({   headers: {  "X-CSRFToken": csrftoken  }  });
 
     console.log(corr_coords)
     var wkt = $.geo.WKT.stringify( {
@@ -1141,7 +1195,7 @@ $("#submitFormCorr").click(function (e) {
     $.ajax({
         type: "POST",
 
-        headers: { "X-CSRFToken": csrftoken },
+        //headers: { "X-CSRFToken": csrftoken },
         url: "{% url 'alter_raster' %}",
         data: {
             source:id_source,
@@ -1162,29 +1216,22 @@ $("#submitFormCorr").click(function (e) {
             // Fermeture du formulaire 
             $("#modal_corr_form").modal('hide');
                
-            //null si on a pas encore initialisé (inutile si on affiche un polluant par defaut)
+            //null si on a pas encore initialis?inutile si on affiche un polluant par defaut)
             if ( activeLayer1 != null) {
                 map.removeLayer(activeLayer1[1])
             }
             id_source = overlayLayers1[id_but]
             
-            //workaround pour faire passer la variable id ds l'url
-            url_img='{% url 'img_raster' id='0' %}'
-            url_bbox='{% url 'bbox_raster' id='0' %}'
 
-            img=url_img.slice(0,url_img.length-5)+id_source.toString()+'.png'
-            bbox=url_bbox.slice(0,url_bbox.length-6)+id_source.toString()+'.json'
-            console.log(bbox)
-            console.log(img)
+            url_bbox='{% url "bbox_raster" %}'
+            img=img_raster_url(id_source)
 
-            // s1="'{% "
-            // s2=" %}'"
-            // s3=s1 + s + s2
-            // console.log(s1 + s + s2)
             $.ajax({
                 //recup de scoins de la carte necessaires pour que leaflet affiche le png
-                url:bbox,
-                
+                url: url_bbox,
+                data : {
+                    id:id_source
+                },
                 success : function(msg){
                     anchors = [
                         [msg['ymax'], msg['xmin']], //haut gauche
@@ -1203,8 +1250,6 @@ $("#submitFormCorr").click(function (e) {
                     $('#active_layer_div1').append(tbl)
                 }
             })      
-  
-        
         },
         error: function (request, error) {
             console.log(request);
@@ -1214,15 +1259,28 @@ $("#submitFormCorr").click(function (e) {
             console.log("Ajax error: " + error);
             $("#error_tube").show();
         },        
-    });    
+    });
+    drawLayer.removeFrom(map)
  
 }); 
 
-/* Fonction éxécutée lors de l'annulation de l'envoi du formulaire de correction */
+/* Fonction ?cut?lors de l'annulation de l'envoi du formulaire de correction */
 $("#reset").click(function (e) {
-    console.log("Annulation de l'envoie, on conserve l'objet pour éventuelles modifications.")
+    console.log("Annulation de l'envoie, on conserve l'objet pour ?ntuelles modifications.")
 });
-
+function post_test(){
+    $.ajax({
+        type: "POST",
+        url : "{% url 'trajet_request' %}",
+        data : { type:"FeatureCollection",features:[{type:"Feature",geometry:{type:"MultiLineString",coordinates:[[[5,45.685905],[5.000280,45.6859]],[[5.000280,45.6859],[5.000280,45.6840]]]}}]},
+        dataType : 'json',       
+        success : 
+            function(msg) {
+                console.log(msg)
+            }
+    })
+}    
+/* 
 $( ".toggle-right-mode" ).mouseenter(function() {
     $(".right-btn").show()
     $("#right-btn-chevron").hide()
@@ -1240,30 +1298,30 @@ function show_map2_clic(){
 function show_stats_clic(){
     $('#map-block2').hide()
     $('#stat-block').show()
-}
+} */
 // using jQuery
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
+// function getCookie(name) {
+    // var cookieValue = null;
+    // if (document.cookie && document.cookie != '') {
+        // var cookies = document.cookie.split(';');
+        // for (var i = 0; i < cookies.length; i++) {
+            // var cookie = jQuery.trim(cookies[i]);
             // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+            // if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                // cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                // break;
+            // }
+        // }
+    // }
+    // return cookieValue;
+// }
 
 function test(){
     console.log('iug')
     $.ajax({
         type: "POST",
         //csrfmiddlewaretoken: '{{ csrf_token }}',
-        headers: { "X-CSRFToken": getCookie("csrftoken") },
+        // headers: { "X-CSRFToken": getCookie("csrftoken") },
         url: "{% url 'test_ajax' %}",
         data: {
             source:1000    
@@ -1294,21 +1352,108 @@ function test(){
         },        
     }); 
 }
+function launch_async(func){
+    show_msg()
+    func()
+}
 function get_stats_reg(){
-    url_img='{% url 'calcul_stats_reg' id='2090' %}'
-    $.ajax({
-        url : url_img,
-        success: 
-            function(msg){
-                alert(msg)
+    // show_msg()
+    url_img='{% url "calcul_stats_reg"  %}'
+    
+    for (i in overlayLayers1){
+        id_prev=i.split('_')[2]     
+        id=overlayLayers1[i]
+        
+        // msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : en cours ... </div>')
+        $.ajax({
+            url : url_img,
+            async : false,
+            data : { 
+                id_prev : id_prev
+            },
+            success: 
+                function(msg){
+                    prevs[id_prev]['stats']=msg
+                    // msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : OK </div>')
+                }
+            ,error : function () {
+                // msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : échec </div>')
             }
-    })
+        })
+    }
     
 }
-
-function export_low(id_prev){
-    url_img='{% url 'img_raster' id='0' %}'
+function launch_stats(){
+	get_stats_reg_unique(id_prev)
 }
+function get_stats_reg_unique(id_prev){
+    show_msg()
+    url_img='{% url "calcul_stats_reg"  %}'
+    msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : en cours ... </div>')
+    $.ajax({
+        url : url_img,
+        async : false,
+        data : { 
+            id_prev : id_prev
+        },
+        success: 
+            function(msg){
+                prevs[id_prev]['stats']=msg
+                msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : OK </div>')
+            }
+        ,error : function () {
+            msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : échec </div>')
+        }
+    })
+}
+
+function launch_BQA_unique(){
+    $.ajax({
+        url : '{% url "launch_BQA_unique"  %}',
+        async : false,
+        data : { 
+            id_prev : id_prev
+        },
+        success: 
+            function(msg){
+                prevs[id_prev]['ibg']=msg
+                msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : OK </div>')
+            }
+        ,error : function () {
+            msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : échec </div>')
+        }
+    })
+}
+function launch_BQA(){
+    $.ajax({
+        url : '{% url "launch_BQA" %}',
+        async : false
+    })
+}
+function get_indice_com(){
+    url_img='{% url "calcul_indice_com"  %}'
+    for (i in overlayLayers1){
+        id_prev=i.split('_')[2]
+        id=overlayLayers1[i]
+        if (liste_sources[id].pol=='MULTI'){
+            console.log(id_prev)
+            $.ajax({
+                url : url_img,
+                async : false,
+                data : { 
+                    id_prev : id_prev
+                },
+                success: 
+                    function(msg){
+                        prevs[id_prev]['indice_com']=msg
+                        
+                        
+                    }
+            })
+        }
+    }
+}
+
 function launch_commentaire(ech){
     $("#commentaire-div").show()
     $("#echeance-input").val(ech)
@@ -1319,7 +1464,7 @@ function remove_commentaire_form() {
     $("#mask").hide()
 }
 function valid_commentaire(){
-    var csrftoken = getCookie('csrftoken');
+    // var csrftoken = getCookie('csrftoken');
     ech=$('#echeance-input').val()
     console.log(ech)
     comm=$('#commentaire-text-input').val()
@@ -1328,7 +1473,7 @@ function valid_commentaire(){
     $("#mask").hide()
     $.ajax({   
         type: "POST",
-        headers: { "X-CSRFToken": csrftoken },    
+        // headers: { "X-CSRFToken": csrftoken },    
         url: '{% url "save_commentaire"   %}',
         data: {
             date_prev:today,
@@ -1373,11 +1518,64 @@ function export_low_val() {
 
     }
 }
+function merge_mi_fine(id_prev,id_source) {
+    if ( activeLayer1 != null) {
+        map.removeLayer(activeLayer1[1])
+        console.log(activeLayer1[1])
+    }
+    id_source = overlayLayers1[id_but]
+    
+    console.log('id_source : ' + id_source.toString())
+    //workaround pour faire passer la variable id ds l'url
+
+    url_bbox='{% url "bbox_raster" %}'
+
+    img=mi_fine_url(id_source,id_prev)
+
+
+
+    // s1="'{% "
+    // s2=" %}'"
+    // s3=s1 + s + s2
+    // console.log(s1 + s + s2)
+    $.ajax({
+        //recup de scoins de la carte necessaires pour que leaflet affiche le png
+        url: url_bbox,
+        data : {
+            id:id_source
+        },
+        success : function(msg){
+            anchors = [
+                [msg['ymax'], msg['xmin']], //haut gauche
+                [msg['ymax'], msg['xmax']], //haut droite
+                [msg['ymin'], msg['xmax']], //bas droite
+                [msg['ymin'], msg['xmin']]  //bas gauche
+            ];
+            //console.log(anchors)
+            lay = L.imageTransform(img, anchors, {opacity:0.7, attribution: 'Cartes de pollution: ATMO Aura'});     
+            lay.addTo(map)
+            activeLayer1=[id_source,lay];
+            
+            //console.log(id_source.toString())
+            var tbl=meta_source_tbl(liste_sources[id_source])
+            $('#active_layer_div1 > table').remove()
+            $('#active_layer_div1').append(tbl)
+        },
+        error : function(msg) {
+            alert(msg)
+        },
+          statusCode: {
+            404: function() {
+                alert( "page not found" );
+            }
+        }
+    }) 
+}
 function export_hd() {
     n=0
     for (i in overlayLayers1){
        
-        if (n<2){
+        if (n<1){
             id_source= overlayLayers1[i]
             
             id_prev=i.split('_')[2]
@@ -1390,9 +1588,10 @@ function export_hd() {
                 id_prev:id_prev
               }
             })
-
             n+=1
+
         }
+       
         else  {
             id_source= overlayLayers1[i]
             
@@ -1406,8 +1605,283 @@ function export_hd() {
                 id_prev:id_prev
               }
             })
+       
         n=0
         }
 
-    }   
+    }
 }
+function mi_fine_url(id_source,id_prev){
+    var img='';
+    url_img='{% url "mi_fine_url" %}'
+    $.ajax({
+        url:url_img,
+        async : false,
+        data : { 
+            id_source : id_source,
+            id_prev : id_prev
+        },
+       
+        success : function(msg){
+            img=msg
+        }
+    })
+    return img;
+}
+function img_raster_url(id_source){
+    var img='';
+    url_img='{% url "img_raster_url" %}'
+    $.ajax({
+        url:url_img,
+        async : false,
+        data : { 
+            id_source : id_source
+        },
+       
+        success : function(msg){
+            img=msg
+        }
+    })
+    return img;
+}
+function fake()    {
+      $.ajax({
+        url:'{% url "fake" %}',
+        async : false,
+
+        success : function(msg){
+            console.log(msg)
+        }
+    })
+}  
+
+function show_mask(){
+    $('#mask').show()
+}
+function hide_mask(){
+    $('#mask').css('display','none')
+}
+function show_msg(){
+
+    $('.msg').css('display','block')
+    $('.msg').append('<div class="container-fluid" id="msg-content"></div>')
+    show_mask()
+}
+function msg_add_content(html){
+    $('.msg > #msg-content').append(html)
+}
+function close_msg(){
+    hide_mask()
+    $('.msg > #msg-content').remove()
+    $('.msg').css('display','none')
+}
+function preprocess_files(){
+    $.ajax({
+        url:'{% url "preprocess_files" %}',
+        async : true,
+        success : function(msg){
+            check_statut()
+            $("#poll_switch_1 > ."+active_poll_left_table ).click()
+            refresh_right_table()
+            process_files=true
+            
+        }
+    })
+    
+}
+function statsShow(id_prev){
+    obs=prevs[id_prev]['stats']
+    $('#mask').show()
+    $('#stats_tbl >  tbody').remove()
+    $('#stats_div').show()
+    $('#stats_tbl').append('<tbody></tbody>')
+    for (i in obs){
+        console.log(i)
+        ligne = getStatHTML(i,obs[i])
+        console.log(ligne)
+        $('#stats_tbl >  tbody').append(ligne)
+    }
+}
+function bool_lib(b){
+    dep_lib=''
+    if (b==false){
+        dep_lib='non'
+    }
+    else if (b==true){
+        dep_lib='oui'
+    }
+    return dep_lib
+}
+function getStatHTML(id,obj){
+    lib=obj['lib']
+    dpa=obj['depassement_pop_alerte']
+    dpa=bool_lib(dpa)
+    dpi=obj['depassement_pop_info']
+    dpi=bool_lib(dpi)
+    dsa=obj['depassement_surf_alerte']
+    dsa=bool_lib(dsa)
+    dsi=obj['depassement_surf_info']
+    dsi=bool_lib(dsi)
+    pea=obj['pop_exp_alerte']
+    pei=obj['pop_exp_info']
+    pepa=obj['pop_exp_perc_alerte']
+    pepi=obj['pop_exp_perc_info']
+    sea=obj['surf_exp_alerte']
+    sei=obj['surf_exp_info']
+    sepa=obj['surf_exp_perc_alerte']
+    sepi=obj['surf_exp_perc_info']
+    tr_dep_cls='tr_grey'
+    if (dsi=='oui'){
+        tr_dep_cls='tr_orange'      
+    }
+    if (dpi=='oui'){
+        tr_dep_cls='tr_orange'
+    }
+    if (dsa=='oui'){
+        tr_dep_cls='tr_red'     
+    }
+    if (dpa=='oui'){
+        tr_dep_cls='tr_red'
+    }
+    s='<tr class="'+tr_dep_cls+'">'+
+        '<td>'+id+'</td>'+
+        '<td>'+lib+'</td>'+
+        '<td>'+sei+'</td>'+
+        '<td>'+sepi+'</td>'+
+        '<td>'+dsi+'</td>'+
+        '<td>'+pei+'</td>'+
+        '<td>'+pepi+'</td>'+
+        '<td>'+dpi+'</td>'+
+        '<td>'+sea+'</td>'+
+        '<td>'+sepa+'</td>'+
+        '<td>'+dsa+'</td>'+
+        '<td>'+pea+'</td>'+
+        '<td>'+pepa+'</td>'+
+        '<td>'+dpa+'</td>'+
+    '</tr>'
+    return s
+}
+function remove_stats_form(){
+    $('#mask').hide()
+    $('#stats_div').hide()
+}
+function contactSMILE(){
+    $.ajax({
+        url : 'ws_smile',
+        success : function(msg){
+			alert( " import SMILE activé, les résultats seront disponibles d'ici une vingtaine de minutes sur le site" )
+        }
+    })
+}
+function validPrevi(){
+	hideConfirmValidPrevi()
+    launch_BQA()
+    get_stats_reg()
+    get_indice_com()
+    export_low_val()
+    export_low()
+    export_hd()
+    contactSMILE()
+    
+    }
+function confirmValidPrevi(){
+	$('#mask').show()
+	$('#confirm-valid-div').show()
+}
+function hideConfirmValidPrevi(){
+	$('#mask').hide()
+	$('#confirm-valid-div').hide()
+}
+function get_expertises(id_source){
+    $.ajax({
+        url:'{% url "get_expertises" %}',
+        async : false,
+        data : { 
+            id_source : id_source
+        },
+       
+        success : function(msg){
+            exps=msg
+        }
+    })
+    return exps;
+}
+function set_expertises(id_exp,bool){
+    $.ajax({
+        url:'{% url "set_expertises" %}',
+        async : false,
+        data : { 
+            id_exp : id_exp,
+			active : bool
+        },
+       
+        success : function(msg){
+            exps=msg
+        }
+    })
+    return exps;
+}
+function expMenu(id_source){
+	exps=get_expertises(id_source)
+	$(".table-corr").remove()
+	console.log(id_but)
+	
+	html='<table class="table-responsive table-bordered table-corr"><tr><th>val</th><th data-toggle="tooltip" title="seuil minimum pour appliquer la correction">min</th><th data-toggle="tooltip" title="seuil maximum pour appliquer la correction">max</th><th>active</th></tr>'
+	
+	for (e in exps){
+		console.log(e)
+		ob=exps[e]
+		id_cbx='cbx_'+ ob['id'].toString()
+		var check='';
+		if (ob['active']==true){
+			check=' checked="checked "'
+		}
+
+		html+='<tr><td>'+ob.delta.toString()+'</td><td>'+ob.min.toString()+'</td><td>'+ob.max.toString()+'</td><td><input class="exp_cbx" id="'+id_cbx+'" type="checkbox" '+check+'></td></tr>'	
+
+	}
+	html+='</table>'
+	$('#exp-btn').after(html)
+	$( ".exp_cbx" ).change(function() {
+		id=$(this)[0].id.split("_")[1]
+        console.log(id)
+		bool=$(this).is( ":checked" )
+		set_expertises(id,bool)
+        
+		id_but=$(".active")[1].id
+		switch_map_1(id_but)		
+	})
+}
+$('.map-block').css('display','inline-block')
+function switch_ecran() {
+	var dis=$('.map-block').css('display')
+	if (dis=='inline-block'){
+		$('.map-block').css('display','inline')
+		$('#map-block2').css('display','none')
+	}
+	else {
+		$('.map-block').css('display','inline-block')
+		$('#map-block2').css('display','inline-block')
+	}
+}
+function drag_start(event) {
+    var style = window.getComputedStyle(event.target, null);
+    event.dataTransfer.setData("text/plain",
+    (parseInt(style.getPropertyValue("left"),10) - event.clientX) + ',' + (parseInt(style.getPropertyValue("top"),10) - event.clientY));
+} 
+function drag_over(event) { 
+    event.preventDefault(); 
+    return false; 
+} 
+function drop(event) { 
+    var offset = event.dataTransfer.getData("text/plain").split(',');
+    var z = document.getElementById('drag_stats_btn');
+    z.style.left = (event.clientX + parseInt(offset[0],10)) + 'px';
+    z.style.top = (event.clientY + parseInt(offset[1],10)) + 'px';
+    event.preventDefault();
+    return false;
+} 
+var dm = document.getElementById('drag_stats_btn'); 
+dm.addEventListener('dragstart',drag_start,false); 
+document.body.addEventListener('dragover',drag_over,false); 
+document.body.addEventListener('drop',drop,false);

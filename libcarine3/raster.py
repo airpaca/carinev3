@@ -38,7 +38,7 @@ def rasterize_zt(poly, rstshape, rstaff):
     rbuf = features.rasterize(shapes=shapes,
                               out_shape=rstshape,
                               transform=rstaff,default_value=1,
-                              all_touched=True)
+                              all_touched=False)
 
     return rbuf
 # def rasterize(poly, rstshape, rstaff):
@@ -57,10 +57,6 @@ def to_png(data, fn=None, dpi=10):
     :return: None or Pillow.Image if fn is None.
     """
 
-
-    # Limits
-    #data[(data > -999) & (data < 0)] = 0
-
     # Create figure
     log.debug("ljhf")
     figsize = (data.shape[1] /dpi, data.shape[0]/dpi)
@@ -75,7 +71,7 @@ def to_png(data, fn=None, dpi=10):
     vmax = np.max(data)
 
 
-    plt.imshow(data, cmap=cmap, vmin=vmin, vmax=vmax,clim=(0.0,10.0))
+    plt.imshow(data, cmap=cmap, vmin=vmin, vmax=vmax)
     log.debug("creating plot done!")
 
     # Export sous forme d'image
@@ -96,7 +92,7 @@ def to_png(data, fn=None, dpi=10):
 class Raster:
     """Raster."""
 
-    def __init__(self, fn, pol,source):
+    def __init__(self, fn, pol,source=None,epsg=None):
         """Raster.
         
         :param fn: path and filename of a raster.
@@ -113,24 +109,12 @@ class Raster:
         self.pol = pol
         self.expertises = list()
         self.source=source
+        self.epsg=epsg
 
     def __del__(self):
         """Close raster."""
         self.r.close()
 
-    @property
-    def xs(self):
-        x0 = self.r.affine.c
-        nx = self.r.width
-        dx = self.r.affine.a
-        return np.arange(x0, x0 + nx * dx, dx)
-
-    @property
-    def ys(self):
-        y0 = self.r.affine.f
-        ny = self.r.height
-        dy = self.r.affine.e
-        return np.arange(y0, y0 + ny * dy , dy)
 
     @property
     def x(self):
@@ -146,7 +130,7 @@ class Raster:
         data = self.r.read(1)
         mask = (data == self.r.nodata)
         shape=self.r.shape
-        aff=self.r.affine
+        aff=self.r.transform
         self.r.close()
         data = np.ma.array(data, mask=mask)
         del mask
@@ -154,60 +138,53 @@ class Raster:
 
         # Apply modifications
         for expertise in self.expertises:
-            log.debug("**************** EXPERTISE *********************")
-            log.debug(expertise)
-            modif = np.zeros(data.shape)
-            if expertise.ssup:
-                mk_ssup = (modif+expertise.delta) <= expertise.ssup
-            else:
-                mk_ssup = (data > 0)
-            # Use mask if mn or mx
-            # FIXME: comment faire le traitement avec les bornes min et max
-            if expertise.smin:
-                mk_smin = (data + expertise.delta > expertise.mn)
-            else : 
-                mk_smin = (data > 0)
-                
-            if expertise.mn:
-                mk_mn = (data >= expertise.mn)
-            else:
-                mk_mn = (data > 0)
-               
-            if expertise.mx:
-                mk_mx = (data <= expertise.mx)
-            else:
-                mk_mx = (data > 0)
-                
-            if expertise.geom.geom_type == 'Point':
-                g = libcarine3.Point(*expertise.geom.coords, epsg=4326)
-
-            elif expertise.geom.geom_type == 'Polygon':
-                g = libcarine3.Polygon(expertise.geom.coords[0], epsg=3857)
-
-            else:
-                raise NotImplementedError()
-
-            # Définition des zones tampons pour la décroissance
-            # ztlims, ztxs, ztys = libcarine3.zt_sigmoide(d=10000, n=30)
-
-            # ztlims = list(ztlims[1:][::-1]) + [0]
-            # ztys = list(ztys[::-1]) + [1]
-            #for d, pc in zip(ztlims, ztys):
-            rbuf = rasterize_zt(g,  shape, aff)
-            log.debug("--------------------------------------------------------------------------------rbuf.shape--------------------------------------------------------------")
-            log.debug(rbuf.shape)
-            log.debug(np.max(rbuf))
+            if (expertise.active==True):
+                log.debug("**************** EXPERTISE *********************")
+                log.debug(expertise)
+                modif = np.zeros(data.shape)
+                if expertise.ssup:
+                    mk_ssup = (modif+expertise.delta) <= expertise.ssup
+                else:
+                    mk_ssup = (data > 0)
+                # Use mask if mn or mx
+                # FIXME: comment faire le traitement avec les bornes min et max
+                if expertise.smin:
+                    mk_smin = (data + expertise.delta > expertise.mn)
+                else : 
+                    mk_smin = (data > 0)
+                    
+                if expertise.mn:
+                    mk_mn = (data >= expertise.mn)
+                else:
+                    mk_mn = (data > 0)
+                   
+                if expertise.mx:
+                    mk_mx = (data <= expertise.mx)
+                else:
+                    mk_mx = (data > 0)
+                    
+                if expertise.geom.geom_type == 'Point':
+                    g = libcarine3.Point(*expertise.geom.coords, epsg=4326)
             
-            
-            modif[(rbuf == 255) & mk_mn & mk_mx & mk_ssup & mk_smin] = expertise.delta
-            data += modif
+                elif expertise.geom.geom_type == 'Polygon':
+                    if (self.epsg==None):
+                        g = libcarine3.Polygon(expertise.geom.coords[0], epsg=3857)
+                    else :
+                        g1 = libcarine3.Polygon(expertise.geom.coords[0], epsg=3857)
+                        g=g1.reproject(epsg=2154)
 
+                else:
+                    raise NotImplementedError()
+                rbuf = rasterize_zt(g,  shape, aff)
+                log.debug("--------------------------------------------------------------------------------rbuf.shape--------------------------------------------------------------")
+                log.debug(self.fn)
+                log.debug(rbuf.shape)
+                log.debug(np.max(rbuf))
+                
+                
+                modif[(rbuf == 255) & mk_mn & mk_mx & mk_ssup & mk_smin] = expertise.delta
+                data += modif
 
-        #data=libcarine3.sous_indice(data,self.pol)
-        #log.debug(f"apply modification {expertise.delta:+} in {g.wkt}")
-
-        # if (self.pol!=10):
-            # data=libcarine3.merge_tools.sous_indice(data,self.pol)
         return data
     def sample_gen(self, x,y, indexes=None):
         #rewrite de la source du meme nom de rio (rio.sample.sample_gen) 
@@ -224,6 +201,7 @@ class Raster:
             d=libcarine3.merge_tools.sous_indice(d,self.pol)
         
         data2=d[r][c]
+        log.debug([data,data2])
         return([data,data2])
     def to_png(self,data, fn=None, dpi=10):
         """Convert raster into png format.
@@ -268,21 +246,7 @@ class Raster:
         else:
             log.debug("return image data...")
             return f.getvalue()
-        # width,height = data.shape[1] , data.shape[0]
-        # width_byte_4 = width 
-        
-        # buf = data.tobytes()
-        # raw_data = b''.join(b'\x00' + buf[span:span + width_byte_4] for span in range((height - 1) * width_byte_4, -1, - width_byte_4))
-        # return b''.join([
-            # b'\x89PNG\r\n\x1a\n',
-            # self.png_pack(b'IHDR', struct.pack("!2I5B", width, height, 8, 6, 0, 0, 0)),
-            # self.png_pack(b'IDAT', zlib.compress(raw_data, 9)),
-            # self.png_pack(b'IEND', b'')])
 
-
-    # def png_pack(self,png_tag, data):
-        # chunk_head = png_tag + data
-        # return (struct.pack("!I", len(data)) + chunk_head + struct.pack("!I", 0xFFFFFFFF & zlib.crc32(chunk_head)))
     def to_tif(self,data, fn=None, dpi=10):
         """Convert raster into png format.
         
@@ -338,15 +302,15 @@ class Raster:
         """
         self.expertises += expertises
         
-    def export_low_val(self):
+    def export_low_val(self,new_file):
         with rio.Env(GDAL_CACHEMAX=512,NUM_THREADS='ALL_CPUS') as env:
 
             pr = self.r.profile
-            pol=self.source.tsr.pol
-            ech=self.source.tsr.ech
-            tsp=self.source.daterun
+            # pol=self.source.tsr.pol
+            # ech=self.source.tsr.ech
+            # tsp=self.source.daterun
             
-            new_file = config.basse_def_val_path + config.aasqa +'-'+ pol.lower() + '-' + str(tsp) + '-' + str(ech+1) + '.tiff' 
+            # new_file = config.basse_def_val_path + config.aasqa +'-'+ pol.lower() + '-' + str(tsp) + '-' + str(ech+1) + '.tiff' 
             log.debug(" --- new file --- ")
             log.debug(new_file)
             ar=self.r.read(1)
@@ -360,168 +324,3 @@ class Raster:
                 dst.write(new_ar,1)
                 dst.close()
             return 'toto'
-    
-    # def merge_fine(self):
-        # with rio.Env(GDAL_CACHEMAX=8192,NUM_THREADS='ALL_CPUS') as env:
-            # ratio=100
-            # urls=[]
-            # pol=self.source.tsr.pol
-            # ech=self.source.tsr.ech
-            # tsp=self.source.daterun
-            # pr=self.r.profile
-            # b1=self.r.bounds
-            # aff=self.r.transform
-
-            # new_file = '/var/www/html/hd/val/aura_' + pol.lower() + '_' + str(tsp) + '_' + str(ech+1) + '.tiff' 
-            # ar=self.get_array()
-            
-            # s=ar.shape
-            # log.debug(s)
-            # new_ar=ar.repeat(ratio,axis=0).repeat(ratio,axis=1)
-            # log.debug(new_ar.shape)
-            # ar=None
-            
-            # pr.update(height = pr['height'] * ratio)
-            # pr.update(width = pr['width']  * ratio)
-
-            # new_aff = affine.Affine(aff.a / ratio, aff.b, aff.c,aff.d, aff.e / ratio, aff.f)  
-            # pr.update(transform=new_aff)
-            # prh=pr['height']
-            # prw=pr['width']
-            
-            # if (pol.upper() != 'MULTI'):
-
-                # lib_ech=config.libs_ech[ech]
-                # dir = '/home/previ/raster_source/domaines_fine/3857/'           
-                # for i in config.domaines_hd:
-                    # url=dir+'AURA_'+pol.upper()+'_'+i+'_'+str(tsp)+'_'+lib_ech+'_3857.tif'
-                    # urls.append(url)            
-            
-            # res=14.25
-            # w1=rio.windows.from_bounds(b1[0],b1[1],b1[2],b1[3],pr['transform'],boundless=True)
-            # log.debug(w1)
-            # w4=None
-            # with MemoryFile() as memfile:
-                # with memfile.open(**pr) as dataset:
-                    # dataset.write(new_ar,1)
-                    # new_ar=None
-                    # mem_arr = dataset.read()
-                    # for f2 in urls:
-                        # ds2=rio.open(f2)
-                        # b2=ds2.bounds
-                        # log.debug(b2)
-                        # ox=abs((b2[0]-b1[0])/res)
-                        # oy=abs((b2[3]-b1[3])/res)
-                        # w2=rio.windows.from_bounds(b2[0],b2[1],b2[2],b2[3],ds2.transform,boundless=True)
-                        # log.debug("=== w2 ===")
-                        # print(w2)
-                        # w3=rio.windows.intersection(w1,w2)
-                        # log.debug("=== w3 ===")
-                        # log.debug(w3)
-                        # w4=((int(w3[0][0]+oy),int(w3[0][1]+oy)),(int(w3[1][0]+ox),int(w3[1][1]+ox)))
-                        # log.debug("=== w4 ===")
-                        # log.debug(w4)
-                        # warr=dataset.read(1,window=w4)
-                        # log.debug("=== warrshape ===")
-                        # log.debug(warr.shape)
-                        # warr=np.maximum(warr,ds2.read())
-                        # print("=== w4 ===")
-                        # print([w4[0][0],w4[0][1],w4[1][0],w4[1][1]])
-                        # mem_arr[0][w4[0][0]:w4[0][1],w4[1][0]:w4[1][1]]=warr
-                        # log.debug(warr.shape)
-                        
-
-                        # print(mem_arr.shape)
-                        # log.debug(ds2.profile)
-                        # warr=None
-                        # ds2.close()
-                    # with rio.open(new_file,'w',**pr) as dst:
-                        # dst.write(mem_arr)
-                        # dst.close()
-            # mem_arr=None
-            # dataset.close()
-            # memfile=None
-        # return new_file
-    # def merge_mi_fine(self,Prev):
-        # with rio.Env(GDAL_CACHEMAX=1024,NUM_THREADS='ALL_CPUS') as env:
-            # ratio=20
-            # urls=[]
-            # pol=self.source.tsr.pol
-            # ech=self.source.tsr.ech
-            # tsp=self.source.daterun
-            # pr=self.r.profile
-            # b1=self.r.bounds
-            # aff=self.r.transform
-            # new_file = '/var/www/html/hd/val/aura_' + pol.lower() + '_' + str(tsp) + '_' + str(ech+1) + '.tiff' 
-            
-            # ar=np.ma.getdata(self.get_array())
-            
-            # s=ar.shape
-            # log.debug(s)
-            # new_ar=ar.repeat(ratio,axis=0).repeat(ratio,axis=1)
-            # log.debug(new_ar.shape)
-            # ar=None
-            
-            # pr.update(height = pr['height'] * ratio)
-            # pr.update(width = pr['width']  * ratio)
-
-            # new_aff = affine.Affine(aff.a / ratio, aff.b, aff.c,aff.d, aff.e / ratio, aff.f)  
-            # pr.update(transform=new_aff)
-            # prh=pr['height']
-            # prw=pr['width']
-            
-            # if (pol.upper() != 'MULTI'):
-
-                # lib_ech=config.libs_ech[ech]
-                # dir = '/home/previ/raster_source/domaines_fine/3857/'           
-                # for i in config.domaines_hd:
-                    # url=dir+'AURA_'+pol.upper()+'_'+i+'_'+str(tsp)+'_'+lib_ech+'_3857.tif'
-                    # urls.append(url)            
-            
-            # res=71.5
-            # w1=rio.windows.from_bounds(b1[0],b1[1],b1[2],b1[3],pr['transform'],boundless=True)
-            # log.debug(w1)
-            # w4=None
-            # with MemoryFile() as memfile:
-                # with memfile.open(**pr) as dataset:
-                    # dataset.write(new_ar,1)
-                    # new_ar=None
-                    # mem_arr = dataset.read()
-                    # for f2 in urls:
-                        # if (os.path.exists(f2)):
-                            # ds2=rio.open(f2)
-                            # b2=ds2.bounds
-                            # log.debug(b2)
-                            # ox=abs((b2[0]-b1[0])/res)
-                            # oy=abs((b2[3]-b1[3])/res)
-                            # w2=rio.windows.from_bounds(b2[0],b2[1],b2[2],b2[3],ds2.transform,boundless=True)
-                            # log.debug("=== w2 ===")
-                            # print(w2)
-                            # w3=rio.windows.intersection(w1,w2)
-                            # log.debug("=== w3 ===")
-                            # log.debug(w3)
-                            # w4=((int(w3[0][0]+oy),int(w3[0][1]+oy)),(int(w3[1][0]+ox),int(w3[1][1]+ox)))
-                            # log.debug("=== w4 ===")
-                            # log.debug(w4)
-                            # warr=dataset.read(1,window=w4)
-                            # log.debug("=== warrshape ===")
-                            # log.debug(warr.shape)
-                            # warr=np.maximum(warr,ds2.read())
-                            # print("=== w4 ===")
-                            # print([w4[0][0],w4[0][1],w4[1][0],w4[1][1]])
-                            # mem_arr[0][w4[0][0]:w4[0][1],w4[1][0]:w4[1][1]]=warr
-                            # log.debug(warr.shape)
-                            
-
-                            # print(mem_arr.shape)
-                            
-                            # log.debug(ds2.profile)
-                            # warr=None
-                            # ds2.close()
-                    # with rio.open(new_file,'w',**pr) as dst:
-                        # dst.write(mem_arr)
-                        # dst.close()
-            # mem_arr=None
-            # dataset.close()
-            # memfile=None
-        # return new_file

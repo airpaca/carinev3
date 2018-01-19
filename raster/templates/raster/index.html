@@ -12,15 +12,18 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="">
         <title>Carine v3</title>
-        <meta name="author" content="romain.souweine@airpaca.org">
-        
+        <meta name="author" content="vjulier@atmo-aura.fr">
+        <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<META HTTP-EQUIV="Expires" CONTENT="-1">
         <!-- Chargement des feuilles de stype CSS -->
-
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
         <link href="{% static 'raster/css/bootstrap.min.css' %}" rel="stylesheet">
         <link href="{% static 'raster/lib/customScroll/css/jquery.mCustomScrollbar.css' %}" rel="stylesheet">
         <link href="{% static 'raster/css/style.default.css' %}" rel="stylesheet">
         <link rel="stylesheet" href="{% static 'raster/css/style.css' %}"/>
-        <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
+
+        <script type="text/javascript"> </script>
         <!-- API Google Maps
         <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHyrW7AhUa3J8sm7iLofM5PzbLmj_j2wo" type="text/javascript"></script>
         -->
@@ -28,7 +31,6 @@
     </head>
     
     <body>
-
         <!-- Barre de navigation -->
         <nav class="navbar navbar-default nav-fixed-top" role="navigation" id="app-nav-bar" >
             <!-- Brand and toggle get grouped for better mobile display -->
@@ -40,6 +42,7 @@
                     <span class="icon-bar"></span>
                 </button>-->
                 <a class="navbar-brand" href="#">CARINE v3</a>
+
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
@@ -79,6 +82,13 @@
                     </li>
 
                 </ul>
+                                <ul class="nav navbar-nav navbar-right">
+                    <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
+                    <li>
+                        <a href="{% url 'help' %}" target="_blank">Help</a>
+                    </li>
+
+                </ul>
             </div><!-- /.navbar-collapse -->
         </nav>
         
@@ -100,38 +110,64 @@
                     <li >
                         <a  onclick="multi_form_show()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Calcul du multipolluants</a>
                     </li>
-                    <li >
-                        <a  onclick="get_stats_reg()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Statistiques réglementaires</a>
-                    </li>
+                    <!-- <li > -->
+                        <!-- <a  onclick="launch_async(get_stats_reg)" data-toggle="tooltip" title="calcul les stats pour toutes les cartes (environ 1min)" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Statistiques réglementaires (toutes)</a> -->
+                    <!-- </li> -->
+                    <!-- <li > -->
+                        <!-- <a  onclick="get_indice_com()" data-toggle="tooltip" title="calcul les indices pour toutes les cartes (environ 3min). Pas indispensable car recalculé à la validation finale" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Indices communaux</a> -->
+                    <!-- </li> -->
                     <li >
                      
-                        <a onclick="launch_commentaire(1)" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i>Ecrire le commentaire</a>
+                        <a onclick="launch_commentaire(1)" data-toggle="tooltip" title="le commentaire peut être re-enregistré autant de fois que nécessaire" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i>Ecrire le commentaire</a>
                     </li>
-                    <li>
-                        <div class="dropdown" style="height : 100%;">
-                            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                Export des cartes du jour
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                    <!-- <li> -->
+                        <!-- <div class="dropdown" style="height : 100%;"> -->
+                            <!-- <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"> -->
+                                <!-- Export des cartes du jour -->
+                                <!-- <span class="caret"></span> -->
+                            <!-- </button> -->
+                            <!-- <ul class="dropdown-menu" aria-labelledby="dropdownMenu1"> -->
 
-                                <li><a onclick="export_low_val()" href="#" title="Lien 2">Basse définition valeurs</a></li>
-                                <li><a onclick="export_low()" href="#" title="Lien 2">Basse définition RGB</a></li>
-                                <li><a onclick="export_hd()" href="#" title="Lien 2">Haute définition RGB</a></li>
+                                <!-- <li><a onclick="export_low_val()" href="#" title="Lien 2">Basse définition valeurs</a></li> -->
+                                <!-- <li><a onclick="export_low()" href="#" title="Lien 2">Basse définition RGB</a></li> -->
+                                <!-- <li><a onclick="export_hd()" href="#" title="Lien 2">Haute définition RGB</a></li> -->
 
-                            </ul>
-                        </div>
-                    </li>
+                            <!-- </ul> -->
+                        <!-- </div> -->
+                    <!-- </li> -->
                     <li>
-                        <a  onclick="validPrevis()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> VALIDER LA PREVISION </a>    
+                        <a  onclick="confirmValidPrevi()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> VALIDER LA PREVISION </a>    
                     </li>
                 
 
                 </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
+					<li class="dropdown">
+						
 
+							<a class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"><i class="glyphicon glyphicon-wrench"></i></a>
+							<ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+								<li><a onclick="preprocess_files()" href="#" title="">Préparation des sources</a></li>
+								<li><a onclick="launch_async(get_stats_reg)" data-toggle="tooltip" title="calcul les stats pour toutes les cartes (environ 1min)" >Statistiques réglementaires (toutes)</a></li>
+								<li><a onclick="get_indice_com()" data-toggle="tooltip" title="calcul les indices pour toutes les cartes (environ 3min). Pas indispensable car recalculé à la validation finale">Indices communaux</a></li>
+								<li><a onclick="export_low_val()" href="#" title="Lien 2">Basse définition valeurs</a></li>
+								<li><a onclick="export_low()" href="#" title="Lien 2">Basse définition RGB</a></li>
+								<li><a onclick="export_hd()" href="#" title="Lien 2">Haute définition RGB</a></li>
+								<li><a onclick="contactSMILE()" href="#" data-toggle="tooltip" title="déclenche un nouvel import de SMILE sans réaliser aucun calcul.">Rediffuser</a></li>
+                                <li><a onclick="launch_BQA()" href="#" data-toggle="tooltip" title="calcule et exporte dans transalpair tous les indices du bassin grenoblois">Bassin grenoblois</a></li>
+							</ul>
+
+						
+					</li>
+                    <li>
+                        <a onclick="switch_ecran()"><i class="glyphicon glyphicon-th-large"></i></a>
+                    </li>
+
+                </ul>
             </div><!-- /.navbar-collapse -->
         </nav>
-	<div id="englob">
+    <div id="englob">
 <!--     <button onclick='test()'>TEST</button> -->
         <div  class="map-block" id="map-block1">
             <!-- Déclaration de la carte -->
@@ -156,12 +192,12 @@
                 <div id="sidemenu" class="well">
 
                     <!-- Sidebar Options -->
-                    <div class="btn-group btn-group-justified btn-group-sm">
-                        <a class="btn btn-default"> <i class="glyphicon glyphicon-fullscreen"></i> Fit in Window </a>
-                        <a class="btn btn-default"> <i class="glyphicon glyphicon-filter"></i> Filtrer </a>
-                        <a onclick="toggleNav()" class="btn btn-default"> <i class="glyphicon glyphicon-lock"></i> Navigation simultanée </a>
+                    <!-- <div class="btn-group btn-group-justified btn-group-sm"> -->
+                        <!-- <a class="btn btn-default"> <i class="glyphicon glyphicon-fullscreen"></i> Fit in Window </a> -->
+                        <!-- <a class="btn btn-default"> <i class="glyphicon glyphicon-filter"></i> Filtrer </a> -->
+                        <!-- <a onclick="toggleNav()" class="btn btn-default"> <i class="glyphicon glyphicon-lock"></i> Navigation simultanée </a> -->
                         
-                    </div>
+                    <!-- </div> -->
                     <div id="poll_switch_1" class="btn-group btn-group-justified btn-group-sm">
 
                         
@@ -185,10 +221,22 @@
                         <a href="#" class="list-group-item point-item" id="layer_sites_fixes" > <h4 class="list-group-item-heading" >Sites fixes</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
                     </div>
                     <div class="divider_vect"></div>
-					<div class='active_layer_div' id='active_layer_div1'>
-						<p class='active_layer_p alert alert-info' id='active_layer_p1'></p>
+                    <div class='active_layer_div' id='active_layer_div1'>
+                        <p class='active_layer_p alert alert-info' id='active_layer_p1'></p>
+                    </div>
+					<div class="coords_div">
+						<table class="table-bordered clic-val-table" id="clic-val-table-1">
+							<tr>
+								<th> concentration corrigée </th>
+								<th> sous-indice </th>
+							</tr>
+							<tr>
+								<td id='t1-v1'> -- </td>
+								<td id='t1-v2'> -- </td>
+							</tr>
+						</table>
 					</div>
-<!-- 					<div class="btn-group btn-group-justified btn-group-sm">
+<!--                    <div class="btn-group btn-group-justified btn-group-sm">
                         <a  onclick="multi_form_show()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Calcul du multipolluants (0 pr test) </a>
                         <a  onclick="validPrevis()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> VALIDER LA PREVISION </a>                        
                     </div> -->
@@ -198,12 +246,16 @@
                     <!-- couches vectorielles -->
 
                 </div>
-            <div id="map"></div>
-            <div class="coords_div"><p class="coords_p"></p></div>
+				<div class="map-div">
+					<div id="map">				
+
+					</div>
+				</div>
+
             </div>
         </div> <!--fin map block 1 -->
         <div class="map-block" id="map-block2">
-		
+        
 
             <div class="visible-lg visible-md">
 
@@ -224,10 +276,10 @@
                 <!-- Side Bar -->
                 <div id="sidemenu2" class="well">
                     <!-- Sidebar Options -->
-                    <div class="btn-group btn-group-justified btn-group-sm">
-                        <a class="btn btn-default"> <i class="glyphicon glyphicon-fullscreen"></i> Fit in Window </a>
-                        <a class="btn btn-default"> <i class="glyphicon glyphicon-filter"></i> Filtrer </a>
-                    </div>
+                    <!-- <div class="btn-group btn-group-justified btn-group-sm"> -->
+                        <!-- <a class="btn btn-default"> <i class="glyphicon glyphicon-fullscreen"></i> Fit in Window </a> -->
+                        <!-- <a class="btn btn-default"> <i class="glyphicon glyphicon-filter"></i> Filtrer </a> -->
+                    <!-- </div> -->
 
                     <!-- Sidebar Separator -->
                     <div class="divider10"></div>
@@ -240,34 +292,14 @@
                         </table>         
                     </div>
                     <div class="divider10"></div>
-					<p class="other_head"></p>
+                    <p class="other_head"></p>
                     <div class="list-group point-list-view" id="other_layers" >      
                     </div>
-					
-						<div id='switch_source_div' class='form-group'>
-								<button id="hide_switch_btn" onclick='remove_switch_form()'> <i class="glyphicon glyphicon-remove"></i></button>
-								<div class="form-group">
-									<label class="form-control" for="switch_input">
-										Source à remplacer : 
-									</label>
-									<select class="form-control" id="switch_input" placeholder='choisissez dans la liste'  name="browser">
-									</select>
-								</div>
-								<div class="form-group">
-									<label class="form-control" for="new_source">
-										Nouvelle source :
-									</label>							
-									<select style='-webkit-appearance: none;' class="form-control" id="new_source"  name="new_source">
-										
-									</select>
-								</div>
-							<button id="validate_switch_btn" onclick='validate_switch_btn()'> <i class="glyphicon glyphicon-ok"></i> Valider le changement</button>
-						</div>
-					
-					
-					<button id='switch_source_btn' class="btn btn-default btn-sm" onclick='switch_source()'>
-						<span > <i class="glyphicon glyphicon-asterisk"></i> Changer de source </span>
-					</button>
+                    
+                    
+                    <button id='switch_source_btn' class="btn btn-default btn-sm" onclick='switch_source()'>
+                        <span > <i class="glyphicon glyphicon-tint"></i> Changer de source </span>
+                    </button>
 
                     <div class="divider_vect"></div>
                     <div class="list-group point-list-view vector-layer" id="vect">
@@ -276,28 +308,37 @@
                         <a href="#" class="list-group-item point-item"  id="layer_sites_fixes_2"> <h4 class="list-group-item-heading" >Sites fixes</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
                     </div>
                     <div class="divider_vect"></div>
-					<div class='active_layer_div' id='active_layer_div2'>
-						<p class='active_layer_p alert alert-info' id='active_layer_p2'></p>
+                    <div class='active_layer_div' id='active_layer_div2'>
+                        <p class='active_layer_p alert alert-info' id='active_layer_p2'></p>
+                    </div>
+					<div class="coords_div">
+						<table class="table-bordered clic-val-table" id="clic-val-table-2">
+							<tr>
+								<th> concentration corrigée </th>
+								<th> sous-indice </th>
+							</tr>
+							<tr>
+								<td id='t2-v1'> -- </td>
+								<td id='t2-v2'> -- </td>
+							</tr>
+						</table>
 					</div>
                 </div>
                             <!-- Déclaration de la carte -->
             <div id="map2"></div>
-            <div class="coords_div"><p class="coords_p"></p></div>
-			
-			  
             </div>
-			
+            
         </div>
-		<!-- fin du map-block2 -->
-		
-		<div class="right-englob" id="stat-block">DIV qui accueillera les stats réglementaires</div>
-		
-		<div class="btn-group-vertical btn-group-lg toggle-right-mode" >
-			<button class="btn btn-secondary" id="right-btn-chevron" >&#10094;</button>
-			<button  onclick="show_map2_clic()" class="btn btn-secondary right-btn " id="show_map2">Cartes +</button>
-			<button  onclick="show_stats_clic()" class="btn btn-secondary right-btn" id="show_stats">Stats</button>
-			<button  onclick="show_map1_clic()" class="btn btn-secondary right-btn" id="show_map1">Carte plein écran</button>
-		</div>
+        <!-- fin du map-block2 -->
+        
+<!--        <div class="right-englob" id="stat-block">DIV qui accueillera les stats réglementaires</div>
+        
+        <div class="btn-group-vertical btn-group-lg toggle-right-mode" >
+            <button class="btn btn-secondary" id="right-btn-chevron" >&#10094;</button>
+            <button  onclick="show_map2_clic()" class="btn btn-secondary right-btn " id="show_map2">Cartes +</button>
+            <button  onclick="show_stats_clic()" class="btn btn-secondary right-btn" id="show_stats">Stats</button>
+            <button  onclick="show_map1_clic()" class="btn btn-secondary right-btn" id="show_map1">Carte plein écran</button>
+        </div> -->
         <!-- Modal popup de correction -->
         <div id="modal_corr_form" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-sm">
@@ -317,30 +358,23 @@
                           </div>
                           <div class="form-group">
                             <div class="col-md-12">
-                                <label for="type_tube">Filtre mininmum</label>
+                                <label for="type_tube">Valeur au dessus de laquelle la correction s'appliquera</label>
                                 <input type="texts" class="form-control" id="corr_form_min" placeholder="Concentration minimum" name="corr_form_min" >
                             </div>
                           </div>
                           <div class="form-group">
                             <div class="col-md-12">
-                                <label for="type_tube">Filtre maximum</label>
+                                <label for="type_tube">Valeur au dessous de laquelle la correction s'appliquera</label>
                                 <input type="texts" class="form-control" id="corr_form_max" placeholder="Concentration maximum" name="corr_form_max" >
                             </div>
                           </div>
-                          <div class="form-group">
-                            <div class="col-md-12">
-                                <label for="type_tube">Seuil supérieur à ne pas dépasser</label>
-                                <input type="texts" class="form-control" id="corr_form_ssup" placeholder="seuil supérieur" name="corr_form_ssup" >
-                            </div>
-                          </div>
-                          <div class="form-group">
-                            <div class="col-md-12">
-                                <label for="type_tube">Type de correction</label>
-                                <select class="form-control" id="corr_form_type" name="corr_form_type">
-                                  <option>Gaussienne</option>
-                                </select>
-                            </div>
-                          </div>
+                          <!-- <div class="form-group"> -->
+                            <!-- <div class="col-md-12"> -->
+                                <!-- <label for="type_tube">Seuil supérieur à ne pas dépasser</label> -->
+                                <!-- <input type="texts" class="form-control" id="corr_form_ssup" placeholder="seuil supérieur" name="corr_form_ssup" > -->
+                            <!-- </div> -->
+                          <!-- </div> -->
+
                             <!--
                             <div id="error_tube">
                             <div class="alert alert-danger"> <strong>Erreur</strong></br> Erreur dans un des champs du formulaire.</div>
@@ -359,15 +393,43 @@
           
           <label for="commentaire-text-input" class="col-2 col-form-label">Text</label>
           <div class="col-10 commentaire-div2">
-            <button class="del_form" id="hide_multi_btn" onclick="remove_commentaire_form()"> <i class="glyphicon glyphicon-remove"></i></button>
+            <button class="del_form" id="hide_com_btn" onclick="remove_commentaire_form()"> <i class="glyphicon glyphicon-remove"></i></button>
             <textarea class="form-control" rows="3" placeholder="What's up?"  id="commentaire-text-input"></textarea>
             <input class="form-control hide" type="text" value="" id="echeance-input">
             <button  class="btn btn-primary" id="valid_commentaire" onclick="valid_commentaire()">Valider le commentaire</button>
           </div>
         </div>
+		<div class="msg">	
+			<button onclick='close_msg()' id='close-msg-btn'>Fermer</button>
+		</div>
         <div id="mask">
-        
         </div>
+		<div id="confirm-valid-div">
+			<div class="confirm-p">Etes vous sûr de valider la prévision?</div>
+			<div class="confirm-btn-class">
+				<button onclick="validPrevi()" class="confirm-btn">OK</button>		
+				<button onclick="hideConfirmValidPrevi()" class="confirm-btn">Annuler</button>
+			</div>
+		</div>
+			<div id='switch_source_div' class='form-group'>
+				<button id="hide_switch_btn" onclick='remove_switch_form()'> <i class="glyphicon glyphicon-remove"></i></button>
+				<div class="form-group">
+					<label class="form-control" for="switch_input">
+						Source à remplacer : 
+					</label>
+					<select class="form-control" id="switch_input" placeholder='choisissez dans la liste'  name="browser">
+					</select>
+				</div>
+				<div class="form-group">
+					<label class="form-control" for="new_source">
+						Nouvelle source :
+					</label>                            
+					<select style='-webkit-appearance: none;' class="form-control" id="new_source"  name="new_source">
+						
+					</select>
+				</div>
+			<button id="validate_switch_btn" onclick='validate_switch_btn()'> <i class="glyphicon glyphicon-ok"></i> Valider le changement</button>
+		</div>
                     <div id="multi_div" class="list-group point-list-view">
                         <div id="multi_tbl_div">
                             <button id="hide_multi_btn" onclick="remove_multi_form()"> <i class="glyphicon glyphicon-remove"></i></button>
@@ -502,11 +564,43 @@
                                 </tbody>
                             </table>
                             <button id="calc_multi_btn" onclick="calculate_multi()">Calculer l'indice pour les échéances sélectionnées</button>
-                           
                         </div>                        
                     </div>
 
     </div>
+	<div  id="stats_div" class="list-group point-list-view">
+		<div id="stats_tbl_div">
+			<button draggable='true' id="drag_stats_btn"  > <i class="glyphicon glyphicon-move"></i></button>
+			<button id="hide_stats_btn" onclick="remove_stats_form()"> <i class="glyphicon glyphicon-remove"></i></button>
+			<table id="stats_tbl" class="table table-responsive t3">
+				<thead>
+					<tr>
+						<th colspan=2></th>
+						<th colspan=6>INFO</th>
+						<th colspan=6>ALERT</th>						
+					</tr>
+					<tr>
+						<th>zone</th>
+						<th>lib</th>
+						<th>surf</th>
+						<th>% surf</th>
+						<th>dep. surf</th>
+						<th>pop</th>
+						<th>% pop</th>
+						<th>dep. pop</th>
+						<th>surf</th>
+						<th>% surf</th>
+						<th>dep. surf</th>
+						<th>pop</th>
+						<th>% pop</th>
+						<th>dep pop</th>	
+					</tr>					
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>                        
+	</div>		
         <!-- Javascript modules - Placed at the end of the document so the pages load faster -->
 
         <!-- Leaflet -->
@@ -572,4 +666,8 @@
         <script src="{% url 'application_js' %}" type="text/javascript" charset="utf-8"></script>
 
     </body>
+    <HEAD>
+
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+</HEAD>
 </html>

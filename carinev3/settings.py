@@ -21,24 +21,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '!jhytmr+xnd63ep!%qk$22bvl08)3b)r9i88ju!#d6ed-d$(n2'
+SECRET_KEY = '!jhytmr+xnd63ep!%qk$22bvl08)3b)r9i88ju!#d6ed-d$(n3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 ALLOWED_HOSTS = ["*"
-# 'inf-carine3',
-# '172.16.0.0/16',
-# '192.168.37.0/24',
-  # '192.168.37.154',
- # '91.216.209.163',
- # '195.54.62.175',
- # '195.54.62.174' , 
-# '62.23.35.34',
-# '62.23.35.35',
-# '62.23.35.36',
-# '62.23.35.37', 
-# '62.23.35.38', 
- # '82.224.176.163'
  ]
 
 
@@ -61,7 +48,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -90,7 +77,7 @@ WSGI_APPLICATION = 'carinev3.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-DATABASES = logins.db
+DATABASES = logins.db_prod
 
 
 
@@ -130,8 +117,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
+
+#environnement specific
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'TIMEOUT' : 0
+    }
+}
+
+
 STATIC_URL = '/static/'
-STATIC_ROOT= '/var/www/html/dev/raster/lib_static/'
+STATIC_ROOT= '/var/www/html/carinev3/raster/lib_static/'
 
 LOGIN_URL='accounts/login/'
 
@@ -141,26 +138,26 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
+        'quiet': {
             'format': '{levelname:8s}  {asctime} | {name}.{funcName} :: {message}',
             'datefmt': '%Y-%m-%d %H:%M:%S',
             'style': '{'
         },
         'simple': {
-            'format': '%(levelname)8s :: %(message)s'
+            'format': '%(message)s'
         },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose'
+            'formatter': 'quiet'
         },
     },
     'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-        },
+        # '': {
+            # 'handlers': ['console'],
+            # 'level': 'WARNING',
+        # },
         'django': {
             'handlers': ['console'],
             'level': 'INFO',

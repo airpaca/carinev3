@@ -10,7 +10,8 @@
 
 import datetime
 import time
-
+from time import gmtime, strftime
+from datetime import timedelta,date
 
 
 def getSec():
@@ -23,14 +24,16 @@ def getTimestamp(delta):
     m=n.month
     y=n.year
     d=n.day
-    #mieux vaut enlever (86400*delta)a la fin que faire d-delta ici.
-    #bug sur les jours negatifs (ex 2017 / 09 / (01-2)=> error 500) 
+
     date = datetime.date(y,m,d)
-    print(date)
-    tt=date.timetuple()
-    print(tt)
+    dt = timedelta(days = delta)
+    date=date-dt
     
-    tsp = int(time.mktime(tt))-(86400*delta)
+    #print(date)
+    tt=date.timetuple()
+    #print(tt)
+    
+    tsp = int(time.mktime(tt))
     return tsp
 
 def getTimestampFromDate(date):
@@ -38,8 +41,8 @@ def getTimestampFromDate(date):
     m=int(date[4:6])
     d=int(date[6:8])
     date = datetime.date(y,m,d)
-    print(date)
+    #print(date)
     tt=date.timetuple()
-    print(tt)
+    #print(tt)
     tsp = int(time.mktime(tt))
     return tsp
