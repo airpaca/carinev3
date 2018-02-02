@@ -146,6 +146,8 @@ def iter_increment(url,x,y):
     
     b=np.lib.pad(block,((rectify0min,rectify0max),(rectifx0min,rectifx0max)),'constant')
     log.debug(b.shape)
+    if (init_val>49) :
+        init_val=49
     block_co = get_closest(b,init_val)
     
     offset_x = block_co[1] - (b.shape[1]-1)/2
@@ -194,7 +196,8 @@ def rast_mls(url,mls):
 
     ds =rio.open(url)
     aff=ds.transform
-    geom = transform(project,shape(mls))
+    shp=shape(mls)
+    geom = transform(project,shp)
     l_tot = geom.length
 
     dct=dict(segments=[],moyenne=0)

@@ -1,0 +1,34 @@
+
+.table-fine th{
+    background-color : #222;
+    color : #ddd;
+}
+.table-fine tbody  tr  td {
+    background-color : #eeeeee;
+ 
+}
+.table-fine tbody  tr  td:hover {
+    opacity : 1;
+}
+.img-container img{
+    width : 200px;
+    height : 200px;
+    display : inline-block;
+}
+.table-container {
+    border : 1px solid black;
+    overflow : auto;
+}
+
+.img-ul {
+
+    height : 100%;
+    display : inline-block;
+    list-style: none;
+}
+td.img-container.green-fine-status {
+    background-color : #ffffff;
+}
+td.img-container.red-fine-status {
+    background-color : #fbd9d3;
+}

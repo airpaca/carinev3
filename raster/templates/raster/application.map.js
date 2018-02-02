@@ -1,3 +1,4 @@
+{% load static %}
 /*riables globales pour stocker les paramtres de correction */
 var corr_pollutant = "";
 var corr_echeance = "";
@@ -11,7 +12,10 @@ var echs={}
 
 var process_files=false
 var calc_multi=false
-
+$.ajax({
+    url: '{% url "init_dallefine" %}',
+    async : true
+});
 $.ajax({
     url: '{% url "getTsp" %}',
     async : false,
@@ -31,7 +35,16 @@ function format_date(tsp){
     str = d.toString() +'/' + m.toString() + '/' + y.toString()
     return str
 }
+function format_date_ymd(tsp){
+    d=new Date(tsp*1000)
+    console.log(d)
+    y=d.getFullYear()
 
+    m=d.getMonth()+1
+    d=d.getDate()
+    str = y.toString() +  m.toString().padStart(2,"0") + d.toString().padStart(2,'0')
+    return str
+}
 console.log(today,yesterday,yyesterday)
 var runs={}
 runs[today]=0
@@ -160,14 +173,7 @@ function update_source(id_prev,id){
     }
     $("#"+id_but + " > .badge").css('background-color',col)
     var url='{% url "img_multi" %}'
-    // $.ajax({
-        // url: url,
-        // async : false,
-        // data : {
-            // ech : prevs[id_prev][1]+1            
-        // }
-    // })
-    // get_stats_reg()
+
 }
 /* --------- DEBUT MAP-BLOCK1 ---------- */
 /* Fonction de creation du menu de gestion des couches */
@@ -844,7 +850,14 @@ function onEachFeature(feature, layer) {
 
         layer.bindPopup(popupContent);
     }
+function onEachFeatureDisp(feature, layer) {
+        var popupContent="";
+        if (feature.properties && feature.properties.lib_court_) {
+            popupContent += feature.properties.lib_court_;
+        }
 
+        layer.bindPopup(popupContent);
+    }
 // Enregistrement du polluant et de l'??ce par defaut
 
 
@@ -868,36 +881,30 @@ $.ajax({
 
     }
 });
-/* var epci_aura;
+var disp_reg;
+var disp_reg_2;
+
 $.ajax({
-    url: '{% url "epci_aura"  %}',
+    dataType: "json",
+    url: "{% static 'raster/vector_files/disp_reg_aura_3857.geojson' %}",
     success : function(msg){
         //j=JSON.parse(msg)
-        
-
-        epci_aura = L.geoJSON(
+        disp_reg= L.geoJSON(
             msg,
             {
-                onEachFeature: onEachFeature,
-                style: function(feature) {
-                     return {
-                        color : "#000000",
-                        weight: 1,
-                        opacity: 1,
-                        fillOpacity: 0
-                    }
-                }
+                onEachFeature: onEachFeatureDisp,
+                style : myStyle
             }
         )
+        vectorLayers['disp_reg']= {'objet' : disp_reg}
+        //clone grace au plugin clonelayer pour permettre d'afficher sur les 2 frames
+        var  disp_reg_2 = cloneLayer(disp_reg);
+        vectorLayers['disp_reg_2']= {'objet' : disp_reg_2}
 
-        vectorLayers['epci_aura']= {'objet' : epci_aura}
-                //clone grace au plugin clonelayer pour permettre d'afficher sur les 2 frames
-        var  epci_aura_2 = cloneLayer(epci_aura);
-        vectorLayers['epci_aura_2']= {'objet' : epci_aura_2}
-        setTimeout(console.log(vectorLayers),20000)
-        
     }
-}); */
+});
+
+
 var layer_sites_fixes;
 $.ajax({
     url: '{% url "sites_fixes"  %}',
@@ -924,6 +931,16 @@ $(function() {
     $('.vector-layer').children().click( function() {
         var id = $(this).attr('id')
 
+        substr = "close";
+        string= $('#'+id + ' > span').attr('class')
+        if (string.indexOf(substr) > -1) {
+            $('#'+id + ' > span').removeClass('glyphicon-eye-close')
+            $('#'+id + ' > span').addClass('glyphicon-eye-open')
+        }
+        else {
+            $('#'+id + ' > span').removeClass('glyphicon-eye-open')
+            $('#'+id + ' > span').addClass('glyphicon-eye-close')
+        }
         if ($(this).closest("#map-block1").length == 1){
             ob=vectorLayers[id]['objet']
             if (map.hasLayer(ob)){
@@ -1082,6 +1099,7 @@ map.addControl(new L.Control.Draw({
             allowIntersection: false,
             showArea: true
         },
+        marker : false,
         circle: false,
         polyline: false,
         rectangle: false,
@@ -1359,8 +1377,10 @@ function launch_async(func){
 function get_stats_reg(){
     // show_msg()
     url_img='{% url "calcul_stats_reg"  %}'
-    
+    log_dashboard('statistiques_reglementaires','get_stats_reg',1,'INFO',"début du calcul des stats")
+    c=0
     for (i in overlayLayers1){
+        
         id_prev=i.split('_')[2]     
         id=overlayLayers1[i]
         
@@ -1373,13 +1393,25 @@ function get_stats_reg(){
             },
             success: 
                 function(msg){
+                    c+=6
                     prevs[id_prev]['stats']=msg
+                    log_dashboard('statistiques_reglementaires','get_stats_reg',c,'INFO',"calcul des stats pour id_prev="+id_prev.toString())
                     // msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : OK </div>')
-                }
-            ,error : function () {
-                // msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : échec </div>')
-            }
+                },
+            error:      
+                function(msg){
+                    log_dashboard('statistiques_reglementaires','get_stats_reg',c,'WARNING',"echec du calcul des stats pour id_prev="+id_prev.toString())
+                    c+=2
+                    // msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : OK </div>')
+                },
+
         })
+    }
+    if (c<96){
+        log_dashboard('statistiques_reglementaires','get_stats_reg',100,'ERROR',"échec des stats")     
+    }
+    else {
+        log_dashboard('statistiques_reglementaires','get_stats_reg',100,'INFO',"fin du calcul des stats")
     }
     
 }
@@ -1425,17 +1457,27 @@ function launch_BQA_unique(){
     })
 }
 function launch_BQA(){
+    log_dashboard('calcul_bassin_grenoblois','launch_BQA',1,'INFO',"calcul de l'indice du bassin grenoblois en cours")
     $.ajax({
         url : '{% url "launch_BQA" %}',
-        async : false
+        async : false,
+        success: function(msg){
+            log_dashboard('calcul_bassin_grenoblois','launch_BQA',100,'INFO','insertion base transalpair terminée pour les 4 échéances')
+        },
+        error : function(){
+            log_dashboard('calcul_bassin_grenoblois','launch_BQA',100,'ERROR',"erreur lors du calcul ou de l'insertion transalpair")
+        }
     })
 }
 function get_indice_com(){
+    c=0
+    log_dashboard('indices_communaux','get_indice_com',1,'INFO','calcul des indices communaux')
     url_img='{% url "calcul_indice_com"  %}'
     for (i in overlayLayers1){
         id_prev=i.split('_')[2]
         id=overlayLayers1[i]
         if (liste_sources[id].pol=='MULTI'){
+
             console.log(id_prev)
             $.ajax({
                 url : url_img,
@@ -1445,18 +1487,45 @@ function get_indice_com(){
                 },
                 success: 
                     function(msg){
+                       c+=20 
                         prevs[id_prev]['indice_com']=msg
+                        log_dashboard('indices_communaux','get_indice_com',c,'INFO','calcul des indices communaux pour id_prev= '+ id_prev.toString())
                         
-                        
-                    }
+                    },
+                error : function (){
+                    c+=10
+                    log_dashboard('indices_communaux','get_indice_com',c,'WARNING','calcul des indices communaux pour id_prev= '+ id_prev.toString())
+
+                    
+                }
             })
         }
+    }
+    if (c<80){
+         log_dashboard('indices_communaux','get_indice_com',100,'ERROR','erreur sur les indices communaux')
+    }
+    else {
+         log_dashboard('indices_communaux','get_indice_com',100,'INFO','fin du calcul des indices communaux')
     }
 }
 
 function launch_commentaire(ech){
     $("#commentaire-div").show()
     $("#echeance-input").val(ech)
+    d=format_date_ymd(today)
+    $.ajax({
+        url : '{% url "get_commentaire" %}',
+        async : true,
+        data : { 
+            date : d
+        },
+        success: 
+            function(comm){
+                c=(comm['comment'])
+                
+                $('#commentaire-text-input').val(c)
+            }
+    })
     $("#mask").show()
 }
 function remove_commentaire_form() {
@@ -1488,7 +1557,10 @@ function valid_commentaire(){
     })
 }
 function export_low() {
+    log_dashboard('basse_def_image','export_low',1,'INFO',"début de l'export des images basse def")
+    c=0
     for (i in overlayLayers1){
+        c+=6
         id_source= overlayLayers1[i]
         id_prev=i.split('_')[2]
         console.log(id_source)
@@ -1498,12 +1570,30 @@ function export_low() {
           data : {
             id_source:id_source,
             id_prev:id_prev
+          },
+          success : function(){
+
+            log_dashboard('basse_def_image','export_low',c,'INFO',"export des images basse def")
+          },
+          error : function () {
+              
+            log_dashboard('basse_def_image','export_low',c,'WARNING',"échec de l'export des images basse def")
+            c-=6
           }
         })      
     }
+    if (c ==96){
+        log_dashboard('basse_def_image','export_low',100,'INFO',"succès de l'export des images basse def")
+    }
+    else{
+        log_dashboard('basse_def_image','export_low',100,'ERROR',"échec de l'export des ss_indices basse def")
+    }
 }
 function export_low_val() {
+    log_dashboard('basse_def_val','export_low_val',1,'INFO',"début de l'export des ss_indices basse def")
+    c=0
     for (i in overlayLayers1){
+        c+=6
         id_source= overlayLayers1[i]
         id_prev=i.split('_')[2]
         console.log(id_source)
@@ -1513,9 +1603,23 @@ function export_low_val() {
           data : {
             id_source:id_source,
             id_prev:id_prev
+          },
+        success : function(){
+            log_dashboard('basse_def_val','export_low_val',c,'INFO',"export des ss_indices basse def")
+          },
+        error : function () {
+          
+            log_dashboard('basse_def_val','export_low_val',c,'WARNING',"échec de l'export des ss_indices basse def")
+            c-=6
           }
         })      
 
+    }
+    if (c == 96){
+        log_dashboard('basse_def_val','export_low_val',100,'INFO',"succès de l'export des ss_indices basse def")
+    }
+    else{
+        log_dashboard('basse_def_val','export_low_val',100,'ERROR',"échec de l'export des ss_indices basse def")
     }
 }
 function merge_mi_fine(id_prev,id_source) {
@@ -1573,8 +1677,11 @@ function merge_mi_fine(id_prev,id_source) {
 }
 function export_hd() {
     n=0
+    c=0
+    end=0
+    log_dashboard('haute_definition','export_hd',1,'INFO',"début de l'export des cartes hd")
     for (i in overlayLayers1){
-       
+
         if (n<1){
             id_source= overlayLayers1[i]
             
@@ -1586,16 +1693,29 @@ function export_hd() {
               data : {
                 id_source:id_source,
                 id_prev:id_prev
-              }
-            })
-            n+=1
+              },
+            success : function(){
+                if (end==0){                
+                    c+=6
+                    log_dashboard('haute_definition','export_hd',c,'INFO',"export des cartes hd") 
+                }                    
+            },
+            error : function () {
+                if (end==0){
+                    log_dashboard('haute_definition','export_hd',c,'WARNING',"échec de l'export de id_prev="+id_prev.toString()+ " et id_source = "+ id_source.toString() )
+                    c-=3
+                }
+            }
+
+        })
+        n+=1
 
         }
        
         else  {
             id_source= overlayLayers1[i]
             
-            id_prev=i.split('_')[2]
+            id_prev=i.split('_')[2]    
             console.log(id_source)
             $.ajax ({
               async : false,
@@ -1603,12 +1723,31 @@ function export_hd() {
               data : {
                 id_source:id_source,
                 id_prev:id_prev
-              }
+              },
+                success : function(){
+                    if (end==0) {
+                    c+=6
+                    log_dashboard('haute_definition','export_hd',c,'INFO',"export des cartes hd")
+                    }
+                },
+                error : function () {
+                 
+                    log_dashboard('haute_definition','export_hd',c,'WARNING',"échec de l'export de id_prev="+id_prev.toString()+ " et id_source = "+ id_source.toString() )
+                     c-=3
+                }
             })
        
         n=0
         }
 
+    }
+    if (c==96){
+        end=1
+        log_dashboard('haute_definition','export_hd',100,'INFO',"fin du calcul des cartes hd" )
+    }
+    else {  
+        end=1
+        log_dashboard('haute_definition','export_hd',100,'ERROR',"échec de l'export de id_prev="+id_prev.toString()+ " et id_source = "+ id_source.toString() )
     }
 }
 function mi_fine_url(id_source,id_prev){
@@ -1676,6 +1815,16 @@ function close_msg(){
     $('.msg').css('display','none')
 }
 function preprocess_files(){
+    $.get({
+        url:"http://inf-tools/dashboard/log",
+        data : {
+            id : 'preprocess_files',
+            script : 'carinev3/raster',
+            etape : 1 ,
+            type : 'INFO',
+            m : 'début régénération des sources'
+        }
+    })
     $.ajax({
         url:'{% url "preprocess_files" %}',
         async : true,
@@ -1684,7 +1833,28 @@ function preprocess_files(){
             $("#poll_switch_1 > ."+active_poll_left_table ).click()
             refresh_right_table()
             process_files=true
-            
+            $.get({
+                url:"http://inf-tools/dashboard/log",
+                data : {
+                    id : 'preprocess_files',
+                    script :'carinev3/raster',
+                    etape : 100,
+                    type : 'INFO',
+                    m : 'régénération des sources terminée'
+                }
+            })
+        },
+        error : function(msg){
+            $.get({
+                url:"http://inf-tools/dashboard/log",
+                data : {
+                id : 'preprocess_files',
+                script : 'carinev3/raster',
+                etape : 100,
+                type : 'ERROR',
+                m : 'régénération des sources incomplète, fichiers probablement corrompus'
+                }
+            })
         }
     })
     
@@ -1766,14 +1936,23 @@ function remove_stats_form(){
     $('#stats_div').hide()
 }
 function contactSMILE(){
+    log_dashboard('contact_smile','contactSMILE',1,'INFO',"tentative de contact SMILE")
     $.ajax({
         url : 'ws_smile',
         success : function(msg){
-			alert( " import SMILE activé, les résultats seront disponibles d'ici une vingtaine de minutes sur le site" )
+            if (JSON.parse(msg)["result"]==1){
+                log_dashboard('contact_smile','contactSMILE',100,'INFO',"succès de la tentative de contact SMILE")
+                alert( " import SMILE activé, les résultats seront disponibles d'ici une vingtaine de minutes sur le site" )
+            }
+            else {
+                alert( " problème avec l'import SMILE, essayer de cliquer sur 'REDIFFUSER' (outils > REDIFFUSER). Si le problème persiste, contacter le service informatique. " )
+                log_dashboard('contact_smile','contactSMILE',100,'ECHEC',"échec de la tentative de contact SMILE")
+            }
         }
     })
 }
 function validPrevi(){
+    log_dashboard('validation_generale','validPrevi',1,'INFO',"clic validation, début des calculs")
 	hideConfirmValidPrevi()
     launch_BQA()
     get_stats_reg()
@@ -1782,7 +1961,7 @@ function validPrevi(){
     export_low()
     export_hd()
     contactSMILE()
-    
+    log_dashboard('validation_generale','validPrevi',100,'INFO',"fin des calculs")
     }
 function confirmValidPrevi(){
 	$('#mask').show()
@@ -1885,3 +2064,16 @@ var dm = document.getElementById('drag_stats_btn');
 dm.addEventListener('dragstart',drag_start,false); 
 document.body.addEventListener('dragover',drag_over,false); 
 document.body.addEventListener('drop',drop,false);
+function log_dashboard(id_process,script_name,step,lvl,msg){
+        $.get({
+        async : true,
+        url:"http://inf-tools/dashboard/log",
+        data : {
+            id : id_process,
+            script : script_name,
+            etape : step,
+            type : lvl,
+            m : msg
+        }
+    })
+}

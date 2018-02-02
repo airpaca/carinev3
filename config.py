@@ -26,6 +26,8 @@ elif aasqa == "aura":
     geom_field = "the_geom"
     DIR_RASTERS = '/home/previ/raster_source'
     DIR_RASTERS_GLOB = '/home/previ/raster_source'
+    dirFine = '/home/previ/raster_source/domaines_fine/3857'
+    dirFineCustom='/home/previ/raster_source/domaines_fine/3857/custom'
     raster_prefix = 'AURA'
     polls=['NO2','PM10','O3','MULTI']
     hd_dest="previ@dmz-previ:/home/previ/geotiff"

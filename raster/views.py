@@ -70,6 +70,18 @@ def help_js(request):
     template = loader.get_template('help/help.js')
     context = {}
     return HttpResponse(template.render(context, request))    
+@login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')    
+def dashboard_fine(request):
+    """Index."""
+    template = loader.get_template('dashboard_fine/dashboard_fine.html')
+    context = {}
+    return HttpResponse(template.render(context, request))
+@login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
+def dashboard_fine_js(request):
+    """Application (Javascript)."""
+    template = loader.get_template('dashboard_fine/dashboard_fine.js')
+    context = {}
+    return HttpResponse(template.render(context, request))       
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
 def get_init_info(request):
     
@@ -373,19 +385,19 @@ def reg_aura(request):
         liste_sites.append(row)
 
     return JsonResponse(liste_sites,safe=False)
-@login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
-def epci_aura(request):
-    conn = psycopg2.connect("host="+logins.host+  " dbname="+logins.dbname +  " user="+logins.user+" password=" + logins.password )
-    cur=conn.cursor()
-    req = "select id_zone,lib_zone,st_asgeojson(" + config.geom_field + ") as " + config.geom_field + " from temp_epci_2017_aura_4326"
-    cur.execute(req)
-    res=cur.fetchall();
-    conn.close()
-    liste_sites=[]
-    for i in res :
-        row={"type": "Feature","geometry": {"type": "MultiPolygon","coordinates": json.loads(i[2])['coordinates']},"properties": {"nom" : i[1]},"id_epci": i[0]}
-        liste_sites.append(row)
-    return JsonResponse(liste_sites,safe=False)
+# @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
+# def disp_reg(request):
+    # conn = psycopg2.connect("host="+logins.host+  " dbname="+logins.dbname +  " user="+logins.user+" password=" + logins.password )
+    # cur=conn.cursor()
+    # req = "select id_zone,lib_zone,st_asgeojson(" + config.geom_field + ") as " + config.geom_field + " from temp_epci_2017_aura_4326"
+    # cur.execute(req)
+    # res=cur.fetchall();
+    # conn.close()
+    # liste_sites=[]
+    # for i in res :
+        # row={"type": "Feature","geometry": {"type": "MultiPolygon","coordinates": json.loads(i[2])['coordinates']},"properties": {"nom" : i[1]},"id_epci": i[0]}
+        # liste_sites.append(row)
+    # return JsonResponse(liste_sites,safe=False)
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
 def bbox_raster(request):
     """Bounding box of the raster."""
@@ -983,6 +995,7 @@ def preprocess_files(request):
             url=f.url_source()
             log.debug(url)
             msg=libcarine3.preprocessing.projcrop_ada(url)
+   
     return HttpResponse(msg)
 def ws_smile(request):
     f= urllib.request.urlopen(config.launch_smile_prod)

@@ -10,8 +10,9 @@ import raster
 from rasterio import merge,windows
 from rasterio.windows import from_bounds
 import affine
+from raster import dashboardfine_views
 from rasterio.io import MemoryFile
-from raster.models import Prev,Polluant,Expertise,Source
+from raster.models import Prev,Polluant,Expertise,Source,DalleFine,Echeance
 log = logging.getLogger('libcarinev3.raster')
 
 def merge_method(m,arrs):
@@ -170,25 +171,12 @@ def merge_fine(rast,prev):
         pr.update(transform=new_aff)
         prh=pr['height']
         prw=pr['width']
-        if (pol.upper() != 'MULTI'):
-            lib_ech=config.libs_ech[ech+1]
-            dir = '/home/previ/raster_source/domaines_fine/3857/'
-            for i in config.domaines_hd:
-                url=dir+'AURA_'+pol.upper()+'_'+i+'_'+str(tsp)+'_'+lib_ech+'_3857.tif'
-                if (os.path.exists(url)):
-                    urls.append(url)
-                else :
-                    log.debug(url)
-        else :
-            lib_ech=config.libs_ech[ech+1]
-            dir = '/home/previ/raster_source/domaines_fine/3857/'
-            for i in config.domaines_hd:
-                for p in Polluant.objects.all():
-                    url=dir+'AURA_'+p.nom.upper()+'_'+i+'_'+str(tsp)+'_'+lib_ech+'_3857.tif'
-                    if (os.path.exists(url)):
-                        urls.append(url)
-                    else :
-                        log.debug(url)
+        eObj = Echeance.objects.filter(libInt=str(ech))
+        pObj = Polluant.objects.filter(nom=pol.upper())
+        
+
+        urls = dashboardfine_views.get_fine_url_merge(prev.id)
+
 
         res=14.25
         w1=rio.windows.from_bounds(b1[0],b1[1],b1[2],b1[3],pr['transform'],boundless=True)
@@ -202,48 +190,49 @@ def merge_fine(rast,prev):
         log.debug(np.min(new_ar))
         new_ar=new_ar.reshape(1,new_ar.shape[0],new_ar.shape[1])
         for f2 in urls:
-            log.debug("------------------ PROCESSING LOW-DEF  : "+ f2 + "  ------------")
-            lib_pol = os.path.basename(f2).split('_')[1].upper()
-            log.debug(lib_pol)
-            pol_low=config.from_name(lib_pol)
-            log.debug(pol_low)
-            date_prev = prev.date_prev
+            if (os.path.exists(f2)):
+                log.debug("------------------ PROCESSING LOW-DEF  : "+ f2 + "  ------------")
+                lib_pol = os.path.basename(f2).split('_')[1].upper()
+                log.debug(lib_pol)
+                pol_low=config.from_name(lib_pol)
+                log.debug(pol_low)
+                date_prev = prev.date_prev
 
-            f2_prev=Prev.objects.get(date_prev=date_prev,pol=lib_pol,ech=prev.ech)
-            src=f2_prev.src
-            log.debug(src.url())
-            exp=Expertise.objects.filter(target=src)
-            log.debug(exp)
-            ds2=rio.open(f2)
-            #a refactorer quand tout tournera bien, là on a 1 dataset + 1 raster .. (qui contient un dataset redondant)
-            r2=libcarine3.Raster(f2,config.from_name(lib_pol.upper()))
-            r2.add_expertises(exp)
-            get_ar=r2.get_array()
-            b2=ds2.bounds
-            log.debug(b2)
-            ox=abs((b2[0]-b1[0])/res)
-            oy=abs((b2[3]-b1[3])/res)
-            w2=rio.windows.from_bounds(b2[0],b2[1],b2[2],b2[3],ds2.transform,boundless=True)
+                f2_prev=Prev.objects.get(date_prev=date_prev,pol=lib_pol,ech=prev.ech)
+                src=f2_prev.src
+                log.debug(src.url())
+                exp=Expertise.objects.filter(target=src)
+                log.debug(exp)
+                ds2=rio.open(f2)
+                #a refactorer quand tout tournera bien, là on a 1 dataset + 1 raster .. (qui contient un dataset redondant)
+                r2=libcarine3.Raster(f2,config.from_name(lib_pol.upper()))
+                r2.add_expertises(exp)
+                get_ar=r2.get_array()
+                b2=ds2.bounds
+                log.debug(b2)
+                ox=abs((b2[0]-b1[0])/res)
+                oy=abs((b2[3]-b1[3])/res)
+                w2=rio.windows.from_bounds(b2[0],b2[1],b2[2],b2[3],ds2.transform,boundless=True)
 
-            w3=rio.windows.intersection(w1,w2)
+                w3=rio.windows.intersection(w1,w2)
 
-            w4=((int(w3[0][0]+oy),int(w3[0][1]+oy)),(int(w3[1][0]+ox),int(w3[1][1]+ox)))
-            sh=new_ar.shape
-            warr=new_ar[0][w4[0][0]:w4[0][1],w4[1][0]:w4[1][1]]
-
-
+                w4=((int(w3[0][0]+oy),int(w3[0][1]+oy)),(int(w3[1][0]+ox),int(w3[1][1]+ox)))
+                sh=new_ar.shape
+                warr=new_ar[0][w4[0][0]:w4[0][1],w4[1][0]:w4[1][1]]
 
 
-            ar2=sous_indice(get_ar,pol_low).astype('uint8')
-            warr=np.maximum(warr,ar2)
-            print("=== w4 ===")
-            print([w4[0][0],w4[0][1],w4[1][0],w4[1][1]])
-            new_ar[0][w4[0][0]:w4[0][1],w4[1][0]:w4[1][1]]=warr
-            log.debug(warr.shape)
-            print(new_ar.shape)
-            log.debug(ds2.profile)
-            warr=None
-            ds2.close()
+
+
+                ar2=sous_indice(get_ar,pol_low).astype('uint8')
+                warr=np.maximum(warr,ar2)
+                print("=== w4 ===")
+                print([w4[0][0],w4[0][1],w4[1][0],w4[1][1]])
+                new_ar[0][w4[0][0]:w4[0][1],w4[1][0]:w4[1][1]]=warr
+                log.debug(warr.shape)
+                print(new_ar.shape)
+                log.debug(ds2.profile)
+                warr=None
+                ds2.close()
 
         
         with rio.open(new_file,'w',**pr) as dst:

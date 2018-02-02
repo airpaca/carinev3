@@ -62,8 +62,8 @@ urlpatterns = [
 
     url(r'^reg_aura$',
         views.reg_aura, name='reg_aura'),
-    url(r'^epci_aura$',
-        views.epci_aura, name='epci_aura'),
+    # url(r'^disp_reg$',
+        # views.disp_reg, name='disp_reg'),
 
     #appelé au chargement de l'appli pour initialiser les couches
     url(r'^source_url$',
@@ -94,7 +94,8 @@ urlpatterns = [
         
     url(r'^save_commentaire/$',
         views.save_commentaire, name='save_commentaire'), 
-    
+    url(r'^get_commentaire/$',
+        views.commentaire, name='get_commentaire'), 
     
     url(r'^export_hd/$',
         views.export_hd, name='export_hd'),    

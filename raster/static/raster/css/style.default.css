@@ -457,3 +457,10 @@ body.modal-open {
 .question_content_div {
     display : none;
 }
+.glyphicon-eye-close  {
+    float : right;
+}
+.glyphicon-eye-open {
+    float : right;
+}
+

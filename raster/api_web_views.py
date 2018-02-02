@@ -8,7 +8,6 @@ from raster.models import Source,Prev
 import numpy as np
 import json
 from shapely.geometry import shape,MultiLineString
-from libcarine3 import write_log
 # Log
 log = logging.getLogger('carinev3.raster.api_web_views')
 def indice_request(request):
@@ -37,7 +36,6 @@ def indice_request(request):
 def indice_request_full(request):
     x = request.GET.get('x')
     y = request.GET.get('y')
-    write_log.append_log(str(x) + "/" + str(y))
     xy_3857= api_web_lib.to_3857(x,y)
     tsp=timestamp.getTimestamp(0)
     tsp_hier=timestamp.getTimestamp(1)
@@ -123,8 +121,10 @@ def best_prox_qa(request):
     if val < 20 :
         return JsonResponse(dict())
     else : 
-        vals=api_web_lib.iter_increment(url,co[0],co[1])    
-        return JsonResponse(dict(position = dict(latitude = vals[1], longitude = vals[0]),indice_j = dict(valeur = int(val))))
+        vals=api_web_lib.iter_increment(url,co[0],co[1])
+        bestCoords=api_web_lib.to_3857(vals[0],vals[1])
+        bestQA=api_web_lib.get_value(url,bestCoords[0],bestCoords[1])
+        return JsonResponse(dict(position = dict(latitude = vals[1], longitude = vals[0]),indice_j = dict(valeur = int(bestQA))))
     
 def get_square_buff(request):
     x = request.GET.get('x')
@@ -160,7 +160,6 @@ def trajet_request(request):
     r = request.method
     rb=request.body
     a=request.body.decode('utf8')
-    write_log.append_log(a)
     mls=json.loads(a)['features'][0]['geometry']
     polls={'multi':'indice_multipolluant','pm10':'sous_indice_pm10','no2':'sous_indice_no2','o3' : 'sous_indice_o3'}
     lib_ech=["indice_jm1","indice_j","indice_jp1"]

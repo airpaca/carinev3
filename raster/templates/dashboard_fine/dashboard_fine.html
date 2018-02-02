@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    
+        <!-- 
+        Template bootstrap pour SIG: https://github.com/luckynvic/GIS-Web-Template        
+        -->
+    
+        <!-- Infos générales -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <title>Carine v3</title>
+        <meta name="author" content="vjulier@atmo-aura.fr">
+        
+        <!-- Chargement des feuilles de stype CSS -->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
+        <link href="{% static 'raster/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'raster/lib/customScroll/css/jquery.mCustomScrollbar.css' %}" rel="stylesheet">
+        <link href="{% static 'raster/css/style.default.css' %}" rel="stylesheet">
+        <link href="{% static 'raster/css/dashboard_fine.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'raster/css/style.css' %}"/>
+
+        <script type="text/javascript"> </script>
+        <!-- API Google Maps
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHyrW7AhUa3J8sm7iLofM5PzbLmj_j2wo" type="text/javascript"></script>
+        -->
+        
+    </head>
+    
+    <body>
+        <!-- Barre de navigation -->
+        <nav class="navbar navbar-default nav-fixed-top" role="navigation" id="app-nav-bar" >
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header" >
+                <!--<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>-->
+                <a class="navbar-brand" href="{% url 'index' %}">CARINE v3</a>
+
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
+                    <li>
+                        <a href="{% url 'mylogout' %}">Logout</a>
+                    </li>
+
+                </ul>
+                                <ul class="nav navbar-nav navbar-right">
+                    <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
+                    <li>
+                        <a href="{% url 'help' %}">Help</a>
+                    </li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </nav>
+                <!-- Barre d'outils -->
+        <nav class="navbar navbar-default nav-fixed-top" role="navigation" id="tools-nav-bar" >
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul style="width : 100%; padding-left : 30% ; padding-right : 30%;" id="poll-menu" class="nav navbar-nav">
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </nav>
+        
+        <p class="mb-0">
+        A midi, si tout s'est bien passé côté Mod, vous aurez accès à toute les dalles Rhône-Alpes + Montluçon et Vichy. Pour les autres agglos auvergnates vous aurez J0 et J+1 (les dernières arrivent à 12h00). Attendre pour avoir d'autres dalles n'a pas d'intérêt, les suivantes arrivent 30min plus tard.</br>
+        Cette page à comme objectif de valider les dalles sans avoir à les chercher toutes une par une dans chacune des cartes de l'interface principale.</br>
+        Si vous effectuez une correction sur une zone où il y a de la fine échelle en dessous, il est fortement conseillé de visualiser le résultat en cliquant sur l'onglet 'fine' de la carte en question dans l'interface principale. Si besoin, vous pouvez ensuite revenir ici invalider la dalle.
+        </p>
+        <div class="table-container">
+            
+        </div>
+     </body>
+     </html>
+     
+        <!-- Application principale -->
+        <script src="{% url 'dashboard_fine_js' %}" type="text/javascript" charset="utf-8"></script>

@@ -6,7 +6,19 @@ import datetime
 import django.utils.timezone
 import libcarine3.timestamp
 from django.contrib.auth.models import User
+import os
 
+class DomaineFine(models.Model):
+    nom=models.CharField(max_length=100,default="")
+    libCourt=models.CharField(max_length=100,default="")
+    libLong=models.CharField(max_length=100,default="")
+    def __str__(self):
+        return self.nom
+class Echeance(models.Model):
+    delta=models.IntegerField(null=True)
+    libChar=models.CharField(max_length=10,default="")
+    libInt=models.CharField(max_length=10,default="")
+    
 class TypeSourceRaster(models.Model):
     #value pour intrun à check dans getdate
     #0,1,2 = j0, j-1, j-2
@@ -184,3 +196,30 @@ class Polluant(models.Model):
     vls=models.FloatField(default=None,null=True)
     ale=models.FloatField(default=None,null=True)
     colormap= models.CharField(max_length=1000,null=True,default=None)
+    
+class DalleFine(models.Model):
+    #ex : AURA_O3_Moulins_1516316400_jp2_3857.tif
+    #/home/previ/raster_source/domaines_fine/3857
+    poll=models.ForeignKey(Polluant,null=True)
+    nom=models.ForeignKey(DomaineFine,null=True)
+    ech = models.ForeignKey(Echeance,null=True)
+    date_prev = models.ForeignKey(DatePrev,null=True)
+    is_valid=models.BooleanField(default=True)
+    def get_url_fine(self):
+        dname = config.dirFine
+        bname = config.raster_prefix + '_'+ self.poll.nom + '_'  + self.nom.libLong + '_'+ str(self.date_prev.date_prev) + '_' +self.ech.libChar + '_3857.tif'
+        url = os.path.join(dname,bname)
+        return url
+    def get_url_mi_fine(self):
+        dname = config.raster_dirFineCustom       
+        bname = config.raster_prefix + '_' + self.poll.nom +  '_'  + self.nom.libLong + '_'+ str(self.date_prev.date_prev) + '_' +self.ech.libChar + '_3857_custom.tif'
+        url = os.path.join(dname,bname)
+        return url
+    def get_status(self):
+        status=False
+        url = self.get_url_fine()
+        if (os.path.exists(url)):
+            status = True
+        return status
+    def __str__(self):
+        return self.get_url_fine()

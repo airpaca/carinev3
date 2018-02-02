@@ -108,7 +108,7 @@
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav">
                     <li >
-                        <a  onclick="multi_form_show()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Calcul du multipolluants</a>
+                        <a  onclick="multi_form_show()" class="btn btn-default">Calcul du multipolluants</a>
                     </li>
                     <!-- <li > -->
                         <!-- <a  onclick="launch_async(get_stats_reg)" data-toggle="tooltip" title="calcul les stats pour toutes les cartes (environ 1min)" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Statistiques réglementaires (toutes)</a> -->
@@ -118,7 +118,7 @@
                     <!-- </li> -->
                     <li >
                      
-                        <a onclick="launch_commentaire(1)" data-toggle="tooltip" title="le commentaire peut être re-enregistré autant de fois que nécessaire" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i>Ecrire le commentaire</a>
+                        <a onclick="launch_commentaire(1)" data-toggle="tooltip" title="le commentaire peut être re-enregistré autant de fois que nécessaire" class="btn btn-default"> Ecrire le commentaire</a>
                     </li>
                     <!-- <li> -->
                         <!-- <div class="dropdown" style="height : 100%;"> -->
@@ -136,12 +136,15 @@
                         <!-- </div> -->
                     <!-- </li> -->
                     <li>
-                        <a  onclick="confirmValidPrevi()" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> VALIDER LA PREVISION </a>    
+                        <a  onclick="confirmValidPrevi()" class="btn btn-default"> </i> VALIDER LA PREVISION </a>    
                     </li>
                 
 
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="{% url 'dashboard_fine' %}" target="_blank">Validation fine échelle<i class="glyphicon glyphicon-th-check"></i></a>
+                    </li>
                     <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
 					<li class="dropdown">
 						
@@ -216,9 +219,9 @@
                         -->
                     </div>
                     <div class="list-group point-list-view vector-layer" id="vect">
-                        <a href="#" class="list-group-item point-item" id="reg_aura" > <h4 class="list-group-item-heading" >Régions</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
-                        <a href="#" class="list-group-item point-item" id="epci_aura"> <h4 class="list-group-item-heading" >Epcis</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
-                        <a href="#" class="list-group-item point-item" id="layer_sites_fixes" > <h4 class="list-group-item-heading" >Sites fixes</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
+                        <a href="#" class="list-group-item point-item" id="reg_aura" > <h4 class="list-group-item-heading" >Régions</h4>  <span class="glyphicon glyphicon-eye-close"></span></a>
+                        <a href="#" class="list-group-item point-item" id="disp_reg" > <h4 class="list-group-item-heading" >Dispositifs</h4>  <span class="glyphicon glyphicon-eye-close"></span></a>
+                        <a href="#" class="list-group-item point-item" id="layer_sites_fixes" > <h4 class="list-group-item-heading" >Sites fixes</h4>  <span class="glyphicon glyphicon-eye-close"></span></a>
                     </div>
                     <div class="divider_vect"></div>
                     <div class='active_layer_div' id='active_layer_div1'>
@@ -303,9 +306,9 @@
 
                     <div class="divider_vect"></div>
                     <div class="list-group point-list-view vector-layer" id="vect">
-                        <a href="#" class="list-group-item point-item"  id="reg_aura_2" > <h4 class="list-group-item-heading" >Régions</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
-                        <a href="#" class="list-group-iem point-item" id="epci_aura_2" > <h4 class="list-group-item-heading" >Epcis</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
-                        <a href="#" class="list-group-item point-item"  id="layer_sites_fixes_2"> <h4 class="list-group-item-heading" >Sites fixes</h4>    <span class="glyphicon glyphicon-chevron-right hide"></span><span class="badge">Ready</span></a>
+                        <a href="#" class="list-group-item point-item"  id="reg_aura_2" > <h4 class="list-group-item-heading" >Régions</h4>    <span class="glyphicon glyphicon-eye-close"></span></a>
+                        <a href="#" class="list-group-item point-item" id="disp_reg_2" > <h4 class="list-group-item-heading" >Dispositifs</h4>    <span class="glyphicon glyphicon-eye-close"></span></a>
+                        <a href="#" class="list-group-item point-item"  id="layer_sites_fixes_2"> <h4 class="list-group-item-heading" >Sites fixes</h4>    <span class="glyphicon glyphicon-eye-close"></span></a>
                     </div>
                     <div class="divider_vect"></div>
                     <div class='active_layer_div' id='active_layer_div2'>
