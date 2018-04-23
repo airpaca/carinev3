@@ -24,6 +24,21 @@
         <link rel="stylesheet" href="{% static 'raster/css/style.css' %}"/>
 
         <script type="text/javascript"> </script>
+        <!-- Matomo -->
+         <script type="text/javascript">
+           var _paq = _paq || [];
+           /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+           _paq.push(['trackPageView']);
+           _paq.push(['enableLinkTracking']);
+           (function() {
+             var u="//matomo.atmo-aura.fr/";
+             _paq.push(['setTrackerUrl', u+'piwik.php']);
+             _paq.push(['setSiteId', '5']);
+             var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+             g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+           })();
+         </script>
+         <!-- End Matomo Code -->
         <!-- API Google Maps
         <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHyrW7AhUa3J8sm7iLofM5PzbLmj_j2wo" type="text/javascript"></script>
         -->
@@ -44,9 +59,13 @@
                 <a class="navbar-brand" href="#">CARINE v3</a>
 
             </div>
-
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <a style='color : grey;' class="navbar-brand"><h6><i>Bonjour {{user.username}}</i></h6></a>
+                <a style='color : grey;' class="navbar-brand"><h6><i>Contexte actif: {{ctx.nom}}</i></h6></a>
+            </div>
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
+            
                 <!--<ul class="nav navbar-nav">
                     <li class="active">
                         <a href="#">Home</a>
@@ -144,6 +163,9 @@
                 <ul class="nav navbar-nav navbar-right">
                     <li>
                         <a href="{% url 'dashboard_fine' %}" target="_blank">Validation fine échelle<i class="glyphicon glyphicon-th-check"></i></a>
+                    </li>
+                    <li>
+                        <a href="{% url 'config_html' %}" target="_blank">Configuration<i class="glyphicon glyphicon-th-check"></i></a>
                     </li>
                     <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
 					<li class="dropdown">

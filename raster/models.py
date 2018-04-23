@@ -8,6 +8,112 @@ import libcarine3.timestamp
 from django.contrib.auth.models import User
 import os
 
+class DicoPath(models.Model):
+    nom=models.CharField(max_length=20,default='')
+    desc=models.CharField(max_length=200,default='')
+    sep=models.CharField(max_length=1,default='')
+    ext=models.CharField(max_length=10,default='')
+    suffixe=models.CharField(max_length=10,default='')
+    def __str__(self):
+        return self.nom
+    def get_file_url(self,pref,poll,tsp,ech):
+        last_sep=self.sep
+        if self.suffixe == "''":
+            last_sep = ''
+            self.suffixe = ''
+        elif self.suffixe == "":
+            last_sep = ''
+            self.suffixe = ''
+        print (self.suffixe)
+        print(last_sep)
+        return pref + self.sep + poll + self.sep + str(tsp) + self.sep + str(ech) + last_sep + self.suffixe+ '.' + self.ext
+class RemoteMachine(models.Model):
+    nom=models.CharField(max_length=20,default='')
+    domaine=models.CharField(max_length=20,default='')
+    user = models.CharField(max_length=20,default='')
+    dir=models.CharField(max_length=200,default='')
+    type=models.ForeignKey(DicoPath,default=None)
+    active=models.BooleanField(default=True)
+    def get_list(self):
+        return [self.domaine,self.user,self.dir]
+    def get_scp_string(self):
+        s=self.user+"@"+self.domaine+":"+self.dir
+        return s
+    def __str__(self):
+        return self.nom
+
+class OutputData(models.Model):
+    desc=models.CharField(max_length=200,default='')
+    type=models.ForeignKey(DicoPath,default=None)
+    dir=models.CharField(max_length=200,default='')
+    def __str__(self):
+        return self.type.nom
+    def get_local_dir(self,outdir):
+        dir=os.path.join(outdir,self.dir)
+        return dir
+    
+    
+class Previ_mod(models.Model):
+    nom=models.CharField(max_length=200,default='')
+    output_dir=models.CharField(max_length=200,default='/var/www/html/')
+    DIR_RASTERS = models.CharField(max_length=200,default='/home/previ/raster_source')
+    DIR_RASTERS_GLOB = models.CharField(max_length=200,default='/home/previ/raster_source')
+    raster_prefix = models.CharField(max_length=200,default='AURA')
+    profile={'count':1,'height':300,'width':400,'driver':'GTiff','transform':[1425, 0.0, 229638.54496787317, 0.0, -1425, 5910187.041501439]}
+    geom_field = "the_geom"
+    polls=['NO2','PM10','O3','MULTI']
+    hd_dest=models.CharField(max_length=200,default='')
+    hd_path=models.CharField(max_length=200,default='/var/www/html/hd/') 
+    hd_val_path=models.CharField(max_length=200,default='/var/www/html/hd/val')
+    basse_def_path=models.CharField(max_length=200,default='/var/www/html/basse_def/')
+    basse_def_val_path=models.CharField(max_length=200,default="/var/www/html/basse_def/val/") 
+    basse_def_url=models.CharField(max_length=200,default='')
+    basse_def_url_val_path=models.CharField(max_length=200,default='')
+    public_adresse=models.CharField(max_length=200,default='')
+    echs_diff=[-1,0,1,2]    
+    launch_smile_prod=models.CharField(max_length=200,default="")
+    launch_smile_preprod=models.CharField(max_length=200,default="")
+    mylogs=models.CharField(max_length=200,default="/var/www/html/mylogs.txt")
+    fpop=r'/home/previ/raster_source/pop/pop100m_2154.tif' #views.py l-553 716
+    disp=r'/home/previ/vector_source/disp_reg_aura.shp' # pareil
+    fpop_com=r'/home/previ/raster_source/pop/pop_com_lyonok.tif' # views.py 717
+    disp=r'/home/previ/vector_source/communes_geofla_light.shp' # 729
+    lyon_arr = r'/home/previ/vector_source/lyon_geofla_arr.shp' # 730
+    machines = models.ManyToManyField(RemoteMachine)
+    ###### preprocessing.py
+    src_2154='/home/previ/raster_source/ada/2154/' 
+    f_3857 = '/home/previ/raster_source/'
+    f_temp = '/home/previ/raster_source/ada/3857/'
+    bbox_aura ='/home/previ/vector_source/bbox_aura_3857.shp'
+    aura_cutline='/home/previ/vector_source/aura_reg_3857.shp'
+    ##### subprocess_wrapper
+    colormap_file='/var/www/html/carinev3/libcarine3/colormaps/normalize_colors.txt'
+    def __str__(self):
+        return self.nom
+class Fine_echelle_mod(models.Model):
+    nom=models.CharField(max_length=200,default='')
+    dirFine = models.CharField(max_length=200,default='/home/previ/raster_source/domaines_fine/3857',null=True)
+    dirFineCustom=models.CharField(max_length=200,default='/home/previ/raster_source/domaines_fine/3857/custom',null=True)
+    raster_prefix = models.CharField(max_length=200,default='AURA',null=True)
+    hd_dest=models.CharField(max_length=200,default='',null=True)
+    hd_path=models.CharField(max_length=200,default='/var/www/html/hd/',null=True) 
+    hd_val_path=models.CharField(max_length=200,default='/var/www/html/hd/val',null=True) 
+class BassinGrenoblois(models.Model):
+    host=models.CharField(max_length=200,default='')
+    user=models.CharField(max_length=200,default='')
+    db=models.CharField(max_length=200,default='')
+    password=models.CharField(max_length=200,default='')
+    table=models.CharField(max_length=200,default='')
+class Context(models.Model):
+    nom=models.CharField(max_length=200,default='') 
+    previ_mod=models.ForeignKey(Previ_mod,default=None)   
+    fine_mod=models.ForeignKey(Fine_echelle_mod,null=True,blank=True)
+    api_active=models.BooleanField(default=False)
+    previ_active=models.BooleanField(default=False)
+    bassin_grenoblois = models.ForeignKey(BassinGrenoblois,null=True,blank=True)
+    active=models.BooleanField(default=False)
+    def __str__(self):
+        return self.nom
 class DomaineFine(models.Model):
     nom=models.CharField(max_length=100,default="")
     libCourt=models.CharField(max_length=100,default="")
@@ -197,9 +303,8 @@ class Polluant(models.Model):
     ale=models.FloatField(default=None,null=True)
     colormap= models.CharField(max_length=1000,null=True,default=None)
     
+
 class DalleFine(models.Model):
-    #ex : AURA_O3_Moulins_1516316400_jp2_3857.tif
-    #/home/previ/raster_source/domaines_fine/3857
     poll=models.ForeignKey(Polluant,null=True)
     nom=models.ForeignKey(DomaineFine,null=True)
     ech = models.ForeignKey(Echeance,null=True)

@@ -128,11 +128,12 @@ class Raster:
         
     def get_array(self):
         data = self.r.read(1)
+        print('get_array data 1  :  '  + str(np.min(data)))
         mask = (data == self.r.nodata)
         shape=self.r.shape
         aff=self.r.transform
         self.r.close()
-        data = np.ma.array(data, mask=mask)
+        #data = np.ma.array(data, mask=mask)
         del mask
         log.debug(f"read data from raster {self.fn}")
 
@@ -184,7 +185,7 @@ class Raster:
                 
                 modif[(rbuf == 255) & mk_mn & mk_mx & mk_ssup & mk_smin] = expertise.delta
                 data += modif
-
+        print("get_array() end : " +str(np.min(data)))
         return data
     def sample_gen(self, x,y, indexes=None):
         #rewrite de la source du meme nom de rio (rio.sample.sample_gen) 
@@ -210,8 +211,8 @@ class Raster:
         :param dpi:
         :return: None or Pillow.Image if fn is None.
         """
-    
-
+        mk=(data==255)
+        data=np.ma.array(data,mask=mk)
         # Limits
         #data[(data > -999) & (data < 0)] = 0
 
@@ -223,7 +224,6 @@ class Raster:
         fig = plt.figure(frameon=False, figsize=figsize)
         ax = fig.add_axes([0, 0, 1,1])
         ax.axis('off')
-
         # Echelle de couleurs
         cmap = libcarine3.colors.discrete_cmap(libcarine3.colors.colors)
         vmin = 0

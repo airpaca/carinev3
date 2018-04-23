@@ -57,7 +57,7 @@ urlpatterns = [
         views.update_source, name='update_source'),
 
     ###couches vecteurs    
-    url(r'^sites_fixes.json$',
+    url(r'^sites_fixes$',
         views.sites_fixes, name='sites_fixes'),
 
     url(r'^reg_aura$',
@@ -116,15 +116,16 @@ urlpatterns = [
         views.get_expertises, name='get_expertises'),
     url(r'^set_expertises$',
         views.set_expertises, name='set_expertises'),  
-    url(r'^launch_BQA$',
-        views.launch_BQA, name='launch_BQA'),
-    url(r'^launch_BQA_unique$',
-        views.launch_BQA_unique, name='launch_BQA_unique'),
+
     url(r'^get_legend$',
         views.get_legend, name='get_legend'),        
     url(r'^help$',
         views.help, name='help'),
             url(r'^help_js$',
-        views.help_js, name='help_js') 
+        views.help_js, name='help_js') ,
+    url(r'^callback_merge$',
+        views.callback_merge, name='callback_merge'),  
+    url(r'^export_scp$',
+        views.export_scp, name='export_scp'), 
 ]
 

@@ -16,12 +16,12 @@ def indice_request(request):
     log.debug(x)
     log.debug(y)
     tsp=timestamp.getTimestamp(0)
-    url_basename=config.aasqa + "_multi_" + str(tsp) + '_1.tiff'
+    url_basename='val/'+config.aasqa + "-multi-" + str(tsp) + '-1-ind.tiff'
     url = os.path.join(config.hd_path,url_basename)
     log.debug(url)
     if (os.path.exists(url)) != True:
         tsp=timestamp.getTimestamp(1)
-        url_basename=config.raster_prefix.lower() + "_multi_" + str(tsp) + '_2.tiff'
+        url_basename='val/'+config.raster_prefix.lower() + "-multi-" + str(tsp) + '-2-ind.tiff'
         url = os.path.join(config.hd_path,url_basename)
         log.debug(url)
         if (os.path.exists(url)) != True:
@@ -64,11 +64,11 @@ def indice_request_full(request):
     for e in range(0,3):
         for p in polls:
             url=''
-            url_basename=config.aasqa + "_" + p + "_" + str(tsp) + '_'+str(e) +'.tiff'
+            url_basename='val/'+config.aasqa + "-" + p + "-" + str(tsp) + '-'+str(e) +"-"+'ind.tiff'
             url = os.path.join(config.hd_path,url_basename)     
             log.debug(url)
             if (os.path.exists(url) == False):
-                url_basename=config.aasqa + "_" + p + "_" + str(tsp_hier) + '_'+str(e+1) +'.tiff'
+                url_basename='val/'+config.aasqa + "-" + p + "-" + str(tsp_hier) + '-'+str(e+1) +'-ind.tiff'
                 url = os.path.join(config.hd_path,url_basename)
                 log.debug(url)
             val=api_web_lib.get_value(url,xy_3857[0],xy_3857[1])
@@ -89,7 +89,7 @@ def indice_request_unique(request):
     prev=Prev.objects.get(pol=pol.upper(),ech=ech-1,date_prev=tsp)
 
     #devrait implémenté comme mé&thode de la classe prev
-    url_basename=config.aasqa + "_"+ pol + "_" + str(tsp) + '_' + str(ech) + '.tiff'
+    url_basename='val/'+config.aasqa + "-"+ pol + "-" + str(tsp) + '-' + str(ech) + '-ind.tiff'
     url = os.path.join(config.hd_path,url_basename)
     if (os.path.exists(url)) != True:
         return HttpResponse(url + " non disponible")
@@ -105,12 +105,12 @@ def best_prox_qa(request):
     x = request.GET.get('x')
     y = request.GET.get('y')
     tsp=timestamp.getTimestamp(0)
-    url_basename=config.aasqa + "_multi_" + str(tsp) + '_1.tiff'
+    url_basename='val/'+config.aasqa + "-multi-" + str(tsp) + '-1-ind.tiff'
     url = os.path.join(config.hd_path,url_basename)
     log.debug(url)
     if (os.path.exists(url)) != True:
         tsp=timestamp.getTimestamp(1)
-        url_basename=config.raster_prefix.lower() + "_multi_" + str(tsp) + '_2.tiff'
+        url_basename='val/'+config.raster_prefix.lower() + "-multi-" + str(tsp) + '-2-ind.tiff'
         url = os.path.join(config.hd_path,url_basename)
         log.debug(url)
         if (os.path.exists(url)) != True:
@@ -122,8 +122,11 @@ def best_prox_qa(request):
         return JsonResponse(dict())
     else : 
         vals=api_web_lib.iter_increment(url,co[0],co[1])
-        bestCoords=api_web_lib.to_3857(vals[0],vals[1])
-        bestQA=api_web_lib.get_value(url,bestCoords[0],bestCoords[1])
+        if (vals==0):
+            return JsonResponse(dict())
+        else :
+            bestCoords=api_web_lib.to_3857(vals[0],vals[1])
+            bestQA=api_web_lib.get_value(url,bestCoords[0],bestCoords[1])
         return JsonResponse(dict(position = dict(latitude = vals[1], longitude = vals[0]),indice_j = dict(valeur = int(bestQA))))
     
 def get_square_buff(request):
@@ -145,7 +148,7 @@ def get_pixel_any(request):
     prev=Prev.objects.get(pol=pol.upper(),ech=ech-1,date_prev=tsp)
 
     #devrait implémenté comme mé&thode de la classe prev
-    url_basename=config.aasqa + "-"+ pol + "-" + str(tsp) + '-' + str(ech) + '.tiff'
+    url_basename='val/'+config.aasqa + "-"+ pol + "-" + str(tsp) + '-' + str(ech) + '.tiff'
     url = os.path.join(config.basse_def_val_path,url_basename)
     if (os.path.exists(url)) != True:
         return HttpResponse(url + " non disponible")
@@ -169,11 +172,11 @@ def trajet_request(request):
         lib_e=lib_ech[e]
 
         url=''
-        url_basename=config.aasqa + "_multi_" + str(tsp) + '_'+str(e) +'.tiff'
+        url_basename='val/'+config.aasqa + "-multi-" + str(tsp) + '-'+str(e) +'-ind.tiff'
         url = os.path.join(config.hd_path,url_basename)     
         log.debug(url)
         if (os.path.exists(url) == False):
-            url_basename=config.aasqa + "_multi_" + str(tsp_hier) + '_'+str(e+1) +'.tiff'
+            url_basename='val/'+config.aasqa + "-multi-" + str(tsp_hier) + '-'+str(e+1) +'-ind.tiff'
             url = os.path.join(config.hd_path,url_basename)
             log.debug(url)
         all= api_web_lib.rast_mls(url,mls)

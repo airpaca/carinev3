@@ -24,12 +24,12 @@ def insert_BQA(dct):
     poll_id=dct[zone_id][echeance]['polluant_id']
     bd='transalpair.eu'
     #conn = msql.connect("host="+bqa_log['host']+ " port=3306" + " db="+bqa_log['dbname'] +  " user="+bqa_log['user']+" passwd=" + bqa_log['password'] )
-    conn = msql.connect(host=bd, port=3306 ,db="BQA" , user="BQA", passwd="BQA" )
-    cur=conn.cursor()
-    req = "INSERT INTO indices (zone_id,date,echeance,indice_o3,indice_no2,indice_pm10,indice_total,indice_dispositif,polluant_id) VALUES(" + str(zone_id) + ",CURDATE(),'"+echeance+"',"+str(o3) + ","+ str(no2) + "," + str(pm10) + ",0,"+ str(multi) + "," + str(poll_id)+");"
-    cur.execute(req)
-    res=cur.fetchall();
-    conn.close()
+    # conn = msql.connect(host=bd, port=3306 ,db="BQA" , user="BQA", passwd="BQA" )
+    # cur=conn.cursor()
+    # req = "INSERT INTO indices (zone_id,date,echeance,indice_o3,indice_no2,indice_pm10,indice_total,indice_dispositif,polluant_id) VALUES(" + str(zone_id) + ",CURDATE(),'"+echeance+"',"+str(o3) + ","+ str(no2) + "," + str(pm10) + ",0,"+ str(multi) + "," + str(poll_id)+");"
+    # cur.execute(req)
+    # res=cur.fetchall();
+    # conn.close()
     if (echeance == 'J_moins_1'):
         conn = msql.connect(host=bd, port=3306 ,db="BQA" , user="BQA", passwd="BQA" )
         cur=conn.cursor()
@@ -51,12 +51,19 @@ def insert_BQA(dct):
         cur.execute(req)
         res=cur.fetchall();
         conn.close()
-    return res
+    #return res
+def clean_bqa():
+    bd='transalpair.eu'
+    conn = msql.connect(host=bd, port=3306 ,db="BQA" , user="BQA", passwd="BQA" )
+    cur=conn.cursor()
+    req = "DELETE FROM indices WHERE date=CURDATE() OR date=DATE_ADD(CURDATE(), INTERVAL -1 DAY)  OR date=DATE_ADD(CURDATE(), INTERVAL +1 DAY)"
+    cur.execute(req)
     
+    conn.close()
 def get_BQA(sql_req):
     bqa_log=logins.db_BQA_dev
     #conn = msql.connect("host="+bqa_log['host']+ " port=3306" + " db="+bqa_log['dbname'] +  " user="+bqa_log['user']+" passwd=" + bqa_log['password'] )
-    conn = msql.connect(host="inf-tools", port=3306 ,db="BQA" , user="BQA", passwd="BQA" )
+    conn = msql.connect(host="transalpair.eu", port=3306 ,db="BQA" , user="BQA", passwd="BQA" )
     cur=conn.cursor()
     cur.execute(sql_req)
     res=cur.fetchall();
@@ -171,5 +178,5 @@ def calc_BQA(id_prev):
                 log.debug(val)
                 log.debug(ib_10)
     dct['2000']={lib_ech[pr.ech+1] : vals}
-    res=insert_BQA(dct)
+    insert_BQA(dct)
     return dct

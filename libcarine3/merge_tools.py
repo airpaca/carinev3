@@ -38,16 +38,11 @@ def sous_indice(arr,poll):
     log.debug(np.max(arr))
     log.debug(arr.dtype)
 
-    #inférieur à info/5 (bleu à vert)
-
-    # log.debug(a)
-    # log.debug(b)
-    # log.debug(c)
     data=np.round((
-        
+        ((arr<0)*255)+
         ((arr>=0)*(arr<(INFO/5)))*((arr*10)/(INFO/5))+
         ((arr>=(INFO/5))*(arr<=INFO))*(((arr*100)/INFO)-10)+
-        ((arr>INFO)*(90+(arr-INFO)*10/(ALE-INFO)))+
+        (((arr>INFO)*((arr/ALE)<1))*(90+(arr-INFO)*10/(ALE-INFO)))+
         (((arr/ALE)>1)*100)
         ),2).astype('float32')
     log.debug(np.min(data))
@@ -58,7 +53,6 @@ def arr_to_tif(arr):
     shape=arr.shape
     # r = np.zeros(shape=shape,dtype='uint8')
     # g = np.zeros(shape=shape,dtype='uint8')
-
     mx=np.max(arr)
     mn=np.min(arr)
     r=((arr>0)*255).astype(rio.uint8)
@@ -133,7 +127,7 @@ def export_ratio(rast,ratio,prev):
             dst.write(new_ar,1)
             dst.close()
 
-def merge_fine(rast,prev):
+def merge_fine(rast,prev,new_file):
     with rio.Env(GDAL_CACHEMAX=16384,NUM_THREADS='ALL_CPUS') as env:
         log = logging.getLogger('carinev3.raster.views')
         ech = prev.ech
@@ -146,19 +140,28 @@ def merge_fine(rast,prev):
         meta=rast.r.meta
         b1=rast.r.bounds
         aff=rast.r.transform
-        new_file = config.hd_path + config.aasqa+ '_' + pol.lower() + '_' + str(tsp) + '_' + str(ech+1) + '.tiff'
+        #new_file = config.hd_path + config.aasqa+ '_' + pol.lower() + '_' + str(tsp) + '_' + str(ech+1) + '.tiff'
 
-        ar=rast.get_array()
+        ar2=rast.get_array()
+        print(np.min(ar2))
+        # ar2 = (ar2 > 0)*ar2 + (ar2<0)*255
+        # print(np.min(ar2))
+        ar=ar2
+
+
+
+        print(np.min(ar))
         log.debug(np.min(ar))
         if (pol.upper() != 'MULTI'):
             ar=sous_indice(ar,pol_int).astype('uint8')
         else:
             ar = ar.astype('uint8')
-
+        print(np.min(ar))
         s=ar.shape
         log.debug(s)
         new_ar=ar.repeat(ratio,axis=0).repeat(ratio,axis=1)
         new_ar=new_ar.astype('uint8')
+        print(np.min(ar))
         log.debug(new_ar.shape)
         ar=None
 
@@ -190,6 +193,7 @@ def merge_fine(rast,prev):
         log.debug(np.min(new_ar))
         new_ar=new_ar.reshape(1,new_ar.shape[0],new_ar.shape[1])
         for f2 in urls:
+
             if (os.path.exists(f2)):
                 log.debug("------------------ PROCESSING LOW-DEF  : "+ f2 + "  ------------")
                 lib_pol = os.path.basename(f2).split('_')[1].upper()
@@ -204,10 +208,12 @@ def merge_fine(rast,prev):
                 exp=Expertise.objects.filter(target=src)
                 log.debug(exp)
                 ds2=rio.open(f2)
+                print(ds2.profile)
                 #a refactorer quand tout tournera bien, là on a 1 dataset + 1 raster .. (qui contient un dataset redondant)
                 r2=libcarine3.Raster(f2,config.from_name(lib_pol.upper()))
                 r2.add_expertises(exp)
                 get_ar=r2.get_array()
+
                 b2=ds2.bounds
                 log.debug(b2)
                 ox=abs((b2[0]-b1[0])/res)
@@ -224,20 +230,21 @@ def merge_fine(rast,prev):
 
 
                 ar2=sous_indice(get_ar,pol_low).astype('uint8')
+                ar2=(ar2 <255)*ar2
                 warr=np.maximum(warr,ar2)
                 print("=== w4 ===")
                 print([w4[0][0],w4[0][1],w4[1][0],w4[1][1]])
+                
                 new_ar[0][w4[0][0]:w4[0][1],w4[1][0]:w4[1][1]]=warr
                 log.debug(warr.shape)
                 print(new_ar.shape)
                 log.debug(ds2.profile)
                 warr=None
                 ds2.close()
-
-        
+        pr.update(dtype='uint8')
+        pr.update(nodata=255)
         with rio.open(new_file,'w',**pr) as dst:
             log.debug(' ---- dst write --- ' )
-            log.debug(np.min(new_ar))
             dst.write(new_ar)
             dst.close()
         # mx=np.max(new_ar)
@@ -250,7 +257,32 @@ def merge_fine(rast,prev):
             # dst.write(rgb[0].astype(rio.uint8),indexes=2)
             # dst.write(rgb[0].astype(rio.uint8),indexes=3)
         # rast.to_png(new_ar[0],new_file,dpi=100)
+        ar2=None
+
         return new_file
+def merge_mask(f):
+    ds = rio.open(f)
+    r=ds.read(1)
+    pr=ds.profile
+    print(pr)
+    m=u'/var/www/html/hd/mask_reg_10m_def.tif'
+    ds_mask = rio.open(m)
+    new_file = '/var/www/html/hd/test.tif'
+    
+    with rio.open(new_file,'w',**pr) as dst:
+        log.debug(' ---- dst write --- ' )
+        r=ds.read(1)
+        dst.write(r,1)
+        r=None
+        g=ds.read(2)
+        dst.write(g,2)
+        g=None
+        b=ds.read(3)
+        dst.write(b,3)
+        b=None
+        # m_ar=ds_mask.read(1)
+        # dst.write(m_ar,4)
+        dst.close()
 def merge_mi_fine(rast,prev):
     with rio.Env(GDAL_CACHEMAX=16384,NUM_THREADS='ALL_CPUS') as env:
         log = logging.getLogger('carinev3.raster.views')

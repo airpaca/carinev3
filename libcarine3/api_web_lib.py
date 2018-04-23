@@ -107,6 +107,8 @@ def iter_increment(url,x,y):
     if (init_val <= 10):
         #ben oui si on est déjà dans la classe minimum..
         return 0
+    elif (init_val > 49):
+        init_val = 49
     val=init_val
     size=3
     increment = 400
@@ -121,15 +123,15 @@ def iter_increment(url,x,y):
         yoff=int((ds.transform.f-y)/14.25) 
         y0 = yoff - block_offset
         #cas ou ca depasse de la carte:
-        log.debug(x0)
+        
         if (x0 < 0):
             rectifx0min=x0*-1
             x0=0
-        log.debug(y0)
+        
         if ((xoff + block_offset) > ds.width):
             rectifx0max=(xoff + block_offset)-ds.width
             
-        log.debug(y0)
+        
         if (y0 < 0):
             rectify0min=y0*-1
             y0=0
@@ -140,14 +142,17 @@ def iter_increment(url,x,y):
         block=ds.read(1,window=w)
         block = (block > 0)*block + ((block <=0 )*1000)
         val = np.min(block)
-        size+=increment
+        if (size > 10000):
+            return 0
+        else :
+            size+=increment
     size = size -  (increment * 2)
     val=init_val
     
     b=np.lib.pad(block,((rectify0min,rectify0max),(rectifx0min,rectifx0max)),'constant')
-    log.debug(b.shape)
-    if (init_val>49) :
-        init_val=49
+ 
+    # if (init_val>49) :
+        # init_val=49
     block_co = get_closest(b,init_val)
     
     offset_x = block_co[1] - (b.shape[1]-1)/2
@@ -199,38 +204,42 @@ def rast_mls(url,mls):
     shp=shape(mls)
     geom = transform(project,shp)
     l_tot = geom.length
+    if (l_tot > 0 ):
+        dct=dict(segments=[],moyenne=0)
+        vals=0
+        for ls in geom : 
+            l=ls.length
+            if ( l < 21.375):
+                mean=get_value(url,ls.bounds[0],ls.bounds[1])
+                vals+=round((mean * round((l/l_tot),2)),1)
+                log.debug(vals)
+                dct["segments"].append(mean)
+                write_log.append_log(" ___________________________ ")
+            else :
+                write_log.append_log(" ___________________________ ")
+                bounds=ls.bounds # left bot right top
+                x=bounds
+                x0=int((bounds[0]-ds.transform.c)/14.25)
+                y0=int((ds.transform.f-bounds[3])/14.25)
+                new_w = int((bounds[2] - bounds[0])/14.25) + 1
+                new_h = int((bounds[3] - bounds[1])/14.25) + 1
+                new_aff = affine.Affine(aff.a,aff.b,aff.c + x0*14.25,aff.d,aff.e,aff.f-y0*14.25)
+                w=rio.windows.Window(x0,y0,new_w,new_h)
+                rast = features.rasterize(shapes=[ls],
+                                          out_shape=(new_h,new_w),
+                                          transform=new_aff,default_value=1,
+                                          all_touched=False)
+                arr=ds.read(1,window = w)
+                sel=rast * arr
+                mean = round((np.sum(sel)/np.sum(rast > 0 )),1)
 
-    dct=dict(segments=[],moyenne=0)
-    vals=0
-    for ls in geom : 
-        l=ls.length
-        if ( l < 21.375):
-            mean=get_value(url,ls.bounds[0],ls.bounds[1])
-            vals+=round((mean * round((l/l_tot),2)),1)
-            log.debug(vals)
-            dct["segments"].append(mean)
-            write_log.append_log(" ___________________________ ")
-        else :
-            write_log.append_log(" ___________________________ ")
-            bounds=ls.bounds # left bot right top
-            x=bounds
-            x0=int((bounds[0]-ds.transform.c)/14.25)
-            y0=int((ds.transform.f-bounds[3])/14.25)
-            new_w = int((bounds[2] - bounds[0])/14.25) + 1
-            new_h = int((bounds[3] - bounds[1])/14.25) + 1
-            new_aff = affine.Affine(aff.a,aff.b,aff.c + x0*14.25,aff.d,aff.e,aff.f-y0*14.25)
-            w=rio.windows.Window(x0,y0,new_w,new_h)
-            rast = features.rasterize(shapes=[ls],
-                                      out_shape=(new_h,new_w),
-                                      transform=new_aff,default_value=1,
-                                      all_touched=False)
-            arr=ds.read(1,window = w)
-            sel=rast * arr
-            mean = round((np.sum(sel)/np.sum(rast > 0 )),1)
-
-            vals+=round((mean * round((l/l_tot),2)),1)
-            log.debug(vals)
-            dct["segments"].append(mean)
+                vals+=round((mean * round((l/l_tot),2)),1)
+                log.debug(vals)
+                dct["segments"].append(mean)
+    else :
+        vals=0
+        dct=dict(segments=[],moyenne=0)
+        dct["segments"].append(0)
     dct['moyenne']=vals
     return dct
 

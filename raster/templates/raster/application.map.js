@@ -831,14 +831,6 @@ var mapbox_light2 = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y
 mapbox_light2.addTo(map2);
 
 
-/* D?aration de l'emprise max */
-/* var  bounds = new L.LatLngBounds( 
-   new L.LatLng(44.1154926129760483, 2.0628781476760838), // SW  L.LatLng(42.92986796194353,4.220712166125205)
-   new L.LatLng(46.8042870493686962, 7.1855613116475361)  // NE  L.LatLng(45.17322865209258,7.804443841248857)
-);
-map.fitBounds(bounds); */
-//2.0628781476760838,44.1154926129760483 : 7.1855613116475361,46.8042870493686962
-
 
 //fonction popup sur champ 'nom'
 //utilis?ar les couches vecteurs
@@ -1393,26 +1385,18 @@ function get_stats_reg(){
             },
             success: 
                 function(msg){
-                    c+=6
-                    prevs[id_prev]['stats']=msg
-                    log_dashboard('statistiques_reglementaires','get_stats_reg',c,'INFO',"calcul des stats pour id_prev="+id_prev.toString())
-                    // msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : OK </div>')
+
                 },
             error:      
                 function(msg){
-                    log_dashboard('statistiques_reglementaires','get_stats_reg',c,'WARNING',"echec du calcul des stats pour id_prev="+id_prev.toString())
-                    c+=2
-                    // msg_add_content('<div> ' +prevs[id_prev][0].toString() +' - '+ prevs[id_prev][1].toString() + ' : OK </div>')
+
                 },
 
         })
     }
-    if (c<96){
-        log_dashboard('statistiques_reglementaires','get_stats_reg',100,'ERROR',"échec des stats")     
-    }
-    else {
-        log_dashboard('statistiques_reglementaires','get_stats_reg',100,'INFO',"fin du calcul des stats")
-    }
+
+    log_dashboard('statistiques_reglementaires','get_stats_reg',100,'INFO',"fin du calcul des stats")
+
     
 }
 function launch_stats(){
@@ -1560,7 +1544,7 @@ function export_low() {
     log_dashboard('basse_def_image','export_low',1,'INFO',"début de l'export des images basse def")
     c=0
     for (i in overlayLayers1){
-        c+=6
+
         id_source= overlayLayers1[i]
         id_prev=i.split('_')[2]
         console.log(id_source)
@@ -1573,27 +1557,21 @@ function export_low() {
           },
           success : function(){
 
-            log_dashboard('basse_def_image','export_low',c,'INFO',"export des images basse def")
           },
           error : function () {
-              
-            log_dashboard('basse_def_image','export_low',c,'WARNING',"échec de l'export des images basse def")
-            c-=6
+
           }
         })      
     }
-    if (c ==96){
+
         log_dashboard('basse_def_image','export_low',100,'INFO',"succès de l'export des images basse def")
-    }
-    else{
-        log_dashboard('basse_def_image','export_low',100,'ERROR',"échec de l'export des ss_indices basse def")
-    }
+
 }
 function export_low_val() {
     log_dashboard('basse_def_val','export_low_val',1,'INFO',"début de l'export des ss_indices basse def")
     c=0
     for (i in overlayLayers1){
-        c+=6
+
         id_source= overlayLayers1[i]
         id_prev=i.split('_')[2]
         console.log(id_source)
@@ -1605,22 +1583,18 @@ function export_low_val() {
             id_prev:id_prev
           },
         success : function(){
-            log_dashboard('basse_def_val','export_low_val',c,'INFO',"export des ss_indices basse def")
+ 
           },
         error : function () {
           
-            log_dashboard('basse_def_val','export_low_val',c,'WARNING',"échec de l'export des ss_indices basse def")
-            c-=6
+
           }
         })      
 
     }
-    if (c == 96){
+
         log_dashboard('basse_def_val','export_low_val',100,'INFO',"succès de l'export des ss_indices basse def")
-    }
-    else{
-        log_dashboard('basse_def_val','export_low_val',100,'ERROR',"échec de l'export des ss_indices basse def")
-    }
+
 }
 function merge_mi_fine(id_prev,id_source) {
     if ( activeLayer1 != null) {
@@ -1677,9 +1651,7 @@ function merge_mi_fine(id_prev,id_source) {
 }
 function export_hd() {
     n=0
-    c=0
-    end=0
-    log_dashboard('haute_definition','export_hd',1,'INFO',"début de l'export des cartes hd")
+ 
     for (i in overlayLayers1){
 
         if (n<1){
@@ -1695,16 +1667,17 @@ function export_hd() {
                 id_prev:id_prev
               },
             success : function(){
-                if (end==0){                
-                    c+=6
-                    log_dashboard('haute_definition','export_hd',c,'INFO',"export des cartes hd") 
-                }                    
+                  $.ajax ({
+                      async : true,
+                      url: '{% url "callback_merge" %}',
+                      data : {
+                        id_source:id_source,
+                        id_prev:id_prev
+                      }
+                    })
             },
             error : function () {
-                if (end==0){
-                    log_dashboard('haute_definition','export_hd',c,'WARNING',"échec de l'export de id_prev="+id_prev.toString()+ " et id_source = "+ id_source.toString() )
-                    c-=3
-                }
+
             }
 
         })
@@ -1725,29 +1698,23 @@ function export_hd() {
                 id_prev:id_prev
               },
                 success : function(){
-                    if (end==0) {
-                    c+=6
-                    log_dashboard('haute_definition','export_hd',c,'INFO',"export des cartes hd")
-                    }
+                  $.ajax ({
+                      async : true,
+                      url: '{% url "callback_merge" %}',
+                      data : {
+                        id_source:id_source,
+                        id_prev:id_prev
+                      }
+                    })
                 },
                 error : function () {
-                 
-                    log_dashboard('haute_definition','export_hd',c,'WARNING',"échec de l'export de id_prev="+id_prev.toString()+ " et id_source = "+ id_source.toString() )
-                     c-=3
+
                 }
             })
        
         n=0
         }
 
-    }
-    if (c==96){
-        end=1
-        log_dashboard('haute_definition','export_hd',100,'INFO',"fin du calcul des cartes hd" )
-    }
-    else {  
-        end=1
-        log_dashboard('haute_definition','export_hd',100,'ERROR',"échec de l'export de id_prev="+id_prev.toString()+ " et id_source = "+ id_source.toString() )
     }
 }
 function mi_fine_url(id_source,id_prev){
@@ -1962,6 +1929,7 @@ function validPrevi(){
     export_hd()
     contactSMILE()
     log_dashboard('validation_generale','validPrevi',100,'INFO',"fin des calculs")
+    export_scp()
     }
 function confirmValidPrevi(){
 	$('#mask').show()
@@ -2075,5 +2043,18 @@ function log_dashboard(id_process,script_name,step,lvl,msg){
             type : lvl,
             m : msg
         }
+    })
+}
+function export_scp(){
+    $.ajax ({
+        async : true,
+        url: '{% url "export_scp" %}',
+        data: {
+            type : ['hd_val','hd_img','bd_val','bd_img']
+        },
+        succes : function (msg){
+            alert(msg)
+        }
+        
     })
 }

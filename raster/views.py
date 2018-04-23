@@ -48,7 +48,7 @@ DATE_TEST = datetime.date(2017,6,7)
 def index(request):
     """Index."""
     template = loader.get_template('raster/index.html')
-    context = {}
+    context = {'ctx' : Context.objects.get(active=True)}
     return HttpResponse(template.render(context, request))
 
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
@@ -70,18 +70,7 @@ def help_js(request):
     template = loader.get_template('help/help.js')
     context = {}
     return HttpResponse(template.render(context, request))    
-@login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')    
-def dashboard_fine(request):
-    """Index."""
-    template = loader.get_template('dashboard_fine/dashboard_fine.html')
-    context = {}
-    return HttpResponse(template.render(context, request))
-@login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
-def dashboard_fine_js(request):
-    """Application (Javascript)."""
-    template = loader.get_template('dashboard_fine/dashboard_fine.js')
-    context = {}
-    return HttpResponse(template.render(context, request))       
+  
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
 def get_init_info(request):
     
@@ -233,7 +222,7 @@ def img_multi_unique(request):
         os.remove(fn)
     src_crs = {'init': 'EPSG:3857'}
     with rio.Env(GDAL_CACHEMAX=512,NUM_THREADS=1) as env:
-        with rio.open(fn,'w',count=1,dtype='float64',driver='GTiff',compress='DEFLATE',crs=src_crs, height=config.profile['height'],width=config.profile['width'],transform=tr,nodata=0) as dst:
+        with rio.open(fn,'w',count=1,dtype='float64',driver='GTiff',compress='DEFLATE',crs=src_crs, height=300,width=400,transform=tr,nodata=0) as dst:
             dst.write(new_arr,1)
             dst.close()
     #rajout dernière minute export 2154, a fusionner les deux dans une seule fct..  
@@ -307,7 +296,7 @@ def img_multi(request):
         os.remove(fn)
     src_crs = {'init': 'EPSG:3857'}
     with rio.Env(GDAL_CACHEMAX=512,NUM_THREADS=1) as env:
-        with rio.open(fn,'w',count=1,dtype='float64',driver='GTiff',compress='DEFLATE',crs=src_crs, height=config.profile['height'],width=config.profile['width'],transform=tr,nodata=0) as dst:
+        with rio.open(fn,'w',count=1,dtype='float64',driver='GTiff',compress='DEFLATE',crs=src_crs, height=300,width=400,transform=tr,nodata=0) as dst:
             dst.write(new_arr,1)
             dst.close()
     #rajout dernière minute export 2154, a fusionner les deux dans une seule fct..  
@@ -355,12 +344,8 @@ def sites_fixes(request):
     conn.close()
     liste_sites=[]
     for i in res:
-    
-        #liste_site.append(str)
         row={"type": "Feature","geometry": {"type": "Point","coordinates": [i[2],i[3]]},"properties": {"nom" : i[1]},"id_site": i[0]}
         liste_sites.append(row)
-        
-
     str={"type": "FeatureCollection","features": liste_sites}   
     return JsonResponse(str)
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
@@ -541,17 +526,7 @@ def mylogout(request):
     logout(request)
     return redirect('%s?next=%s' % (settings.LOGIN_URL, '/carinev3/raster/'))
 
-@login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
-@never_cache
-def launch_BQA(request):
-    prevs=Prev.objects.filter(date_prev=timestamp.getTimestamp(0),pol='MULTI')
-    for p in prevs:
-        bqa_lib.calc_BQA(p.id)
-    return HttpResponse('Insert Transalpair terminé')
-def launch_BQA_unique(request):
-    id_prev = request.GET.get('id_prev')
-    res = bqa_lib.calc_BQA(id_prev)
-    return JsonResponse(res) 
+
 def calcul_stats_reg(request):
     id_prev = request.GET.get('id_prev')
     prev=Prev.objects.get(id=id_prev)
@@ -798,6 +773,7 @@ def calcul_indice_com(request):
     return JsonResponse(dct)
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
 def export_low(request):
+    ctx=Context.objects.get(active=True)
     """Raster as an image."""
     # TODO: ajouter transformation du raster en wgs84
     id=request.GET.get('id_source')
@@ -824,11 +800,18 @@ def export_low(request):
     log.debug(np.max(data))
     # Return image
     
+    dp=DicoPath.objects.get(nom='bd rgba')
+    output_data=OutputData.objects.get(type=dp)
+    u=dp.get_file_url(ctx.previ_mod.raster_prefix,prev.pol.lower(),prev.date_prev,prev.ech+1)
+    u_full=os.path.join(ctx.previ_mod.output_dir,os.path.join(output_data.dir,u))
     name=config.basse_def_path+config.aasqa+'-'+prev.pol.lower()+'-'+str(prev.date_prev)+'-'+str(prev.ech+1)+ '.png'
+    r.to_png(data,name,10)
     
-    return HttpResponse(r.to_png(data,name,10), content_type="image/png")
+    #libcarine3.subprocess_wrapper.scp_classic(name,'192.168.37.158','airtogo','/home/aura_datas/carine_data/basse_def/')
+    return HttpResponse(name)
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
 def export_low_val(request):
+    ctx=Context.objects.get(active=True)
     """Raster as an image."""
     # TODO: ajouter transformation du raster en wgs84
     id=request.GET.get('id_source')
@@ -849,9 +832,18 @@ def export_low_val(request):
     r = libcarine3.Raster(fnrst, pol=config.from_name(ob.tsr.pol),source=ob)
     r.add_expertises(expertises)
     log.debug(r.expertises)
-    name=config.basse_def_val_path+config.aasqa+'-'+prev.pol.lower()+'-'+str(prev.date_prev)+'-'+str(prev.ech+1)+ '.tiff'
-    msg=r.export_low_val(name)
+    
+
+    dp=DicoPath.objects.get(nom='bd concentration')
+    output_data=OutputData.objects.get(type=dp)
+    u=dp.get_file_url(ctx.previ_mod.raster_prefix,prev.pol.lower(),prev.date_prev,prev.ech+1)
+    u_full=os.path.join(ctx.previ_mod.output_dir,os.path.join(output_data.dir,u))
+    
+    #fullPath=dict(img=os.path.join(ctx.previ_mod.basse_def_val_path,ctx.previ_mod.raster_prefix+'-'+pol.lower()+'-'+str(tsp)+'-'+ech+'.tiff'))
+    #name=config.basse_def_val_path+config.aasqa+'-'+prev.pol.lower()+'-'+str(prev.date_prev)+'-'+str(prev.ech+1)+ '.tiff'
+    msg=r.export_low_val(u_full)
     log.debug(msg)
+    #libcarine3.subprocess_wrapper.scp_classic(name,'192.168.37.158','airtogo','/home/aura_datas/carine_data/basse_def/val')
     return HttpResponse(msg)
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
 def getTsp(request):
@@ -891,22 +883,31 @@ def indice_com(request):
 
 @never_cache    
 def basse_def (request):
+    ctx=Context.objects.get(active=True)
     date_prev=request.GET.get('date')
     tsp=libcarine3.timestamp.getTimestampFromDate(date_prev)
     pol=request.GET.get('pollutant')
     ech=request.GET.get('term')
-    path=config.basse_def_url
-    fullPath=dict(img=os.path.join(path,config.raster_prefix.lower()+'-'+pol.lower()+'-'+str(tsp)+'-'+ech+'.png'))
-    return JsonResponse(fullPath)
+    path=ctx.previ_mod.public_adresse
+
+    dp=DicoPath.objects.get(nom='bd rgba')
+    output_data=OutputData.objects.get(type=dp)
+    u=dp.get_file_url(ctx.previ_mod.raster_prefix,pol.lower(),tsp,ech)
+    u_full=os.path.join(path,os.path.join(output_data.dir,u))
+    return JsonResponse(dict(img=u_full))
 @never_cache    
 def basse_def_val (request):
+    ctx=Context.objects.get(active=True)
     date_prev=request.GET.get('date')
     tsp=libcarine3.timestamp.getTimestampFromDate(date_prev)
     pol=request.GET.get('pollutant')
     ech=request.GET.get('term')
-    path=config.basse_def_url_val_path
-    fullPath=dict(img=os.path.join(path,config.raster_prefix.lower()+'-'+pol.lower()+'-'+str(tsp)+'-'+ech+'.tiff'))
-    return JsonResponse(fullPath)
+    path=ctx.previ_mod.public_adresse
+    dp=DicoPath.objects.get(nom='bd concentration')
+    output_data=OutputData.objects.get(type=dp)
+    u=dp.get_file_url(ctx.previ_mod.raster_prefix,pol.lower(),tsp,ech)
+    u_full=os.path.join(path,os.path.join(output_data.dir,u))
+    return JsonResponse(dict(img=u_full))
     
 @never_cache
 def commentaire(request):
@@ -937,6 +938,7 @@ def export_hd(request):
     return HttpResponse(r.fn)
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')    
 def merge_fine(request):
+    ctx=Context.objects.get(active=True)
     id_source=request.GET.get('id_source')
     id_prev=request.GET.get('id_prev')
     ratio=request.GET.get('ratio')
@@ -945,19 +947,28 @@ def merge_fine(request):
     expertises = Expertise.objects.filter(target=src)
     #with rio.Env(GDAL_CACHEMAX=16384,NUM_THREADS='ALL_CPUS') as env:
     r = libcarine3.Raster(src.url(), pol=config.from_name(src.tsr.pol),source=src)
-    r.add_expertises(expertises) 
-    f=libcarine3.merge_tools.merge_fine(r,prev)
+    r.add_expertises(expertises)
+    dp_val=DicoPath.objects.get(nom='hd sous_indice')
+    dp_img=DicoPath.objects.get(nom='hd rgba')
+    u=dp_val.get_file_url(ctx.previ_mod.raster_prefix,str.lower(prev.pol),prev.date_prev,prev.ech+1)
+    full_u = os.path.join(ctx.previ_mod.output_dir,os.path.join(ctx.previ_mod.hd_val_path,u))
+    u2=dp_img.get_file_url(ctx.previ_mod.raster_prefix,str.lower(prev.pol),prev.date_prev,prev.ech+1)
+    utemp=u2.replace('-','_')
+    full_u2 = os.path.join(ctx.previ_mod.output_dir,os.path.join(ctx.previ_mod.hd_path,u2))   
+    full_utemp=os.path.join(ctx.previ_mod.output_dir,os.path.join(ctx.previ_mod.hd_path,utemp))   
+    f=libcarine3.merge_tools.merge_fine(r,prev,full_u)
+    #libcarine3.subprocess_wrapper.scp_classic(f,'192.168.37.158','airtogo','/home/aura_datas/carine_data/hd/val')
     #write_log.append_log(f)
-    f2=libcarine3.subprocess_wrapper.gdaldem(f)
-    f3=f2.replace('__','-')
-    #write_log.append_log(f2)
-    #write_log.append_log(f3)
-    if (os.path.exists(f3)):
-        os.remove(f3)
-    msg=libcarine3.subprocess_wrapper.warp([f2,f3,'-co','COMPRESS=DEFLATE','--config','GDAL_CACHEMAX','2048','-cutline','/home/previ/vector_source/aura_reg_3857.shp','-crop_to_cutline','-dstnodata','-9999'])
-    os.remove(f2)
-    libcarine3.subprocess_wrapper.scp(f3)
-    
+    f2=libcarine3.subprocess_wrapper.gdaldem(full_u,full_utemp)
+    # libcarine3.merge_tools.merge_mask(f2)
+    # f3=f2.replace('__','-')
+
+    # if (os.path.exists(f3)):
+        # os.remove(f3)
+    #msg=libcarine3.subprocess_wrapper.warp([full_utemp,full_u2,'-co','COMPRESS=DEFLATE','--config','GDAL_CACHEMAX','2048','-cutline','/home/previ/vector_source/aura_reg_3857.shp','-crop_to_cutline','-dstnodata','-9999'])
+    msg=libcarine3.subprocess_wrapper.warp([full_utemp,full_u2,'-co','COMPRESS=DEFLATE','--config','GDAL_CACHEMAX','2048','-dstnodata','-9999'])
+    #os.remove(f2)
+    libcarine3.subprocess_wrapper.scp_classic(full_u2,'dmz-previ','previ','/home/previ/geotiff')
     return HttpResponse(src.url())
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')    
 def merge_mi_fine(request):
@@ -1000,7 +1011,7 @@ def preprocess_files(request):
 def ws_smile(request):
     f= urllib.request.urlopen(config.launch_smile_prod)
     f2= urllib.request.urlopen(config.launch_smile_preprod)
-    return HttpResponse(f.read())
+    return HttpResponse(f2.read())
     
 def get_expertises(request):
     log.debug("  xxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx ")
@@ -1041,3 +1052,40 @@ def get_legend(request):
     html_c+='</tr>'
     html_lib+='</tr>'
     return HttpResponse(html_lib+html_c)
+def callback_merge(request):
+    return HttpResponse('callback_merge')
+def export_scp(request):
+    ctx=Context.objects.get(active=True)
+    polls=Polluant.objects.all()
+    ech = Echeance.objects.all()
+    tsp = timestamp.getTimestamp(0)
+    out_type=DicoPath.objects.all()
+    errors='fichier(s) inexistants : '
+    urlss=[]
+    for i in out_type:
+        print(i.nom)
+        remote_machine = RemoteMachine.objects.filter(type=i,active=True)
+        output_data = OutputData.objects.get(type=i)
+        urls = []
+        for p in polls:
+            print(p.nom)
+            for e in ech:
+                # print(e.delta)
+                u=i.get_file_url(ctx.previ_mod.raster_prefix,str.lower(p.nom),tsp,e.delta+1)
+                print(u)
+                u_full=os.path.join(ctx.previ_mod.output_dir,os.path.join(output_data.dir,u))
+                urls.append(u_full)
+                # print('ctx.previ_mod.output_dir : '+ ctx.previ_mod.output_dir)
+                # print('output_data.dir : ' + output_data.dir)
+                print(u_full)
+        for m in remote_machine:
+            for u in urls:
+                if os.path.exists(u):
+                    libcarine3.subprocess_wrapper.scp_classic(u,m.domaine,m.user,m.dir)
+                else : 
+                    errors += u  + ' '
+    
+    if errors == 'fichier(s) inexistants : ':   
+        return HttpResponse('export vers serveur de tuiles et api terminé')
+    else :
+        return HttpResponse('export vers serveur de tuiles et api terminé</br>' + errors)
