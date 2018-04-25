@@ -739,6 +739,25 @@ function remove_multi_form() {
     $("#multi_div").hide()
     $("#mask").hide()
 }
+function calculate_multi_all(){
+    var url='{% url "img_multi" %}'
+
+    for (i=0;i<4;i++)
+    $.ajax({
+        url: url,
+        async : false,
+        data : {
+            ech : i             
+        }
+        ,success : function(){
+            console.log('success multi => a check')
+            console.log(msg)
+        }
+        ,error  : function (msg) {
+            console.log(msg)
+        }
+    })
+}
 function calculate_multi(){
     $("#mask").hide()
     $("#multi_div").hide()
@@ -1921,6 +1940,7 @@ function contactSMILE(){
 function validPrevi(){
     log_dashboard('validation_generale','validPrevi',1,'INFO',"clic validation, début des calculs")
 	hideConfirmValidPrevi()
+    calculate_multi_all()
     launch_BQA()
     get_stats_reg()
     get_indice_com()
