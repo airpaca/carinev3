@@ -959,16 +959,20 @@ def merge_fine(request):
     f=libcarine3.merge_tools.merge_fine(r,prev,full_u)
     #libcarine3.subprocess_wrapper.scp_classic(f,'192.168.37.158','airtogo','/home/aura_datas/carine_data/hd/val')
     #write_log.append_log(f)
+    if (os.path.exists(full_utemp)):
+        os.remove(full_utemp)
+    
     f2=libcarine3.subprocess_wrapper.gdaldem(full_u,full_utemp)
     # libcarine3.merge_tools.merge_mask(f2)
     # f3=f2.replace('__','-')
-
+    if (os.path.exists(full_u2)):
+        os.remove(full_u2)
     # if (os.path.exists(f3)):
         # os.remove(f3)
     #msg=libcarine3.subprocess_wrapper.warp([full_utemp,full_u2,'-co','COMPRESS=DEFLATE','--config','GDAL_CACHEMAX','2048','-cutline','/home/previ/vector_source/aura_reg_3857.shp','-crop_to_cutline','-dstnodata','-9999'])
     msg=libcarine3.subprocess_wrapper.warp([full_utemp,full_u2,'-co','COMPRESS=DEFLATE','--config','GDAL_CACHEMAX','2048','-dstnodata','-9999'])
     #os.remove(f2)
-    libcarine3.subprocess_wrapper.scp_classic(full_u2,'dmz-previ','previ','/home/previ/geotiff')
+    #libcarine3.subprocess_wrapper.scp_classic(full_u2,'dmz-previ','previ','/home/previ/geotiff')
     return HttpResponse(src.url())
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')    
 def merge_mi_fine(request):

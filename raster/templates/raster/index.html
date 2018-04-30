@@ -175,12 +175,13 @@
 							<ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
 								<li><a onclick="preprocess_files()" href="#" title="">Préparation des sources</a></li>
 								<li><a onclick="launch_async(get_stats_reg)" data-toggle="tooltip" title="calcul les stats pour toutes les cartes (environ 1min)" >Statistiques réglementaires (toutes)</a></li>
+                                <li><a onclick="launch_BQA()" href="#" data-toggle="tooltip" title="calcule et exporte dans transalpair tous les indices du bassin grenoblois">Bassin grenoblois</a></li>
 								<li><a onclick="get_indice_com()" data-toggle="tooltip" title="calcul les indices pour toutes les cartes (environ 3min). Pas indispensable car recalculé à la validation finale">Indices communaux</a></li>
 								<li><a onclick="export_low_val()" href="#" title="Lien 2">Basse définition valeurs</a></li>
 								<li><a onclick="export_low()" href="#" title="Lien 2">Basse définition RGB</a></li>
 								<li><a onclick="export_hd()" href="#" title="Lien 2">Haute définition RGB</a></li>
 								<li><a onclick="contactSMILE()" href="#" data-toggle="tooltip" title="déclenche un nouvel import de SMILE sans réaliser aucun calcul.">Rediffuser</a></li>
-                                <li><a onclick="launch_BQA()" href="#" data-toggle="tooltip" title="calcule et exporte dans transalpair tous les indices du bassin grenoblois">Bassin grenoblois</a></li>
+                                <li><a onclick="export_scp()" href="#" data-toggle="tooltip" title="exporte l'ensemble des fichiers de sortie vers leur destination">re-exporter</a></li>
 							</ul>
 
 						
