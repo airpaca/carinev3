@@ -7,4 +7,5 @@ urlpatterns = [
     url(r'^config_html$', config_views.config_html, name='config_html'),
     url(r'^config_js$', config_views.config_js, name='config_js'),
     url(r'^set_ctx$', config_views.set_ctx, name='set_ctx'),
+    url(r'^get_ctx_info$', config_views.get_ctx_info, name='get_ctx_info'),
     ]

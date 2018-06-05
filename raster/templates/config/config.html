@@ -43,6 +43,7 @@
                     <span class="icon-bar"></span>
                 </button>-->
                 <a class="navbar-brand" href="{% url 'index' %}">CARINE v3</a>
+                <a class="navbar-brand" href=""><i>Bonjour {{user}}</i></a>
 
             </div>
 
@@ -50,7 +51,7 @@
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav navbar-right">
                     <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
-                    <li>
+                   <li>
                         <a href="{% url 'mylogout' %}">Logout</a>
                     </li>
 
@@ -65,7 +66,7 @@
         </nav>
                 <!-- Barre d'outils -->
         <nav class="navbar navbar-default nav-fixed-top" role="navigation" id="tools-nav-bar" >
-            <h2>Paramètres actifs : {{ ctx_active.nom }}</h2>
+            <div class="paramactif">Contexte actif : {{ ctx_active.nom }}</div>
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
@@ -81,28 +82,54 @@
                 </ul>
             </div><!-- /.navbar-collapse -->
         </nav>
-Bonjour {{user}}
+                <div id="mask">
+        </div>
+
 <div class="container">
   <div class="row">
-    {% for ctx in ctx_list %}
-    <div class="col-sm-6" >
-      <button type="button" class="btn btn-light">{{ ctx.nom }}</button>
-        <ul class="list-group">
-            <li class="list-group-item">{{db.default.HOST}}</li>
-          <li class="list-group-item">{{ctx.previ_mod.launch_smile_prod}}</li>
-          <li class="list-group-item">{{ctx.previ_mod.launch_smile_preprod}}</li>
-         <button type="button"  onclick=toggle_active({{ctx.id}}) class="btn btn-light">Activer le contexte <br>{{ ctx.nom }}</br></button> 
-        </ul>
+					<li class="dropdown">
+						
+
+							<a class="dropdown-toggle btn " type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Contextes   <i class="glyphicon glyphicon-collapse-down"></i></a>
+                            <hr>
+							<ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                {% for ctx in ctx_list %}
+								<li><a onclick=show_ctx_info({{ctx.id}}) href="#" title="">{{ctx.nom}}</a></li>
+                                {% endfor %}
+							</ul>
+
+						
+					</li>
+
+
+    <div class="col-sm-6" id="ctx-info-container" >
+      <!-- <button type="button" class="btn btn-light">{{ ctx_active.nom }}</button> -->
+        <!-- <ul class="list-group"> -->
+            <!-- <li class="list-group-item">{{db.default.HOST}}</li> -->
+          <!-- <li class="list-group-item">{{ctx.previ_mod.launch_smile_prod}}</li> -->
+          <!-- <li class="list-group-item">{{ctx.previ_mod.launch_smile_preprod}}</li> -->
+         <!-- <button type="button"  onclick=confirmValidContexte({{ctx.id}}) class="btn btn-light">Activer le contexte <br>{{ ctx.nom }}</br></button>  -->
+        <!-- </ul> -->
     </div>
-    {% endfor %}
+    
   </div>
 </div>
-
+		<div id="confirm-contexte-div">
+			<div class="confirm-p">Vous allez modifier le contexte d'utilisation de carine. </div>
+			<div class="confirm-btn-class">
+				<button onclick=toggle_active() class="confirm-btn">Confirmer</button>		
+				<button onclick=hideConfirmValidContexte() class="confirm-btn">Annuler</button>
+			</div>
+		</div>    
 <ul>
 
 </ul>
-        <div class="table-container">
-            
-        </div>
+
+                <!-- JQuery -->
+        <script src="{% static 'raster/lib/jquery2.2.4/jquery2.2.4.js' %}"></script>
+        <script src="http://code.jquerygeo.com/jquery.geo-1.0.0-rc1.1.min.js"></script>
+
+        <!-- Bootstrap -->
+        <script src="{% static 'raster/lib/bootstrap-3.3.7-dist/js/bootstrap.min.js' %}"></script>
      </body>
      </html>

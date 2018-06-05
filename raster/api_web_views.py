@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from libcarine3 import timestamp,api_web_lib
+from libcarine3 import timestamp,api_web_lib,checkfile
 import os
 import config
 from django.http import HttpResponse, JsonResponse
@@ -67,7 +67,8 @@ def indice_request_full(request):
             url_basename='val/'+config.aasqa + "-" + p + "-" + str(tsp) + '-'+str(e) +"-"+'ind.tiff'
             url = os.path.join(config.hd_path,url_basename)     
             log.debug(url)
-            if (os.path.exists(url) == False):
+            if (checkfile.checkfile(url,30) == False):
+                print(url + ' nexiste pas ou a été accédé il y a moins de 30sec selon checkfile.checkfile')
                 url_basename='val/'+config.aasqa + "-" + p + "-" + str(tsp_hier) + '-'+str(e+1) +'-ind.tiff'
                 url = os.path.join(config.hd_path,url_basename)
                 log.debug(url)

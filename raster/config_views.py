@@ -61,3 +61,19 @@ def set_ctx(request):
     active=ctx.nom
     ctx.save()
     return JsonResponse(dict(active=active,desactive=desactive))
+@login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
+def get_ctx_info(request):
+    id_ctx = request.GET.get('id_ctx')
+    ctx=Context.objects.get(id=id_ctx)
+    if (ctx.fine_mod is None) :
+        fine = False
+    else :
+        fine = True
+    webprod = ctx.previ_mod.launch_smile_prod
+    webpreprod = ctx.previ_mod.launch_smile_preprod
+    if (ctx.bassin_grenoblois is None):
+        bg = False
+    else :
+        bg = True
+
+    return JsonResponse(dict(id=id_ctx,nom=ctx.nom, active=ctx.active, webprod=webprod , webpreprod=webpreprod , bdd=settings.DATABASES['default']['HOST'], fine=fine ))

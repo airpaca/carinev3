@@ -229,7 +229,7 @@ class Raster:
         vmin = 0
         vmax = 100
         log.debug(vmax)
-        plt.imshow(data, cmap=cmap, vmin=vmin, vmax=vmax)
+        plt.imshow(data, cmap=libcarine3.colors.cmap, norm=libcarine3.colors.norm)
         log.debug("creating plot done cool !")
 
         # Export sous forme d'image

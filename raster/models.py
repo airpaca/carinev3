@@ -114,6 +114,7 @@ class Context(models.Model):
     active=models.BooleanField(default=False)
     def __str__(self):
         return self.nom
+  
 class DomaineFine(models.Model):
     nom=models.CharField(max_length=100,default="")
     libCourt=models.CharField(max_length=100,default="")
@@ -213,7 +214,15 @@ class Prev(models.Model):
     pol=models.CharField(max_length=10,null=True)
     ech=models.IntegerField(null=True)
     src=models.ForeignKey(Source,on_delete=models.SET_NULL,null=True)
-
+    def get_urls(self):
+        outD = OutputData.objects.all()
+        for i in outD:
+            #prev poll tsp ech
+            ctx = Context.objects.filter(active = True)
+            
+            pref = ctx[0].previ_mod.raster_prefix
+            bname = i.type.get_file_url(pref,self.pol.lower(),self.date_prev,self.ech+1)
+        return dict(nom = i.type.nom, url = os.path.join(ctx[0].previ_mod.output_dir,os.path.join(i.dir,bname)))
     def json(self):
         return dict(date_prev=self.date_prev,pol=self.pol,ech=self.ech,src=self.src.url())
 class Expertise(models.Model):

@@ -170,7 +170,7 @@ def img_raster(request):
 def img_raster_url(request):
     id_source = request.GET.get('id_source')
 
-    u=reverse('img_raster')+'?id='+str(id_source)
+    u=reverse('img_raster')+'?id='+str(id_source) + '&randomnocache='+str(random.random())
     return HttpResponse(u)
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
 def info_raster(request,id):
@@ -993,7 +993,7 @@ def merge_mi_fine(request):
 def mi_fine_url(request):
     id_source = request.GET.get('id_source')
     id_prev = request.GET.get('id_prev')
-    u=reverse('merge_mi_fine')+'?id_source='+str(id_source) + '&id_prev='+str(id_prev)
+    u=reverse('merge_mi_fine')+'?id_source='+str(id_source) + '&id_prev='+str(id_prev) + '&randomnocache='+str(random.random())
     return HttpResponse(u)
 
 def fake(request):

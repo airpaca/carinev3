@@ -14,6 +14,7 @@ var process_files=false
 var calc_multi=false
 $.ajax({
     url: '{% url "init_dallefine" %}',
+    data : {             randomnocache : Math.random() },
     async : true
 });
 $.ajax({
@@ -122,6 +123,7 @@ var active_poll_left
 function check_statut() {
     $.ajax({
         url: '{% url "check_statut" %}',
+        data : {            randomnocache : Math.random() },
         async : false,
         success : function(msg){
             //j=JSON.parse(msg)
@@ -157,6 +159,7 @@ function update_source(id_prev,id){
         url: '{% url "update_source"  %}',
         async : false,
         data : {
+                        randomnocache : Math.random(),
             id_prev : id_prev,
             id : id
         },
@@ -266,6 +269,7 @@ function init_switch_1(poll) {
 function check_sources () {
     $.ajax({
         url: '{% url "check_sources"  %}',
+        data : {            randomnocache : Math.random()},
         success : function(msg){
             //j=JSON.parse(msg)
             //console.log(msg)
@@ -396,7 +400,8 @@ function switch_map_1(id_but){
         //recup de scoins de la carte necessaires pour que leaflet affiche le png
         url: url_bbox,
         data : {
-            id:id_source
+            id:id_source,
+            randomnocache : Math.random()
         },
         success : function(msg){
             anchors = [
@@ -557,6 +562,7 @@ function td_clic() {
         $('#other_layers > p').remove()
         $.ajax({
             url: "getMoreSources/"+id_source+".json",
+                       
             success : function(msg){
                 //console.log(msg)
                 var k=Object.keys(msg)
@@ -602,7 +608,8 @@ function td_clic() {
             $.ajax({
                 url: url_bbox,
                 data : {
-                    id:id_source
+                    id:id_source,
+                    randomnocache : Math.random()
                 },
                 success : function(msg){
                     var anchors = [
@@ -643,7 +650,8 @@ function other_layers_clic() {
         $.ajax({
             url: url_bbox,
                 data : {
-                    id:id_source
+                    id:id_source,
+                                randomnocache : Math.random()
                 },
             success : function(msg){
                 var anchors = [
@@ -1006,9 +1014,10 @@ map.on('click', function(e) {
         
         console.log(url)
         $.ajax({
-
+                    
             url:url,
             data : {
+                            randomnocache : Math.random(),
                 id : id_source,
                 x : Math.round(coords['lng']*1000000),
                 y : Math.round(coords['lat']*1000000)
@@ -1026,6 +1035,18 @@ map.on('click', function(e) {
                 // var k=Object.keys(msg)
                 $('#t1-v1').text(msg['val'][0].toString())
                 $('#t1-v2').text(msg['val'][1].toString())
+                ind=Math.trunc(msg['val'][1]/10)
+                if (ind>0){
+                    ind-=1
+                }
+                
+                $("#table-legend tr:eq(0) td").css("background-color","#eeeeee") 
+                $("#table-legend tr:eq(0) td").css("color","#000")
+                s="#table-legend  td:eq("+(ind).toString()+")"
+
+                $(s).css("background-color","grey") 
+                $(s).css("color","#fff")
+
 
             }
         });
@@ -1079,9 +1100,10 @@ map2.on('click', function(e) {
        
         console.log(url)
         $.ajax({
-
+                   
             url:url,
             data : {
+                            randomnocache : Math.random(),
                 id : id_source,
                 x : Math.round(coords['lng']*1000000),
                 y : Math.round(coords['lat']*1000000)
@@ -1259,7 +1281,8 @@ $("#submitFormCorr").click(function (e) {
                 //recup de scoins de la carte necessaires pour que leaflet affiche le png
                 url: url_bbox,
                 data : {
-                    id:id_source
+                    id:id_source,
+                    randomnocache: Math.random()
                 },
                 success : function(msg){
                     anchors = [
@@ -1400,7 +1423,8 @@ function get_stats_reg(){
             url : url_img,
             async : false,
             data : { 
-                id_prev : id_prev
+                id_prev : id_prev,
+                randomnocache: Math.random()
             },
             success: 
                 function(msg){
@@ -1429,7 +1453,8 @@ function get_stats_reg_unique(id_prev){
         url : url_img,
         async : false,
         data : { 
-            id_prev : id_prev
+            id_prev : id_prev,
+             randomnocache: Math.random()
         },
         success: 
             function(msg){
@@ -1639,8 +1664,10 @@ function merge_mi_fine(id_prev,id_source) {
         //recup de scoins de la carte necessaires pour que leaflet affiche le png
         url: url_bbox,
         data : {
+                        randomnocache : Math.random(),
             id:id_source
         },
+ 
         success : function(msg){
             anchors = [
                 [msg['ymax'], msg['xmin']], //haut gauche
@@ -1679,17 +1706,21 @@ function export_hd() {
             id_prev=i.split('_')[2]
             console.log(id_source)
             $.ajax ({
+  
               async : true,
               url: '{% url "merge_fine" %}',
               data : {
+                              randomnocache : Math.random(),
                 id_source:id_source,
                 id_prev:id_prev
               },
             success : function(){
                   $.ajax ({
+
                       async : true,
                       url: '{% url "callback_merge" %}',
                       data : {
+                                      randomnocache : Math.random(),
                         id_source:id_source,
                         id_prev:id_prev
                       }
@@ -1713,14 +1744,17 @@ function export_hd() {
               async : false,
               url: '{% url "merge_fine" %}',
               data : {
+                   randomnocache: Math.random(),
                 id_source:id_source,
                 id_prev:id_prev
               },
                 success : function(){
                   $.ajax ({
+        
                       async : true,
                       url: '{% url "callback_merge" %}',
                       data : {
+                                      randomnocache : Math.random(),
                         id_source:id_source,
                         id_prev:id_prev
                       }
@@ -1743,6 +1777,7 @@ function mi_fine_url(id_source,id_prev){
         url:url_img,
         async : false,
         data : { 
+         randomnocache: Math.random(),
             id_source : id_source,
             id_prev : id_prev
         },
@@ -1760,6 +1795,7 @@ function img_raster_url(id_source){
         url:url_img,
         async : false,
         data : { 
+         randomnocache: Math.random(),
             id_source : id_source
         },
        
@@ -1947,9 +1983,9 @@ function validPrevi(){
     export_low_val()
     export_low()
     export_hd()
-    contactSMILE()
+    //contactSMILE()
     log_dashboard('validation_generale','validPrevi',100,'INFO',"fin des calculs")
-    export_scp()
+    //export_scp()
     }
 function confirmValidPrevi(){
 	$('#mask').show()
@@ -1964,6 +2000,7 @@ function get_expertises(id_source){
         url:'{% url "get_expertises" %}',
         async : false,
         data : { 
+         randomnocache: Math.random(),
             id_source : id_source
         },
        
@@ -1979,7 +2016,8 @@ function set_expertises(id_exp,bool){
         async : false,
         data : { 
             id_exp : id_exp,
-			active : bool
+			active : bool,
+             randomnocache: Math.random()
         },
        
         success : function(msg){

@@ -417,6 +417,17 @@ body.modal-open {
     display : none;
 	background-color :  #dddddd;	
 }
+#confirm-contexte-div{
+	border : 1px solid black;
+	padding : 5px;
+    position : fixed;
+    top: 50%;
+    left : 45%;
+    z-index: 100; 
+    vertical-align : middle;
+    display : none;
+	background-color :  #dddddd;	
+}
 .confirm-p{
 	margin : 5%;
 	text-align : center;
@@ -464,3 +475,35 @@ body.modal-open {
     float : right;
 }
 
+a { color: inherit; } 
+li { list-style-type : none;}
+.div-valid {
+    border : 1px solid black;
+    text-align : center;
+}
+.div-valid:hover {
+        background-color: #333;
+        color : white;
+
+}
+
+.paramactif{
+    font-size : 1.5em;
+    color : grey;
+    text-align : center;
+    }
+div.row {
+    border-left :1px solid #eee;
+    border-right :1px solid #eee;
+    padding-bottom : 10px;
+    border-bottom : 1px solid #eee;
+}
+#ctx-info-container {
+    max-width : 70%;
+    min-width : 70%;
+    margin-left : 15%;
+    margin-right : 15%;
+}
+#ctx-info-container td {
+    width : 65%;
+}
