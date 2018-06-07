@@ -8,7 +8,7 @@ urlpatterns = [
     #default login
     url(r'accounts/login/$', auth_views.LoginView.as_view(),name='login'),
     # Index
-    url(r'^$', views.index, name='index'),
+    url(r'^index$', views.index, name='index'),
 
     # Dynamic javascript application
     url(r'^application.map.js$', views.application_js, name='application_js'),
@@ -127,5 +127,10 @@ urlpatterns = [
         views.callback_merge, name='callback_merge'),  
     url(r'^export_scp$',
         views.export_scp, name='export_scp'), 
+		    url(r'^get_note$',
+        views.get_note, name='get_note'), 
+		    url(r'^save_note$',
+        views.save_note, name='save_note'), 
+
 ]
 

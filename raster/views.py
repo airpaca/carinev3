@@ -1093,3 +1093,16 @@ def export_scp(request):
         return HttpResponse('export vers serveur de tuiles et api terminé')
     else :
         return HttpResponse('export vers serveur de tuiles et api terminé</br>' + errors)
+		
+def get_note(request):
+	id = int(request.GET.get('id'))
+	s=Source.objects.get(id=id)
+	note = s.commentaire
+	return HttpResponse(note)
+def save_note(request):
+	id=int(request.GET.get('id'))
+	note = request.GET.get('commentaire')
+	s=Source.objects.get(id=id)
+	s.commentaire = note
+	s.save()
+	return HttpResponse('save  '  +note)

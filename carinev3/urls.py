@@ -27,5 +27,6 @@ urlpatterns = [
     url(r'^api-air2go/', include('raster.api_air2go_urls')),
     url(r'^raster/', include('raster.urls_config')),
     url(r'^admin/', admin.site.urls),
-    
+	url(r'^raster/', include('raster.urls_accueil')),
+
 ]

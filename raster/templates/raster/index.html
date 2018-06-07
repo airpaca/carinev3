@@ -425,6 +425,16 @@
             <button  class="btn btn-primary" id="valid_commentaire" onclick="valid_commentaire()">Valider le commentaire</button>
           </div>
         </div>
+		<div id="note-div" class="form-group row">
+          
+          <label for="note-text-input" class="col-2 col-form-label">Text</label>
+          <div class="col-10 note-div2">
+            <button class="del_form" id="hide_com_btn" onclick="remove_note_form()"> <i class="glyphicon glyphicon-remove"></i></button>
+            <textarea class="form-control" rows="3" placeholder="What's up?"  id="note-text-input"></textarea>
+            <input class="form-control hide" type="text" value="" id="id-input">
+            <button  class="btn btn-primary" id="valid_note" onclick="valid_note()">Valider le commentaire</button>
+          </div>
+        </div>
 		<div class="msg">	
 			<button onclick='close_msg()' id='close-msg-btn'>Fermer</button>
 		</div>

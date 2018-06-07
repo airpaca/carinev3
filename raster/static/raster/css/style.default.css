@@ -507,3 +507,25 @@ div.row {
 #ctx-info-container td {
     width : 65%;
 }
+#note-div {
+
+    width : 1000px;
+    height :1000px;
+    position : fixed;
+    top: 0px;
+    left : 0px;
+    z-index: 100; 
+    vertical-align : middle;
+    display : none;
+
+}
+.note-div2 {
+    top: 50%;
+    position: relative;
+    left: 50%;
+    height : 500px;
+    
+}
+.note-div2  input{
+    
+}

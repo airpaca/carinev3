@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    
+        <!-- 
+        Template bootstrap pour SIG: https://github.com/luckynvic/GIS-Web-Template        
+        -->
+    
+        <!-- Infos générales -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <title>Carine v3</title>
+        <meta name="author" content="vjulier@atmo-aura.fr">
+        <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+		<META HTTP-EQUIV="Expires" CONTENT="-1">
+
+
+        <link href="{% static 'raster/lib/customScroll/css/jquery.mCustomScrollbar.css' %}" rel="stylesheet">
+		<link rel="stylesheet" href="{% static 'raster/css/style.default.css' %}"/>
+
+        <link rel="stylesheet" href="{% static 'raster/css/style.css' %}"/>
+        <link href="{% static 'raster/css/bootstrap.min.css' %}" rel="stylesheet">
+    </head>
+    
+    <body>    
+
+		<div class="titre-glob">
+
+			<h1 class="titre-h1"> Carine </h1>
+			<a style='color : grey;' class="navbar-brand"><h2>Bonjour {{user.first_name}}</h2></a>
+			<br>
+			<br>
+			<hr style="border: 1px solid black; height : 100%; width : 100% ;">
+			<div class='loader-daddy'>
+				<div class="loader"></div>
+				<div><i>Préparation des sources</i></div>
+			</div>
+			<div class="link-div" >
+                <ul class="nav navbar-nav navbar-right">
+                    <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
+                    <li class='link-li'>
+						
+						
+                        <a id='a-previ' ><img class='li-img' src="{% static 'raster/img/colorier1.png' %}" alt="carine previ" ></a>
+						<h2><i>Prévision</i></h2>
+                    </li>
+                    <li class='link-li'>
+						<a id='a-exploit' ><img class='li-img' src="{% static 'raster/img/calendrier1.jpg' %}" alt="carine previ" title='en construction'></a>
+						<h2><i>Exploitation</i></h2>
+                    </li>
+
+                </ul>
+			</div>
+		</div>
+
+
+
+        <!-- JQuery -->
+        <script src="{% static 'raster/lib/jquery2.2.4/jquery2.2.4.js' %}"></script>
+        <script src="http://code.jquerygeo.com/jquery.geo-1.0.0-rc1.1.min.js"></script>
+
+        <!-- Bootstrap -->
+        <script src="{% static 'raster/lib/bootstrap-3.3.7-dist/js/bootstrap.min.js' %}"></script>
+
+        <!-- Application principale -->
+        <script src="{% url 'accueil_js' %}" type="text/javascript" charset="utf-8"></script>
+		<link href="{% static 'raster/css/accueil.css' %}" rel="stylesheet">
+    </body>
+
+</html>

@@ -285,7 +285,7 @@ function check_sources () {
         }
     });
 }
-preprocess_files()
+// preprocess_files()
 /* function build_left_menu(msg) {
     
     //les cles du dic 'liste_source' sont l'id de la source
@@ -353,6 +353,7 @@ function layer_but_clic() {
 					$(this).after('<div class="div-fine" id="fine-btn-'+id_prev.toString()+'" onclick="merge_mi_fine('+id_prev+','+id_source+')"><button class="btn btn-secondary btn-fine"><i>Fine échelle</i></button></div>')
 					$(this).after('<div class="div-fine" id="exp-btn"><button  onclick="expMenu('+id_source+')" class="btn btn-secondary btn-fine"><i>Corrections</i></button></div>')
                     $(this).after('<div class="div-fine" id="stats-btn-'+id_prev.toString()+'"><button  onclick="statsShow('+id_prev+')" class="btn btn-secondary btn-fine"><i>Stats reg.</i></button><button  onclick="get_stats_reg_unique('+id_prev+')" class="btn btn-secondary btn-fine refresh-stats-btn"> <i class="glyphicon glyphicon-refresh"></i></button></div>')
+					$(this).after('<div class="div-fine" id="add-note-div"><button  onclick="showNote('+id_source+')" class="btn btn-secondary btn-fine"><i>Note</i></button></div>')
 					$(this).after('<table id="table-legend"><tbody></tbody></table>')
 					$.ajax({
 							//recup de scoins de la carte necessaires pour que leaflet affiche le png
@@ -757,7 +758,7 @@ function calculate_multi_all(){
         data : {
             ech : i             
         }
-        ,success : function(){
+        ,success : function(msg){
             console.log('success multi => a check')
             console.log(msg)
         }
@@ -861,12 +862,50 @@ mapbox_light2.addTo(map2);
 
 //fonction popup sur champ 'nom'
 //utilis?ar les couches vecteurs
+function highlightFeature(e) {
+    var layer = e.target;
+
+    layer.setStyle({
+        weight: 5,
+        color: '#666',
+        dashArray: '',
+        fillOpacity: 0.7
+    });
+
+    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+        layer.bringToFront();
+    }
+}
+function resetHighlightReg(e) {
+    vectorLayers['reg_aura_2']['objet'].resetStyle(e.target);
+	//console.log(e.target.feature)
+}
+function resetHighlightDisp(e) {
+    vectorLayers['disp_reg_2']['objet'].resetStyle(e.target);
+}
+function zoomToFeature(e) {
+    map.fitBounds(e.target.getBounds());
+}
+
 function onEachFeature(feature, layer) {
         var popupContent="";
         if (feature.properties && feature.properties.nom) {
             popupContent += feature.properties.nom;
+			
         }
+        layer.bindPopup(popupContent);
+    }
+function onEachFeatureReg(feature, layer) {
+        var popupContent="";
+        if (feature.properties && feature.properties.nom) {
+            popupContent += feature.properties.nom;
 
+        }
+		layer.on({
+			mouseover: highlightFeature,
+			mouseout: resetHighlightReg,
+			click: zoomToFeature
+		});
         layer.bindPopup(popupContent);
     }
 function onEachFeatureDisp(feature, layer) {
@@ -874,7 +913,11 @@ function onEachFeatureDisp(feature, layer) {
         if (feature.properties && feature.properties.lib_court_) {
             popupContent += feature.properties.lib_court_;
         }
-
+		layer.on({
+			mouseover: highlightFeature,
+			mouseout:resetHighlightDisp,
+			click: zoomToFeature
+		});
         layer.bindPopup(popupContent);
     }
 // Enregistrement du polluant et de l'??ce par defaut
@@ -889,7 +932,7 @@ $.ajax({
         reg_aura = L.geoJSON(
             msg,
             {
-                onEachFeature: onEachFeature,
+                onEachFeature: onEachFeatureReg,
                 style : myStyle
             }
         )
@@ -2091,17 +2134,17 @@ dm.addEventListener('dragstart',drag_start,false);
 document.body.addEventListener('dragover',drag_over,false); 
 document.body.addEventListener('drop',drop,false);
 function log_dashboard(id_process,script_name,step,lvl,msg){
-        $.get({
-        async : true,
-        url:"http://inf-tools/dashboard/log",
-        data : {
-            id : id_process,
-            script : script_name,
-            etape : step,
-            type : lvl,
-            m : msg
-        }
-    })
+        // $.get({
+        // async : true,
+        // url:"http://inf-tools/dashboard/log",
+        // data : {
+            // id : id_process,
+            // script : script_name,
+            // etape : step,
+            // type : lvl,
+            // m : msg
+        // }
+    // })
 }
 function export_scp(){
     $.ajax ({
@@ -2114,5 +2157,55 @@ function export_scp(){
             alert(msg)
         }
         
+    })
+}
+
+/////
+function showNote(id){
+    $("#note-div").show()
+    console.log(id)
+    d=format_date_ymd(today)
+    $.get({
+        url : '{% url "get_note" %}',
+        async : true,
+        data : { 
+            id : id
+        },
+        success: 
+            function(note){
+				console.log(note)
+                c=(note['note'])              
+                $('#note-text-input').val(note)
+				$('#id-input').val(id)
+            }
+    })
+    $("#mask").show()
+}
+function remove_note_form() {
+    $("#note-div").hide()
+    $("#mask").hide()
+}
+function valid_note(){
+    // var csrftoken = getCookie('csrftoken');
+    id=$('#id-input').val()
+    console.log(id)
+    comm=$('#note-text-input').val()
+    console.log(comm)
+    $("#note-div").hide()
+    $("#mask").hide()
+    $.get({   
+       
+        // headers: { "X-CSRFToken": csrftoken },    
+        url: '{% url "save_note"   %}',
+        data: {
+            id : id,
+            commentaire:comm
+        },
+        //dataType: 'json',
+        success: function(msg){
+
+            console.log(msg)
+        }
+
     })
 }
