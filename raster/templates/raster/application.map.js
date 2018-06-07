@@ -869,7 +869,7 @@ function highlightFeature(e) {
         weight: 5,
         color: '#666',
         dashArray: '',
-        fillOpacity: 0.7
+        fillOpacity: 0.1
     });
 
     if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
@@ -884,7 +884,7 @@ function resetHighlightDisp(e) {
     vectorLayers['disp_reg_2']['objet'].resetStyle(e.target);
 }
 function zoomToFeature(e) {
-    map.fitBounds(e.target.getBounds());
+    //map.fitBounds(e.target.getBounds());
 }
 
 function onEachFeature(feature, layer) {
@@ -898,7 +898,7 @@ function onEachFeature(feature, layer) {
 function onEachFeatureReg(feature, layer) {
         var popupContent="";
         if (feature.properties && feature.properties.nom) {
-            popupContent += feature.properties.nom;
+            popupContent += feature.properties.NOM_REG;
 
         }
 		layer.on({
@@ -926,7 +926,8 @@ function onEachFeatureDisp(feature, layer) {
 
 var reg_aura;
 $.ajax({
-    url: '{% url "reg_aura"  %}',
+	dataType: "json",
+    url: "{% static 'raster/vector_files/region_4326_AE.geojson' %}",
     success : function(msg){
         //j=JSON.parse(msg)
         reg_aura = L.geoJSON(
@@ -936,6 +937,7 @@ $.ajax({
                 style : myStyle
             }
         )
+
         vectorLayers['reg_aura']= {'objet' : reg_aura}
         //clone grace au plugin clonelayer pour permettre d'afficher sur les 2 frames
         var  reg_aura_2 = cloneLayer(reg_aura);
@@ -948,9 +950,10 @@ var disp_reg_2;
 
 $.ajax({
     dataType: "json",
-    url: "{% static 'raster/vector_files/disp_reg_aura_3857.geojson' %}",
+    url: "{% static 'raster/vector_files/disp_reg_aura_4326.geojson' %}",
     success : function(msg){
         //j=JSON.parse(msg)
+		console.log(msg)
         disp_reg= L.geoJSON(
             msg,
             {
@@ -1967,16 +1970,16 @@ function getStatHTML(id,obj){
     sepi=obj['surf_exp_perc_info']
     tr_dep_cls='tr_grey'
     if (dsi=='oui'){
-        tr_dep_cls='tr_orange'      
+        tr_dep_cls='tr_red'      
     }
     if (dpi=='oui'){
-        tr_dep_cls='tr_orange'
+        tr_dep_cls='tr_red'
     }
     if (dsa=='oui'){
-        tr_dep_cls='tr_red'     
+        tr_dep_cls='tr_brown'     
     }
     if (dpa=='oui'){
-        tr_dep_cls='tr_red'
+        tr_dep_cls='tr_brown'
     }
     s='<tr class="'+tr_dep_cls+'">'+
         '<td>'+id+'</td>'+
@@ -1994,6 +1997,7 @@ function getStatHTML(id,obj){
         '<td>'+pepa+'</td>'+
         '<td>'+dpa+'</td>'+
     '</tr>'
+	
     return s
 }
 function remove_stats_form(){
@@ -2112,27 +2116,27 @@ function switch_ecran() {
 		$('#map-block2').css('display','inline-block')
 	}
 }
-function drag_start(event) {
-    var style = window.getComputedStyle(event.target, null);
-    event.dataTransfer.setData("text/plain",
-    (parseInt(style.getPropertyValue("left"),10) - event.clientX) + ',' + (parseInt(style.getPropertyValue("top"),10) - event.clientY));
-} 
-function drag_over(event) { 
-    event.preventDefault(); 
-    return false; 
-} 
-function drop(event) { 
-    var offset = event.dataTransfer.getData("text/plain").split(',');
-    var z = document.getElementById('drag_stats_btn');
-    z.style.left = (event.clientX + parseInt(offset[0],10)) + 'px';
-    z.style.top = (event.clientY + parseInt(offset[1],10)) + 'px';
-    event.preventDefault();
-    return false;
-} 
-var dm = document.getElementById('drag_stats_btn'); 
-dm.addEventListener('dragstart',drag_start,false); 
-document.body.addEventListener('dragover',drag_over,false); 
-document.body.addEventListener('drop',drop,false);
+// function drag_start(event) {
+    // var style = window.getComputedStyle(event.target, null);
+    // event.dataTransfer.setData("text/plain",
+    // (parseInt(style.getPropertyValue("left"),10) - event.clientX) + ',' + (parseInt(style.getPropertyValue("top"),10) - event.clientY));
+// } 
+// function drag_over(event) { 
+    // event.preventDefault(); 
+    // return false; 
+// } 
+// function drop(event) { 
+    // var offset = event.dataTransfer.getData("text/plain").split(',');
+    // var z = document.getElementById('drag_stats_btn');
+    // z.style.left = (event.clientX + parseInt(offset[0],10)) + 'px';
+    // z.style.top = (event.clientY + parseInt(offset[1],10)) + 'px';
+    // event.preventDefault();
+    // return false;
+// } 
+// var dm = document.getElementById('drag_stats_btn'); 
+// dm.addEventListener('dragstart',drag_start,false); 
+// document.body.addEventListener('dragover',drag_over,false); 
+// document.body.addEventListener('drop',drop,false);
 function log_dashboard(id_process,script_name,step,lvl,msg){
         // $.get({
         // async : true,
@@ -2209,3 +2213,64 @@ function valid_note(){
 
     })
 }
+// function allowDrop(ev) {
+    // ev.preventDefault();
+// }
+
+// function drag(ev) {
+    // ev.dataTransfer.setData("text", ev.target.id);
+// }
+
+// function drop(ev) {
+	// console.log(ev)
+    // ev.preventDefault();
+    // var x = ev.dataTransfer.getData("text");
+    // ev.target.appendChild(document.getElementById(data));
+// }
+
+
+
+var offset_data; //Global variable as Chrome doesn't allow access to event.dataTransfer in dragover
+function drag_start(event) {
+    var style = window.getComputedStyle(document.getElementById('stats_div'));
+    offset_data = (parseInt(style.getPropertyValue("left"),10) - event.clientX) + ',' + (parseInt(style.getPropertyValue("top"),10) - event.clientY);
+    event.dataTransfer.setData("text/plain",offset_data);
+} 
+function drag_over(event) { 
+console.log(event)
+    var offset;
+    try {
+        offset = event.dataTransfer.getData("text/plain").split(',');
+    } 
+    catch(e) {
+        offset = offset_data.split(',');
+    }
+    var dm = document.getElementById('drag_stats_btn');
+	console.log(dm)
+    dm.style.left = (event.clientX + parseInt(offset[0],10)) + 'px';
+    dm.style.top = (event.clientY + parseInt(offset[1],10)) + 'px';
+    event.preventDefault(); 
+    return false; 
+} 
+function drop(event) { 
+console.log("drop")
+    var offset;
+    try {
+        offset = event.dataTransfer.getData("text/plain").split(',');
+    } 
+    catch(e) {
+        offset = offset_data.split(',');
+    }
+    var dm = document.getElementById('stats_div');
+    dm.style.left = (event.clientX + parseInt(offset[0],10)) + 'px';
+    dm.style.top = (event.clientY + parseInt(offset[1],10)) + 'px';
+    event.preventDefault();
+    return false;
+} 
+var dm = document.getElementById('drag_stats_btn'); 
+dm.addEventListener('dragstart',drag_start,false); 
+document.getElementById('englob').addEventListener('dragover',drag_over,false); 
+document.getElementById('englob').addEventListener('drop',drop,false); 
+
+//test temp
+var locationFilter = new L.LocationFilter().addTo(map);

@@ -16,11 +16,11 @@ colors=[
     '#99E600',#30<40
     '#C3F000',#40<50
     '#FFFF00',#50<60
-    '#FFD100',
-    '#FFAA00',
-    '#FF5E00',
-    '#FF0000',
-    '#800000'
+    '#FFD100',#60<70
+    '#FFAA00',#70
+    '#FF5E00',#80
+    '#FF0000',#90
+    '#800000' #100>
     ]
 def get_vals(pol):
     if (pol=='O3'):
@@ -45,7 +45,7 @@ def to_rgb(ls):
 
 
 cmap = ListedColormap(colors)
-norm = BoundaryNorm([0,10,20,30,40,50,60,70,80,90,100], cmap.N)   
+norm = BoundaryNorm([0,10,20,30,40,50,60,70,80,90,100,1000], cmap.N)   
 def discrete_cmap(cols):
     N=len(cols)
     """create a colormap with N (N<15) discrete colors and register it"""

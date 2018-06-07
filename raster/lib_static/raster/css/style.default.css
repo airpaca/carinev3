@@ -366,8 +366,6 @@ body.modal-open {
 }
 #hide_stats_btn{
 	position : relative;
-	top : 15px;
-	right : 15px;
 	z-index : 101;
     
 }
@@ -390,11 +388,13 @@ body.modal-open {
 .tr_grey {
 	background-color : #cccccc;
 }
-.tr_orange {
-	background-color : #ff5e00;
+.tr_brown {
+	background-color : #800000;
+	color : white;
 }
 .tr_red {
 	background-color : #ff0000;
+	color : white;
 }
 .table-corr th {
 	font-size: 1em;

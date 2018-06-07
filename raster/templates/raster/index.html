@@ -194,6 +194,39 @@
             </div><!-- /.navbar-collapse -->
         </nav>
     <div id="englob">
+		<div   class="ui-widget-content" id="stats_div" class="list-group point-list-view" >
+		<div id="stats_tbl_div">
+			<button draggable='true' id="drag_stats_btn"  > <i class="glyphicon glyphicon-move"></i></button>
+			<button id="hide_stats_btn" onclick="remove_stats_form()"> <i class="glyphicon glyphicon-remove"></i></button>
+			<table  id="stats_tbl" class="table table-responsive t3">
+				<thead>
+					<tr>
+						<th colspan=2></th>
+						<th colspan=6>INFO</th>
+						<th colspan=6>ALERT</th>						
+					</tr>
+					<tr>
+						<th>zone</th>
+						<th>lib</th>
+						<th>surf</th>
+						<th>% surf</th>
+						<th>dep. surf</th>
+						<th>pop</th>
+						<th>% pop</th>
+						<th>dep. pop</th>
+						<th>surf</th>
+						<th>% surf</th>
+						<th>dep. surf</th>
+						<th>pop</th>
+						<th>% pop</th>
+						<th>dep pop</th>	
+					</tr>					
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>                        
+	</div>
 <!--     <button onclick='test()'>TEST</button> -->
         <div  class="map-block" id="map-block1">
             <!-- Déclaration de la carte -->
@@ -604,39 +637,7 @@
                     </div>
 
     </div>
-	<div  id="stats_div" class="list-group point-list-view">
-		<div id="stats_tbl_div">
-			<button draggable='true' id="drag_stats_btn"  > <i class="glyphicon glyphicon-move"></i></button>
-			<button id="hide_stats_btn" onclick="remove_stats_form()"> <i class="glyphicon glyphicon-remove"></i></button>
-			<table id="stats_tbl" class="table table-responsive t3">
-				<thead>
-					<tr>
-						<th colspan=2></th>
-						<th colspan=6>INFO</th>
-						<th colspan=6>ALERT</th>						
-					</tr>
-					<tr>
-						<th>zone</th>
-						<th>lib</th>
-						<th>surf</th>
-						<th>% surf</th>
-						<th>dep. surf</th>
-						<th>pop</th>
-						<th>% pop</th>
-						<th>dep. pop</th>
-						<th>surf</th>
-						<th>% surf</th>
-						<th>dep. surf</th>
-						<th>pop</th>
-						<th>% pop</th>
-						<th>dep pop</th>	
-					</tr>					
-				</thead>
-				<tbody>
-				</tbody>
-			</table>
-		</div>                        
-	</div>
+
 
         <!-- Javascript modules - Placed at the end of the document so the pages load faster -->
 
@@ -696,6 +697,8 @@
         <script src="{% static 'raster/lib/leaflet-clonelayer-master/index.js' %}"></script>
         <script src="{% static 'raster/lib/leaflet-greyscale.js' %}"></script>
         
+		<script src="{% static 'raster/lib/Proj4Leaflet-1.0.1/lib/proj4.js' %}"></script>
+		<script src="{% static 'raster/lib/Proj4Leaflet-1.0.1/src/proj4leaflet.js' %}"></script>
         <!-- styles des couches vecteurs -->
         <script src="{% static 'raster/lib/map_styles.js' %}"></script>
         
