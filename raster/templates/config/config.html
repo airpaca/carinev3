@@ -1,0 +1,135 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    
+        <!-- 
+        Template bootstrap pour SIG: https://github.com/luckynvic/GIS-Web-Template        
+        -->
+    
+        <!-- Infos générales -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <title>Carine v3</title>
+        <meta name="author" content="vjulier@atmo-aura.fr">
+        
+        <!-- Chargement des feuilles de stype CSS -->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
+        <link href="{% static 'raster/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'raster/lib/customScroll/css/jquery.mCustomScrollbar.css' %}" rel="stylesheet">
+        <link href="{% static 'raster/css/style.default.css' %}" rel="stylesheet">
+        <link href="{% static 'raster/css/dashboard_fine.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'raster/css/style.css' %}"/>
+
+        <script type="text/javascript"> </script>
+        <!-- API Google Maps
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHyrW7AhUa3J8sm7iLofM5PzbLmj_j2wo" type="text/javascript"></script>
+        -->
+        
+    </head>
+    
+    <body>
+    <script src="{% url 'config_js' %}" type="text/javascript" charset="utf-8"></script>
+        <!-- Barre de navigation -->
+        <nav class="navbar navbar-default nav-fixed-top" role="navigation" id="app-nav-bar" >
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header" >
+                <!--<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>-->
+                <a class="navbar-brand" href="{% url 'index' %}">CARINE v3</a>
+                <a class="navbar-brand" href=""><i>Bonjour {{user}}</i></a>
+
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
+                   <li>
+                        <a href="{% url 'mylogout' %}">Logout</a>
+                    </li>
+
+                </ul>
+                                <ul class="nav navbar-nav navbar-right">
+                    <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
+                    <li>
+                        <a href="{% url 'help' %}">Help</a>
+                    </li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </nav>
+                <!-- Barre d'outils -->
+        <nav class="navbar navbar-default nav-fixed-top" role="navigation" id="tools-nav-bar" >
+            <div class="paramactif">Contexte actif : {{ ctx_active.nom }}</div>
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul style="width : 100%; padding-left : 30% ; padding-right : 30%;" id="poll-menu" class="nav navbar-nav">
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </nav>
+                <div id="mask">
+        </div>
+
+<div class="container">
+  <div class="row">
+					<li class="dropdown">
+						
+
+							<a class="dropdown-toggle btn " type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Contextes   <i class="glyphicon glyphicon-collapse-down"></i></a>
+                            <hr>
+							<ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                {% for ctx in ctx_list %}
+								<li><a onclick=show_ctx_info({{ctx.id}}) href="#" title="">{{ctx.nom}}</a></li>
+                                {% endfor %}
+							</ul>
+
+						
+					</li>
+
+
+    <div class="col-sm-6" id="ctx-info-container" >
+      <!-- <button type="button" class="btn btn-light">{{ ctx_active.nom }}</button> -->
+        <!-- <ul class="list-group"> -->
+            <!-- <li class="list-group-item">{{db.default.HOST}}</li> -->
+          <!-- <li class="list-group-item">{{ctx.previ_mod.launch_smile_prod}}</li> -->
+          <!-- <li class="list-group-item">{{ctx.previ_mod.launch_smile_preprod}}</li> -->
+         <!-- <button type="button"  onclick=confirmValidContexte({{ctx.id}}) class="btn btn-light">Activer le contexte <br>{{ ctx.nom }}</br></button>  -->
+        <!-- </ul> -->
+    </div>
+    
+  </div>
+</div>
+		<div id="confirm-contexte-div">
+			<div class="confirm-p">Vous allez modifier le contexte d'utilisation de carine. </div>
+			<div class="confirm-btn-class">
+				<button onclick=toggle_active() class="confirm-btn">Confirmer</button>		
+				<button onclick=hideConfirmValidContexte() class="confirm-btn">Annuler</button>
+			</div>
+		</div>    
+<ul>
+
+</ul>
+
+                <!-- JQuery -->
+        <script src="{% static 'raster/lib/jquery2.2.4/jquery2.2.4.js' %}"></script>
+        <script src="http://code.jquerygeo.com/jquery.geo-1.0.0-rc1.1.min.js"></script>
+
+        <!-- Bootstrap -->
+        <script src="{% static 'raster/lib/bootstrap-3.3.7-dist/js/bootstrap.min.js' %}"></script>
+     </body>
+     </html>
