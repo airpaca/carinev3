@@ -1011,9 +1011,12 @@ def preprocess_files(request):
    
 	return HttpResponse(msg)
 def ws_smile(request):
-	f= urllib.request.urlopen(config.launch_smile_prod)
-	f2= urllib.request.urlopen(config.launch_smile_preprod)
-	return HttpResponse(f2.read())
+	ctx=Context.objects.get(active=True)
+	if (ctx.previ_mod.launch_smile_prod != "''"):
+		f= urllib.request.urlopen(ctx.previ_mod.launch_smile_prod)
+	if (ctx.previ_mod.launch_smile_prod != "''"):
+		f2= urllib.request.urlopen(ctx.previ_mod.launch_smile_preprod)
+	return HttpResponse(ctx.previ_mod.launch_smile_prod)
 	
 def get_expertises(request):
 	log.debug("  xxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxx ")
