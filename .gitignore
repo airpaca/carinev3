@@ -148,7 +148,7 @@ fabric.properties
 
 ### Carine v3
 /*/static/*/data/
-!/*/static/*/lib/
-
+config.*
+/*/migrations/*.py
 logins.*
 
