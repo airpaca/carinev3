@@ -2030,9 +2030,9 @@ function validPrevi(){
     export_low_val()
     export_low()
     export_hd()
-    //contactSMILE()
+    contactSMILE()
     log_dashboard('validation_generale','validPrevi',100,'INFO',"fin des calculs")
-    //export_scp()
+    export_scp()
     }
 function confirmValidPrevi(){
 	$('#mask').show()
