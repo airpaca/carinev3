@@ -57,6 +57,7 @@ function init(){
 					data : { state : 'True' },
 					success : function(msg){
 						$(".loader-daddy").css("display","None")
+						
 						console.log(msg)
 					}
 				})
@@ -65,8 +66,9 @@ function init(){
 	}
 	else {
 		$(".loader-daddy").css("display","None")
-		$("#a-previ").attr('href',"{% url 'index' %}")
+		
 		//$("#a-exploit").attr('href',"{% url 'index' %}")
 	}
+	$("#a-previ").attr('href',"{% url 'index' %}")
 }
 init()

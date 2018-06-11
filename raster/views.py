@@ -35,6 +35,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 import urllib.request
+import time
 
 # Log
 log = logging.getLogger('carinev3.raster.views')
@@ -1083,6 +1084,7 @@ def export_scp(request):
 			for u in urls:
 				if os.path.exists(u):
 					libcarine3.subprocess_wrapper.scp_classic(u,m.domaine,m.user,m.dir)
+					time.sleep(1)
 				else : 
 					errors += u  + ' '
 	
