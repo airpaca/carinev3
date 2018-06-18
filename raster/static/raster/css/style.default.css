@@ -529,3 +529,10 @@ div.row {
 .note-div2  input{
     
 }
+.leaflet-popup-content {
+	width : 300px;
+	
+}
+.popup-img {
+	width : 95%;
+}

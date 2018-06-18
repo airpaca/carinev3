@@ -889,12 +889,27 @@ function zoomToFeature(e) {
 
 function onEachFeature(feature, layer) {
         var popupContent="";
-        if (feature.properties && feature.properties.nom) {
-            popupContent += feature.properties.nom;
+        if (feature.properties && feature.properties.nom_site) {
+            popupContent += 'nom : ' + feature.properties.nom_site + "<br>";
+			popupContent += 'id polair : ' + feature.properties.id_polair.toString() + "<br>";
+			popupContent += 'typologie : ' + feature.properties.lib_typologie + "<br>";
+			popupContent += '<img class="popup-img" src="'+feature.properties.photo+'" ><br>';
 			
         }
         layer.bindPopup(popupContent);
     }
+function onEachFeatureEPCI(feature, layer) {
+	var popupContent="";
+	if (feature.properties && feature.properties.NOM_EPCI) {
+		console.log(feature['geometry']['coordinates'][0][0])
+		popupContent += 'NOM_EPCI : ' + feature.properties.NOM_EPCI + "<br>";
+		
+		popupContent += '<button onclick=showModal('+feature['geometry']['coordinates'][0][0]+') >'+feature.properties.NOM_EPCI+'</button><br>';
+		
+	}
+	layer.bindPopup(popupContent);
+}
+
 function onEachFeatureReg(feature, layer) {
         var popupContent="";
         if (feature.properties && feature.properties.nom) {
@@ -911,7 +926,9 @@ function onEachFeatureReg(feature, layer) {
 function onEachFeatureDisp(feature, layer) {
         var popupContent="";
         if (feature.properties && feature.properties.lib_court_) {
+			popupContent += feature.properties.id_zone + '<br>';
             popupContent += feature.properties.lib_court_;
+			
         }
 		layer.on({
 			mouseover: highlightFeature,
@@ -968,13 +985,18 @@ $.ajax({
 
     }
 });
+function showModal(geom){
 
+	corr_coords=geom
+	$("#modal_corr_form").modal("show")
+	
+}
 
 var layer_sites_fixes;
 $.ajax({
-    url: '{% url "sites_fixes"  %}',
+	dataType: "json",
+    url: '{% static "raster/vector_files/site_fixe_2017.geojson"  %}',
     success : function(msg){
-        
         layer_sites_fixes = L.geoJSON(
             msg,
             {
@@ -992,10 +1014,30 @@ $.ajax({
 
     }
 });
+var epci;
+var epci_2
+$.ajax({
+	dataType: "json",
+    url: '{% static "raster/vector_files/epci_4326_AE.geojson"  %}',
+    success : function(msg){
+        epci = L.geoJSON(
+            msg,
+            {
+                onEachFeature: onEachFeatureEPCI,
+                style :  myStyle
+            }
+        )
+        
+        vectorLayers['epci']= {'objet' : epci}
+        //clone grace au plugin clonelayer pour permettre d'afficher sur les 2 frames
+        var  epci_2 = cloneLayer(epci);
+        vectorLayers['epci_2']= {'objet' : epci_2}
+
+    }
+});
 $(function() {
     $('.vector-layer').children().click( function() {
         var id = $(this).attr('id')
-
         substr = "close";
         string= $('#'+id + ' > span').attr('class')
         if (string.indexOf(substr) > -1) {
@@ -1203,7 +1245,7 @@ map.on(L.Draw.Event.CREATED, function (event) {
             corr_coords.push([layer._latlngs[0][point].lng, layer._latlngs[0][point].lat]);
         };          
     };          
-    
+
     /* Afficher le formulaire d'insertion */
     $('#modal_corr_form').modal('show');    
     ($('#ModalCorrTitle'))[0].innerText = "Correction de la carte " + corr_pollutant;
@@ -1231,7 +1273,7 @@ $("#submitFormCorr").click(function (e) {
     console.log("envoi");
     
     e.preventDefault();
-
+	
     var corr_value = ($('#corr_form_val'))[0].value;
     var corr_min = ($('#corr_form_min'))[0].value;
     var corr_max = ($('#corr_form_max'))[0].value;
@@ -1239,9 +1281,10 @@ $("#submitFormCorr").click(function (e) {
 	var corr_ssup=""
     var id_source=activeLayer1[0]
     console.log("V?fication du formulaire");
-
+	
     /* V?fication du formulaire */   
     if (corr_coords == "" || corr_coords == 'undefined' || corr_coords == []) {
+		
         console.log("Erreur verif formulaire: coords");
         $("#error_tube").show(); // FIXME: Pas cr?
         return;
@@ -1282,7 +1325,7 @@ $("#submitFormCorr").click(function (e) {
     // console.log(csrftoken);
     // $.ajaxSetup({   headers: {  "X-CSRFToken": csrftoken  }  });
 
-    console.log(corr_coords)
+    
     var wkt = $.geo.WKT.stringify( {
         type: 'Polygon',
         coordinates: [corr_coords,[]]

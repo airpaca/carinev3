@@ -107,6 +107,8 @@ class BassinGrenoblois(models.Model):
 	db=models.CharField(max_length=200,default='')
 	password=models.CharField(max_length=200,default='')
 	table=models.CharField(max_length=200,default='')
+	def __str__(self):
+		return self.host
 class Context(models.Model):
 	nom=models.CharField(max_length=200,default='') 
 	previ_mod=models.ForeignKey(Previ_mod,default=None)   

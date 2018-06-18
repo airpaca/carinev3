@@ -18,6 +18,6 @@ admin.site.register(RemoteMachine)
 admin.site.register(Previ_mod)
 admin.site.register(Context)
 admin.site.register(Fine_echelle_mod)
-
+admin.site.register(BassinGrenoblois)
 admin.site.register(DicoPath)
 admin.site.register(OutputData)

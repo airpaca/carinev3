@@ -73,8 +73,9 @@ def help_js(request):
   
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
 def get_init_info(request):
-	
-	infos=dict(polls=config.polls,echs=config.echs_diff)
+	ctx = Context.objects.get(active=True)
+	polls=ctx.previ_mod.polls
+	infos=dict(polls=polls,echs=ctx.previ_mod.echs_diff)
 	ls={}
 	d=libcarine3.timestamp.getTimestamp(0)
 	p=Prev.objects.filter(date_prev=d)
@@ -158,11 +159,11 @@ def img_raster(request):
 	
 	# Read raster
 	fnrst =ob.url()   
-	r = libcarine3.Raster(fnrst, pol=config.from_name(ob.tsr.pol),source=ob)
+	r = libcarine3.Raster(fnrst, pol=Polluant.objects.get(nom=ob.tsr.pol).val,source=ob)
 	r.add_expertises(expertises)
 	data=r.get_array()
 	if (ob.tsr.pol!='MULTI'):
-		data=libcarine3.merge_tools.sous_indice(data,config.from_name(ob.tsr.pol))
+		data=libcarine3.merge_tools.sous_indice(data,Polluant.objects.get(nom=ob.tsr.pol).val)
 	# Return image
 	return HttpResponse(r.to_png(data,None,20), content_type="image/png")
 def img_raster_url(request):
@@ -174,7 +175,7 @@ def img_raster_url(request):
 def info_raster(request,id):
 	ob=Source.objects.get(id=id)
 	url=ob.url()
-	pol=config.from_name(ob.tsr.pol)
+	pol=Polluant.objects.get(nom=ob.tsr.pol).val
 	ds=rio.open(url)
 	arr=ds.read(1)
 	ss_ind=''
@@ -195,7 +196,7 @@ def img_multi_unique(request):
 	tr = ''
 	for i in prevs:    
 		if (i.pol!='MULTI'):
-			polnum=config.from_name(i.pol)
+			polnum=Polluant.objects.get(nom=i.pol).val
 			log.debug("============================")
 			log.debug(i.pol)
 			log.debug(polnum)
@@ -228,7 +229,7 @@ def img_multi_unique(request):
 	tr=''
 	for i in prevs:    
 		if (i.pol!='MULTI'):
-			polnum=config.from_name(i.pol)
+			polnum=Polluant.objects.get(nom=i.pol).val
 			log.debug("============================")
 			log.debug(i.pol)
 			log.debug(polnum)
@@ -269,7 +270,7 @@ def img_multi(request):
 	tr = ''
 	for i in prevs:    
 		if (i.pol!='MULTI'):
-			polnum=config.from_name(i.pol)
+			polnum=Polluant.objects.get(nom=i.pol).val
 			log.debug("============================")
 			log.debug(i.pol)
 			log.debug(polnum)
@@ -302,7 +303,7 @@ def img_multi(request):
 	tr=''
 	for i in prevs:    
 		if (i.pol!='MULTI'):
-			polnum=config.from_name(i.pol)
+			polnum=Polluant.objects.get(nom=i.pol).val
 			log.debug("============================")
 			log.debug(i.pol)
 			log.debug(polnum)
@@ -336,7 +337,7 @@ def img_multi(request):
 def sites_fixes(request):
 	conn = psycopg2.connect("host="+logins.host+  " dbname="+logins.dbname +  " user="+logins.user+" password=" + logins.password )
 	cur=conn.cursor()
-	req = "select id_site,nom_site,st_X(st_transform(" + config.geom_field + ",4326))as x,st_Y(st_transform(" + config.geom_field + ",4326)) as y from sites_fixes"
+	req = "select id_site,nom_site,st_X(st_transform(" + Context.objects.get(active=True).previ_mod.geom_field + ",4326))as x,st_Y(st_transform(" + Context.objects.get(active=True).previ_mod.geom_field + ",4326)) as y from sites_fixes"
 	cur.execute(req)
 	res=cur.fetchall();
 	conn.close()
@@ -352,13 +353,13 @@ def reg_aura(request):
 	conn = psycopg2.connect("host="+logins.host+  " dbname="+logins.dbname +  " user="+logins.user+" password=" + logins.password )
 	cur=conn.cursor()
 	if config.aasqa == "aura":
-		req = "select id_zone,lib_zone,st_asgeojson(st_transform(" + config.geom_field + ",4326)) as the_geom from zones where id_zone=2038 or id_zone=0"
+		req = "select id_zone,lib_zone,st_asgeojson(st_transform(" + Context.objects.get(active=True).previ_mod.geom_field + ",4326)) as the_geom from zones where id_zone=2038 or id_zone=0"
 	if config.aasqa == "aura_preprod":
-		req = "select id_zone,lib_zone,st_asgeojson(st_transform(" + config.geom_field + ",4326)) as the_geom from zones where id_zone=2038 or id_zone=0"
+		req = "select id_zone,lib_zone,st_asgeojson(st_transform(" + Context.objects.get(active=True).previ_mod.geom_field + ",4326)) as the_geom from zones where id_zone=2038 or id_zone=0"
 	if config.aasqa == "aura_dev":
-		req = "select id_zone,lib_zone,st_asgeojson(st_transform(" + config.geom_field + ",4326)) as the_geom from zones where id_zone=2038 or id_zone=0"
+		req = "select id_zone,lib_zone,st_asgeojson(st_transform(" + Context.objects.get(active=True).previ_mod.geom_field + ",4326)) as the_geom from zones where id_zone=2038 or id_zone=0"
 	elif config.aasqa == "airpaca":
-		req = "select id_zone,lib_zone,st_asgeojson(st_transform(" + config.geom_field + ",4326)) as the_geom from zones where id_zone=0"
+		req = "select id_zone,lib_zone,st_asgeojson(st_transform(" + Context.objects.get(active=True).previ_mod.geom_field + ",4326)) as the_geom from zones where id_zone=0"
 	cur.execute(req)
 	res=cur.fetchall();
 	conn.close()
@@ -372,7 +373,7 @@ def reg_aura(request):
 # def disp_reg(request):
 	# conn = psycopg2.connect("host="+logins.host+  " dbname="+logins.dbname +  " user="+logins.user+" password=" + logins.password )
 	# cur=conn.cursor()
-	# req = "select id_zone,lib_zone,st_asgeojson(" + config.geom_field + ") as " + config.geom_field + " from temp_epci_2017_aura_4326"
+	# req = "select id_zone,lib_zone,st_asgeojson(" + Context.objects.get(active=True).previ_mod.geom_field + ") as " + Context.objects.get(active=True).previ_mod.geom_field + " from temp_epci_2017_aura_4326"
 	# cur.execute(req)
 	# res=cur.fetchall();
 	# conn.close()
@@ -390,7 +391,7 @@ def bbox_raster(request):
 	#a moins d'ecrire direct en dur chaque indice multi, on prend la default bbox pr multi)
 
 	fnrst =ob.url()
-	r = libcarine3.Raster(fnrst, pol=config.from_name(ob.tsr.pol),source=ob)
+	r = libcarine3.Raster(fnrst, pol=Polluant.objects.get(nom=ob.tsr.pol).val,source=ob)
 	x1, y1, x2, y2 = r.bbox
 
 	inProj = Proj(init='epsg:3857')
@@ -507,7 +508,7 @@ def get_pixel(request):
 	# Read raster
 	fnrst =ob.url()
 
-	r = libcarine3.Raster(fnrst, pol=config.from_name(ob.tsr.pol),source=ob)
+	r = libcarine3.Raster(fnrst, pol=Polluant.objects.get(nom=ob.tsr.pol).val,source=ob)
 	r.add_expertises(expertises)
 	x=int(x)/1000000.0
 	y=int(y)/1000000.0
@@ -540,12 +541,12 @@ def calcul_stats_reg(request):
 	# Read raster
 	fnrst =ob.url_2154()
 	log.debug(fnrst)
-	r = libcarine3.Raster(fnrst, pol=config.from_name(ob.tsr.pol),source=ob,epsg=2154)
+	r = libcarine3.Raster(fnrst, pol=Polluant.objects.get(nom=ob.tsr.pol).val,source=ob,epsg=2154)
 	r.add_expertises(expertises)
 	log.debug(r.expertises)
 	data=r.get_array()
 	if (ob.tsr.pol!='MULTI'):
-		data=libcarine3.merge_tools.sous_indice(data,config.from_name(ob.tsr.pol))
+		data=libcarine3.merge_tools.sous_indice(data,Polluant.objects.get(nom=ob.tsr.pol).val)
 	data=data.repeat(10,axis=0).repeat(10,axis=1)
 	
 	fpop=r'/home/previ/raster_source/pop/pop100m_2154.tif'
@@ -704,7 +705,7 @@ def calcul_indice_com(request):
 	fnrst =ob.url_2154()
 	log.debug(fnrst)
 	
-	r = libcarine3.Raster(fnrst, pol=config.from_name(ob.tsr.pol),source=ob,epsg=2154)
+	r = libcarine3.Raster(fnrst, pol=Polluant.objects.get(nom=ob.tsr.pol).val,source=ob,epsg=2154)
 	r.add_expertises(expertises)
 	log.debug(r.expertises)
 	data=r.get_array()
@@ -787,14 +788,14 @@ def export_low(request):
 	fnrst =ob.url()
 	log.debug(fnrst)
 	
-	r = libcarine3.Raster(fnrst, pol=config.from_name(ob.tsr.pol),source=ob)
+	r = libcarine3.Raster(fnrst, pol=Polluant.objects.get(nom=ob.tsr.pol).val,source=ob)
 	r.add_expertises(expertises)
 	log.debug(r.expertises)
 	data=r.get_array()
 	log.debug(" ================== ================== ================== ")
 	log.debug(np.max(data))
 	if (ob.tsr.pol!='MULTI'):
-		data=libcarine3.merge_tools.sous_indice(data,config.from_name(ob.tsr.pol))
+		data=libcarine3.merge_tools.sous_indice(data,Polluant.objects.get(nom=ob.tsr.pol).val)
 	log.debug(np.max(data))
 	# Return image
 	
@@ -827,7 +828,7 @@ def export_low_val(request):
 	log.debug("________ -- FILENAME -- __________")
 	log.debug(fnrst)
 	
-	r = libcarine3.Raster(fnrst, pol=config.from_name(ob.tsr.pol),source=ob)
+	r = libcarine3.Raster(fnrst, pol=Polluant.objects.get(nom=ob.tsr.pol).val,source=ob)
 	r.add_expertises(expertises)
 	log.debug(r.expertises)
 	

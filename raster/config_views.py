@@ -18,7 +18,7 @@ from django.http import HttpResponse, JsonResponse,HttpResponseRedirect
 from .models import *
 import libcarine3
 from libcarine3 import *
-import config,logins
+import logins
 import django.utils.timezone as tz
 import os
 import itertools
