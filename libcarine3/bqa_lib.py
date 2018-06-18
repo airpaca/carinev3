@@ -56,7 +56,7 @@ def insert_BQA(dct,bd):
 def clean_bqa(bd):
 	conn = msql.connect(host=bd.host, port=3306 ,db=bd.db , user=bd.user, passwd=bd.password )
 	cur=conn.cursor()
-	req = "DELETE " + bd.table + " indices WHERE date=CURDATE() OR date=DATE_ADD(CURDATE(), INTERVAL -1 DAY)  OR date=DATE_ADD(CURDATE(), INTERVAL +1 DAY) OR date=DATE_ADD(CURDATE(), INTERVAL +2 DAY)"
+	req = "DELETE FROM " + bd.table + " WHERE date=CURDATE() OR date=DATE_ADD(CURDATE(), INTERVAL -1 DAY)  OR date=DATE_ADD(CURDATE(), INTERVAL +1 DAY) OR date=DATE_ADD(CURDATE(), INTERVAL +2 DAY);"
 	cur.execute(req)
 	
 	conn.close()
@@ -178,5 +178,5 @@ def calc_BQA(id_prev,bd):
 				log.debug(val)
 				log.debug(ib_10)
 	dct['2000']={lib_ech[pr.ech+1] : vals}
-	insert_BQA(dct)
+	insert_BQA(dct,bd)
 	return dct
