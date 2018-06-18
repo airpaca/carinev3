@@ -901,7 +901,7 @@ function onEachFeature(feature, layer) {
 function onEachFeatureEPCI(feature, layer) {
 	var popupContent="";
 	if (feature.properties && feature.properties.NOM_EPCI) {
-		console.log(feature['geometry']['coordinates'][0][0])
+		//console.log(feature['geometry']['coordinates'][0][0])
 		popupContent += 'NOM_EPCI : ' + feature.properties.NOM_EPCI + "<br>";
 		
 		popupContent += '<button onclick=showModal('+feature['geometry']['coordinates'][0][0]+') >'+feature.properties.NOM_EPCI+'</button><br>';
