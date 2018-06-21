@@ -901,10 +901,10 @@ function onEachFeature(feature, layer) {
 function onEachFeatureEPCI(feature, layer) {
 	var popupContent="";
 	if (feature.properties && feature.properties.NOM_EPCI) {
-		//console.log(feature['geometry']['coordinates'][0][0])
+		
 		popupContent += 'NOM_EPCI : ' + feature.properties.NOM_EPCI + "<br>";
 		
-		popupContent += '<button onclick=showModal('+feature['geometry']['coordinates'][0][0]+') >'+feature.properties.NOM_EPCI+'</button><br>';
+		popupContent += '<button onclick=showModal('+JSON.stringify(feature['geometry']['coordinates'][0][0])+') >'+feature.properties.NOM_EPCI+'</button><br>';
 		
 	}
 	layer.bindPopup(popupContent);
@@ -912,8 +912,9 @@ function onEachFeatureEPCI(feature, layer) {
 
 function onEachFeatureReg(feature, layer) {
         var popupContent="";
-        if (feature.properties && feature.properties.nom) {
+        if (feature.properties && feature.properties.NOM_REG) {
             popupContent += feature.properties.NOM_REG;
+            popupContent += '<button onclick=showModal('+JSON.stringify(feature['geometry']['coordinates'][0])+') >'+feature.properties.NOM_REG+'</button><br>';
 
         }
 		layer.on({
@@ -928,7 +929,7 @@ function onEachFeatureDisp(feature, layer) {
         if (feature.properties && feature.properties.lib_court_) {
 			popupContent += feature.properties.id_zone + '<br>';
             popupContent += feature.properties.lib_court_;
-			
+			popupContent += '<button onclick=showModal('+JSON.stringify(feature['geometry']['coordinates'][0][0])+') >Corriger</button><br>';
         }
 		layer.on({
 			mouseover: highlightFeature,
@@ -1241,9 +1242,12 @@ map.on(L.Draw.Event.CREATED, function (event) {
     if (type === 'polygon') {
     
         corr_coords = [];
+        xo=layer._latlngs[0][0]
         for (var point in layer._latlngs[0]) {
             corr_coords.push([layer._latlngs[0][point].lng, layer._latlngs[0][point].lat]);
-        };          
+        };
+        corr_coords.push([xo.lng, xo.lat]);
+        
     };          
 
     /* Afficher le formulaire d'insertion */

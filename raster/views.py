@@ -471,7 +471,6 @@ def alter_raster(request):
 	#geom_type = modifs['geom']['type']
 	geom_type='POLYGON'
 	print(coords)
-	coords=coords+[coords[0]]
 
 	coords_3857=[]
 	for i in coords:     
