@@ -56,7 +56,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>-->
-                <a class="navbar-brand" href="#">CARINE v3</a>
+                <a class="navbar-brand" href="{% url 'accueil' %}">CARINE</a>
 
             </div>
             <div class="collapse navbar-collapse navbar-ex1-collapse">
@@ -65,34 +65,7 @@
             </div>
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
-            
-                <!--<ul class="nav navbar-nav">
-                    <li class="active">
-                        <a href="#">Home</a>
-                    </li>
-                    <li>
-                        <a href="browse.html">Prévisions</a>
-                    </li>
 
-                </ul>
-                <ul class="nav navbar-nav">
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Divers<b class="caret"></b></a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a href="#">Logs</a>
-                            </li>
-                            <li>
-                                <a href="#">Contacts</a>
-                            </li>
-
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="aide.html">Aide</a>
-                    </li>
-
-                </ul> -->
 
                 <ul class="nav navbar-nav navbar-right">
                     <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
@@ -129,31 +102,12 @@
                     <li >
                         <a  onclick="multi_form_show()" class="btn btn-default">Calcul du multipolluants</a>
                     </li>
-                    <!-- <li > -->
-                        <!-- <a  onclick="launch_async(get_stats_reg)" data-toggle="tooltip" title="calcul les stats pour toutes les cartes (environ 1min)" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Statistiques réglementaires (toutes)</a> -->
-                    <!-- </li> -->
-                    <!-- <li > -->
-                        <!-- <a  onclick="get_indice_com()" data-toggle="tooltip" title="calcul les indices pour toutes les cartes (environ 3min). Pas indispensable car recalculé à la validation finale" class="btn btn-default"> <i class="glyphicon glyphicon-ok"></i> Indices communaux</a> -->
-                    <!-- </li> -->
+
                     <li >
                      
                         <a onclick="launch_commentaire(1)" data-toggle="tooltip" title="le commentaire peut être re-enregistré autant de fois que nécessaire" class="btn btn-default"> Ecrire le commentaire</a>
                     </li>
-                    <!-- <li> -->
-                        <!-- <div class="dropdown" style="height : 100%;"> -->
-                            <!-- <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"> -->
-                                <!-- Export des cartes du jour -->
-                                <!-- <span class="caret"></span> -->
-                            <!-- </button> -->
-                            <!-- <ul class="dropdown-menu" aria-labelledby="dropdownMenu1"> -->
 
-                                <!-- <li><a onclick="export_low_val()" href="#" title="Lien 2">Basse définition valeurs</a></li> -->
-                                <!-- <li><a onclick="export_low()" href="#" title="Lien 2">Basse définition RGB</a></li> -->
-                                <!-- <li><a onclick="export_hd()" href="#" title="Lien 2">Haute définition RGB</a></li> -->
-
-                            <!-- </ul> -->
-                        <!-- </div> -->
-                    <!-- </li> -->
                     <li>
                         <a  onclick="confirmValidPrevi()" class="btn btn-default"> </i> VALIDER LA PREVISION </a>    
                     </li>
@@ -182,6 +136,7 @@
 								<li><a onclick="export_hd()" href="#" title="Lien 2">Haute définition RGB</a></li>
 								<li><a onclick="contactSMILE()" href="#" data-toggle="tooltip" title="déclenche un nouvel import de SMILE sans réaliser aucun calcul.">Rediffuser</a></li>
                                 <li><a onclick="export_scp()" href="#" data-toggle="tooltip" title="exporte l'ensemble des fichiers de sortie vers leur destination">re-exporter</a></li>
+                                <li><a onclick="get_archive()" href="#" data-toggle="tooltip" title="récupère l'archive du jour">Télécharger l'archive du jour</a></li>
 							</ul>
 
 						

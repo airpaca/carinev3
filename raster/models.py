@@ -11,6 +11,8 @@ class TodayState(models.Model):
 	date=models.DateField(auto_now_add=True)
 	file_ok=models.BooleanField(default=False)
 	valid_en_cours = models.BooleanField(default=False)
+	def __str__(self):
+		return str(self.date)
 class DicoPath(models.Model):
 	nom=models.CharField(max_length=20,default='')
 	desc=models.CharField(max_length=200,default='')
@@ -27,9 +29,8 @@ class DicoPath(models.Model):
 		elif self.suffixe == "":
 			last_sep = ''
 			self.suffixe = ''
-		print (self.suffixe)
-		print(last_sep)
 		return pref + self.sep + poll + self.sep + str(tsp) + self.sep + str(ech) + last_sep + self.suffixe+ '.' + self.ext
+
 class RemoteMachine(models.Model):
 	nom=models.CharField(max_length=20,default='')
 	domaine=models.CharField(max_length=20,default='')
@@ -91,6 +92,8 @@ class Previ_mod(models.Model):
 	aura_cutline='/home/previ/vector_source/aura_reg_3857.shp'
 	##### subprocess_wrapper
 	colormap_file='/var/www/html/carinev3/libcarine3/colormaps/normalize_colors.txt'
+	archive=models.CharField(max_length=200,default='/mnt/archives/carine_output')
+	archive_publique=models.CharField(max_length=200,default='file://atmo//dfs/archives/Carine/carine_output')
 	def __str__(self):
 		return self.nom
 class Fine_echelle_mod(models.Model):

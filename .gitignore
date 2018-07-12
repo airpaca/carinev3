@@ -151,4 +151,6 @@ fabric.properties
 config.py
 /*/migrations/*.py
 logins.*
+carine_output
+raster/lib_static/raster/vector_files/region_4326_AE.geojson
 

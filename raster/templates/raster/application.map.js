@@ -389,7 +389,7 @@ function switch_map_1(id_but){
 
     url_bbox='{% url "bbox_raster" %}'
 
-    img=img_raster_url(id_source)
+    img=img_raster_url(id_source,"corrigee")
 
 
 
@@ -601,7 +601,7 @@ function td_clic() {
             url_bbox='{% url "bbox_raster" %}'
             
             
-            img=img_raster_url(id_source)
+            img=img_raster_url(id_source,'corrigee')
             console.log(' ------- img -------- ')
             console.log(img)
 
@@ -645,7 +645,7 @@ function other_layers_clic() {
         //workaround pour faire passer la variable id ds l'url
 
         url_bbox='{% url "bbox_raster"  %}'
-        img = img_raster_url(id_source)
+        img = img_raster_url(id_source,'corrigee')
         console.log(img)
 
         $.ajax({
@@ -904,7 +904,7 @@ function onEachFeatureEPCI(feature, layer) {
 		
 		popupContent += 'NOM_EPCI : ' + feature.properties.NOM_EPCI + "<br>";
 		
-		popupContent += '<button onclick=showModal('+JSON.stringify(feature['geometry']['coordinates'][0][0])+') >'+feature.properties.NOM_EPCI+'</button><br>';
+		popupContent += '<button onclick=showModal('+JSON.stringify(feature['geometry']['coordinates'][0][0])+') >Corriger</button><br>';
 		
 	}
 	layer.bindPopup(popupContent);
@@ -914,7 +914,7 @@ function onEachFeatureReg(feature, layer) {
         var popupContent="";
         if (feature.properties && feature.properties.NOM_REG) {
             popupContent += feature.properties.NOM_REG;
-            popupContent += '<button onclick=showModal('+JSON.stringify(feature['geometry']['coordinates'][0])+') >'+feature.properties.NOM_REG+'</button><br>';
+            popupContent += '<button onclick=showModal('+JSON.stringify(feature['geometry']['coordinates'][0])+') >Corriger</button><br>';
 
         }
 		layer.on({
@@ -1368,7 +1368,7 @@ $("#submitFormCorr").click(function (e) {
             
 
             url_bbox='{% url "bbox_raster" %}'
-            img=img_raster_url(id_source)
+            img=img_raster_url(id_source,'corrigee')
 
             $.ajax({
                 //recup de scoins de la carte necessaires pour que leaflet affiche le png
@@ -1881,13 +1881,14 @@ function mi_fine_url(id_source,id_prev){
     })
     return img;
 }
-function img_raster_url(id_source){
+function img_raster_url(id_source,mode){
     var img='';
     url_img='{% url "img_raster_url" %}'
     $.ajax({
         url:url_img,
         async : false,
         data : { 
+            mode : mode,
          randomnocache: Math.random(),
             id_source : id_source
         },
@@ -2056,6 +2057,7 @@ function contactSMILE(){
     $.ajax({
         url : 'ws_smile',
         success : function(msg){
+            console.log(msg)
             if (JSON.parse(msg)["result"]==1){
                 log_dashboard('contact_smile','contactSMILE',100,'INFO',"succès de la tentative de contact SMILE")
                 alert( " import SMILE activé, les résultats seront disponibles d'ici une vingtaine de minutes sur le site" )
@@ -2319,5 +2321,29 @@ dm.addEventListener('dragstart',drag_start,false);
 document.getElementById('englob').addEventListener('dragover',drag_over,false); 
 document.getElementById('englob').addEventListener('drop',drop,false); 
 
-//test temp
-var locationFilter = new L.LocationFilter().addTo(map);
+
+function get_archive(){
+    $.ajax({
+        async : false,
+        url : '{% url "zipday" %}',
+        data : {
+            tsp : 0
+        },
+        success : function (){
+            $.ajax({
+                async : false,
+                url : '{% url "getzip" %}',
+                data : {
+                    tsp : 0
+                },
+                success : function(msg){
+                    
+                    $('body').append('<a target="_blank"  id="dl" href="http://'+msg+'" download >')
+                    document.getElementById('dl').click();
+                }
+            })
+        }
+        
+    })
+   
+}

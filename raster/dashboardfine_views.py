@@ -105,11 +105,12 @@ def get_fine_png(request):
 		return HttpResponse('pas de carte')
 
 def get_poll_menu(request):
-	polls=Polluant.objects.all()
+	polls=Polluant.objects.all().order_by('id')
+	ex=request.GET.get('ex')
 	d= ''
 	for p in polls:
-		if (p.nom != 'MULTI'):
-			d+='<li style="width : 33%;"><a  class="btn btn-default" onclick="switch_poll(\''+p.nom+'\')">'+p.nom+' </a></li>'
+		if (p.nom != ex):
+			d+='<li style="width : 24%;"><a  class="btn btn-default" onclick="switch_poll(\''+p.nom+'\')">'+p.nom+' </a></li>'
 
 	return HttpResponse(d)
 	

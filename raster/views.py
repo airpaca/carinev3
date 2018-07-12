@@ -17,7 +17,7 @@ from django.template import loader
 from django.http import HttpResponse, JsonResponse,HttpResponseRedirect
 from .models import *
 import libcarine3
-from libcarine3 import timestamp,merge_tools,api,subprocess_wrapper,preprocessing,bqa_lib,write_log
+from libcarine3 import timestamp,merge_tools,api,subprocess_wrapper,preprocessing,bqa_lib,write_log,archivage
 import config,logins
 import django.utils.timezone as tz
 import os
@@ -36,7 +36,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 import urllib.request
 import time
-
+from raster.decorators import *
 # Log
 log = logging.getLogger('carinev3.raster.views')
 
@@ -45,6 +45,7 @@ log = logging.getLogger('carinev3.raster.views')
 
 
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
+@check_today_state
 def index(request):
 	"""Index."""
 	template = loader.get_template('raster/index.html')
@@ -154,13 +155,15 @@ def img_raster(request):
 	"""Raster as an image."""
 	# TODO: ajouter transformation du raster en wgs84
 	id=request.GET.get('id')
+	mode=request.GET.get('mode')
 	ob=Source.objects.get(id=id)
 	expertises = Expertise.objects.filter(target=ob)
 	
 	# Read raster
 	fnrst =ob.url()   
 	r = libcarine3.Raster(fnrst, pol=Polluant.objects.get(nom=ob.tsr.pol).val,source=ob)
-	r.add_expertises(expertises)
+	if (mode == 'corrigee'):
+		r.add_expertises(expertises)
 	data=r.get_array()
 	if (ob.tsr.pol!='MULTI'):
 		data=libcarine3.merge_tools.sous_indice(data,Polluant.objects.get(nom=ob.tsr.pol).val)
@@ -168,9 +171,10 @@ def img_raster(request):
 	return HttpResponse(r.to_png(data,None,20), content_type="image/png")
 def img_raster_url(request):
 	id_source = request.GET.get('id_source')
-
-	u=reverse('img_raster')+'?id='+str(id_source) + '&randomnocache='+str(random.random())
+	mode=request.GET.get('mode')
+	u=reverse('img_raster')+'?id='+str(id_source) +'&mode='+ mode +  '&randomnocache='+str(random.random())
 	return HttpResponse(u)
+
 @login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
 def info_raster(request,id):
 	ob=Source.objects.get(id=id)
@@ -803,7 +807,7 @@ def export_low(request):
 	u=dp.get_file_url(ctx.previ_mod.raster_prefix,prev.pol.lower(),prev.date_prev,prev.ech+1)
 	u_full=os.path.join(ctx.previ_mod.output_dir,os.path.join(output_data.dir,u))
 	name=config.basse_def_path+config.aasqa+'-'+prev.pol.lower()+'-'+str(prev.date_prev)+'-'+str(prev.ech+1)+ '.png'
-	r.to_png(data,name,10)
+	r.to_png(data,u_full,10)
 	
 	#libcarine3.subprocess_wrapper.scp_classic(name,'192.168.37.158','airtogo','/home/aura_datas/carine_data/basse_def/')
 	return HttpResponse(name)
@@ -1108,3 +1112,53 @@ def save_note(request):
 	s.commentaire = note
 	s.save()
 	return HttpResponse('save  '  +note)
+	
+def get_ids(request):
+	ech=int(request.GET.get('ech'))
+	tsp=int(int(request.GET.get('tsp'))/1000)
+	poll=request.GET.get('poll')
+	print(tsp)
+	print(poll)
+	print(ech)
+	prev = Prev.objects.get(date_prev = tsp,ech = ech-1,pol = poll.upper())
+	return JsonResponse({ 'prev' : str(prev.id) , 'source' : str(prev.src.id)})
+def zipday(request):
+	ctx=Context.objects.get(active=True)
+	polls=Polluant.objects.all()
+	ech = Echeance.objects.all()
+	tsp = request.GET.get('tsp')
+	if (tsp=='0'):
+		tsp=timestamp.getTimestamp(0)
+	out_type=DicoPath.objects.all()
+	errors='fichier(s) inexistants : '
+	urlss={}
+	for i in out_type:
+		print(i.nom)
+		remote_machine = RemoteMachine.objects.filter(type=i,active=True)
+		output_data = OutputData.objects.get(type=i)
+		urls = []
+		for p in polls:
+			print(p.nom)
+			for e in ech:
+				# print(e.delta)
+				u=i.get_file_url(ctx.previ_mod.raster_prefix,str.lower(p.nom),tsp,e.delta+1)
+				print(u)
+				u_full=os.path.join(ctx.previ_mod.output_dir,os.path.join(output_data.dir,u))
+				urls.append(u_full)
+				print(u_full)
+		urlss[i.nom]=urls
+	p = Prev.objects.filter(date_prev=tsp)
+	urls=[]
+	for i in p:
+		urls.append(i.src.url_2154())
+	urlss['source']=urls
+	outf = os.path.join(ctx.previ_mod.archive,'carine-'+str(tsp)+'.zip')
+	libcarine3.archivage.zipdir(outf,urlss)
+	return HttpResponse(urlss)
+def getzip(request):
+	ctx=Context.objects.get(active=True)
+	tsp = request.GET.get('tsp') 
+	if (tsp=='0'):
+		tsp=timestamp.getTimestamp(0)
+	outf = os.path.join(ctx.previ_mod.archive_publique,'carine-'+str(tsp)+'.zip')
+	return HttpResponse(outf)

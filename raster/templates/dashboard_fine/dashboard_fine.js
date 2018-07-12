@@ -3,6 +3,7 @@ function build_poll_menu(){
     $.ajax({
         url: '{% url "get_poll_menu"  %}',
         async : true,
+        data : { ex : 'MULTI' },
         success : function(msg){
             m=msg
             $('#poll-menu').append(m)

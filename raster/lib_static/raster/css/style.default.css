@@ -8,7 +8,7 @@ html, body {
 	width : 49%;
     padding-bottom:1px;
     display : inline;
-    border : 1px solid #555;
+    
 }
 
 .right-englob {
@@ -529,3 +529,56 @@ div.row {
 .note-div2  input{
     
 }
+.leaflet-popup-content {
+	width : 300px;
+	
+}
+.popup-img {
+	width : 95%;
+}
+.cur-month {
+    text-align : center;
+    background-color :green;
+    color : white;
+}
+.out-month {
+    text-align : center;
+    background-color :  #111;
+    color : white;
+}
+.calendar-td {
+
+    padding : 0;
+    margin : 0;
+}
+.calendar-td:hover {
+
+    background-color : #555;
+    opacity : 0.5;
+}
+.calendar-th {
+ 
+    padding : 0;
+    margin : 0;
+}
+#calendar-table {
+    width :100%;
+    margin : 0%;
+    table-layout : fixed;
+}
+#calendar {
+    margin : 0;
+    font-size : 0.8em;
+    
+}
+.ui-datepicker-calendar {
+    display: none;
+    }
+#map {
+    border : 1px solid orange;
+    margin-left : 1px;
+}
+#month-h3 {
+    margin-top : 2px;
+}
+

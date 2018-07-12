@@ -19,6 +19,7 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^raster/', include('raster.urls')),
+    url(r'^raster/', include('raster.urls_exploitation')),
     url(r'^raster/', include('raster.url_diag')),
     url(r'^info/', include('raster.urls_info')),
     url(r'^raster/', include('raster.urls_fine')),
