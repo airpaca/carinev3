@@ -45,7 +45,8 @@ function preprocess_files(){
 }
 function init(){
 	
-	init='{{init.file_ok}}'
+	init='{{init}}'
+		console.log(init)
 	if (init=='False') {
 		$.ajax({
 			url:'{% url "preprocess_files" %}',
