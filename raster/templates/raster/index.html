@@ -62,9 +62,7 @@
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <a style='color : grey;' class="navbar-brand"><h6><i>Bonjour {{user.username}}</i></h6></a>
                 <a style='color : grey;' class="navbar-brand"><h6><i>Contexte actif: {{ctx.nom}}</i></h6></a>
-            </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse navbar-ex1-collapse">
+
 
 
                 <ul class="nav navbar-nav navbar-right">
@@ -74,13 +72,7 @@
                     </li>
 
                 </ul>
-                                <ul class="nav navbar-nav navbar-right">
-                    <!-- <li><p class="navbar-text">Utilisateur - Astreinte</p></li> -->
-                    <li>
-                        <a href="{% url 'help' %}" target="_blank">Help</a>
-                    </li>
 
-                </ul>
             </div><!-- /.navbar-collapse -->
         </nav>
         
@@ -265,6 +257,8 @@
 				<div class="map-div">
 					<div id="map">				
 
+					</div>
+					<div style="overflow : scroll; height : 200px;" id="corr-div">
 					</div>
 				</div>
 
