@@ -964,7 +964,9 @@ function onEachFeatureCorr(feature, layer) {
             })
         var popupContent="";
         if (feature.properties && feature.properties.delta) {
-            popupContent += feature.properties.delta.toString();
+			popupContent += "identifiant : " + feature.properties.pk.toString() + '<br>';
+            popupContent += "delta : " + feature.properties.delta.toString() + "µg</br>";
+			popupContent += "active : " + feature.properties.active.toString() + "</br>";
             popupContent += '<button onclick=showModal('+JSON.stringify(feature['geometry']['coordinates'][0])+') >Corriger</button><br>';
 
         }
@@ -1010,7 +1012,6 @@ function onEachFeatureDisp(feature, layer) {
         var popupContent="";
         if (feature.properties && feature.properties.lib_court_) {
 			popupContent += feature.properties.id_zone + '<br>';
-            popupContent += feature.properties.lib_court_;
 			popupContent += '<button onclick=showModal('+JSON.stringify(feature['geometry']['coordinates'][0][0])+') >Corriger</button><br>';
         }
 		layer.on({
@@ -2252,7 +2253,7 @@ function expMenu(id_source){
         
 	
 	// })
-    var field_filter={'delta':'delta','mn':'seuil inférieur','mx' : 'seuil supérieur'}
+    var field_filter={'pk':'id','delta':'delta','mn':'seuil inférieur','mx' : 'seuil supérieur'}
     var tbl='<table style="border : 2px solid red;" id="corr-table" class="table-bordered"><thead>'
 
     for (var key in field_filter){
@@ -2269,7 +2270,6 @@ function expMenu(id_source){
             console.log(feat["properties"][key])
             td="<td style='text-align : center;'  >"+feat["properties"][key]+"</td>";
             tr+=td
-            
         }
         var check='';
         if (feat["properties"]['active'] == true){

@@ -188,8 +188,8 @@ class Raster:
 
 				modif[(rbuf == 255) & mk_mn & mk_mx & mk_ssup & mk_smin] = expertise.delta
 				data += modif
-				print(np.max(data))
-				mk1=(data * (modif ==expertise.delta))
+				# print(np.max(data))
+				# mk1=(data * (modif ==expertise.delta))
 				#modif[mk_mx_ecret] = 100
 				# if (expertise.mx < 9999):
 
