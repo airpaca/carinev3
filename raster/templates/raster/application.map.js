@@ -2280,7 +2280,7 @@ function expMenu(id_source){
     } 
     tbl+='</tbody></table'
     console.log(tbl)
-    $('#map').after(tbl)
+    $('#corr-div').append(tbl)
     corr = L.geoJSON(
         exps,
         {

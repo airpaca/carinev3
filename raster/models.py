@@ -6,11 +6,23 @@ import datetime
 import django.utils.timezone
 import libcarine3.timestamp
 from django.contrib.auth.models import User
-import os
+from datetime import datetime
+import pytz
 class TodayState(models.Model):
 	date=models.DateField(auto_now_add=True)
 	file_ok=models.BooleanField(default=False)
 	valid_en_cours = models.BooleanField(default=False)
+	date_preprocess=models.DateTimeField(null=True)	
+	def get_state(self,ctx):
+		stat=os.stat(ctx.previ_mod.DIR_RASTERS+'/ada')
+		print(self.file_ok)
+		print("heure de preprocess : " + str(self.date_preprocess))
+		print("heure de dernier access à raster_source/ada : " + str(datetime.fromtimestamp(stat.st_atime,pytz.timezone("Europe/Paris"))))
+		if (datetime.fromtimestamp(stat.st_atime,pytz.timezone("Europe/Paris")) > self.date_preprocess):
+			self.file_ok = False
+			self.save()
+		return self.file_ok
+
 	def __str__(self):
 		return str(self.date)
 class DicoPath(models.Model):
