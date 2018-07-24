@@ -22,7 +22,7 @@ urlpatterns = [
 	# Url to POST modification
 	url(r'^alter_raster/$', views.alter_raster, name='alter_raster'),
 	url(r'^test_ajax$', views.test_ajax, name='test_ajax'),
-
+	url(r'^get_ids$', views.get_ids, name='get_ids'),
 	# Raster info
 	# .. info/raster_<pol>_ech<ech>.png
 	url(r'^info/raster_(?P<id>[0-9]+).png$',

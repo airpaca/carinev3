@@ -5,12 +5,18 @@ html, body {
 }
 .map-block {
     height : 100%;
-	width : 49%;
+	width : 100%;
     padding-bottom:1px;
     display : inline;
     
 }
-
+#map-block2 {
+    height : 100%;
+	width : 0%;
+    padding-bottom:1px;
+    display : inline;
+    
+}
 .right-englob {
 	height : 100%;
     width:49%;
@@ -75,7 +81,6 @@ html, body {
 }
 #sidemenu,#sidemenu2 {
     vertical-align : top;
-    display : inline-block;
     position: relative;
     left: 5px;
     width: 24%;
@@ -85,6 +90,12 @@ html, body {
     padding: 5px;
     overflow: hidden;
     z-index: 10;
+}
+#sidemenu {
+    display : inline-block;
+}
+#sidemenu2 {
+    display : none;
 }
 #search-box {
     position: absolute;
@@ -582,3 +593,15 @@ div.row {
     margin-top : 2px;
 }
 
+#corr-table {
+    width : 100%;
+}
+
+.exp_cbx {
+   width : 100%; 
+
+}
+
+.corr-duplicate-btn
+    
+}

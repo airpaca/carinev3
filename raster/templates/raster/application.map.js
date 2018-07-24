@@ -63,11 +63,11 @@ var stats={};
 var ic={};
 var drawLayer;
 /* Creation de la carte */
-var map = L.map('map', { zoomControl:false }, {layers: []}).setView([45, 5.0], 8);    
+var map = L.map('map', { zoomControl:false }, {layers: []}).setView([45.45, 4.8], 8);    
 map.attributionControl.addAttribution('CARINE v3 &copy; ATMO Aura - 2017</a>'); 
 
 /*2eme frame*/
-var map2 = L.map('map2', { zoomControl:false }, {layers: []}).setView([45, 5.0], 8);    
+var map2 = L.map('map2', { zoomControl:false }, {layers: []}).setView([45.45, 4.8], 8);    
 map2.attributionControl.addAttribution(' CARINE v3 - ATMO Aura - 2017</a>'); 
 
 L.control.scale().addTo(map);
@@ -319,6 +319,12 @@ function layer_but_clic() {
 			$(".table-corr").remove()
             $(".div-fine").remove()
 			$("#table-legend").remove()
+                            if (vectorLayers['corr'] != null){
+                    vectorLayers['corr']['objet'].removeFrom(map)
+                }
+                if ($("#corr-table").length >0){
+                    $("#corr-table").remove()
+                }
             /* Gestion de la liste des couches */       
             // Boutons actifs
             $(this).addClass('active').siblings().removeClass('active');  
@@ -347,11 +353,11 @@ function layer_but_clic() {
                 id_prev=id_but.split('_')[2]
                 id_source=overlayLayers1[id_but]
 				pol=prevs[id_prev][0]
-				
-                if (!($('#fine-btn-'+id_prev.toString()).length)){
 
+                if (!($('#fine-btn-'+id_prev.toString()).length)){
+                    
 					$(this).after('<div class="div-fine" id="fine-btn-'+id_prev.toString()+'" onclick="merge_mi_fine('+id_prev+','+id_source+')"><button class="btn btn-secondary btn-fine"><i>Fine échelle</i></button></div>')
-					$(this).after('<div class="div-fine" id="exp-btn"><button  onclick="expMenu('+id_source+')" class="btn btn-secondary btn-fine"><i>Corrections</i></button></div>')
+					//$(this).after('<div class="div-fine" id="exp-btn"><button  onclick="expMenu('+id_source+')" class="btn btn-secondary btn-fine"><i>Corrections</i></button></div>')
                     $(this).after('<div class="div-fine" id="stats-btn-'+id_prev.toString()+'"><button  onclick="statsShow('+id_prev+')" class="btn btn-secondary btn-fine"><i>Stats reg.</i></button><button  onclick="get_stats_reg_unique('+id_prev+')" class="btn btn-secondary btn-fine refresh-stats-btn"> <i class="glyphicon glyphicon-refresh"></i></button></div>')
 					$(this).after('<div class="div-fine" id="add-note-div"><button  onclick="showNote('+id_source+')" class="btn btn-secondary btn-fine"><i>Note</i></button></div>')
 					$(this).after('<table id="table-legend"><tbody></tbody></table>')
@@ -371,13 +377,13 @@ function layer_but_clic() {
                 console.log('id_but_prev : ' + id_but.toString())
                 //null si on a pas encore initialis?inutile si on affiche un polluant par defaut)
                 switch_map_1(id_but)
-                
+                expMenu(id_source)
             }
     });
 };
 
 function switch_map_1(id_but){
-    
+
     if ( activeLayer1 != null) {
         map.removeLayer(activeLayer1[1])
         console.log(activeLayer1[1])
@@ -421,7 +427,8 @@ function switch_map_1(id_but){
             $('#active_layer_div1 > table').remove()
             $('#active_layer_div1').append(tbl)
         }
-    }) 
+    })
+    
 }
 /* ---------- FIN MAP-BLOCK1 ------------ */
 
@@ -876,12 +883,28 @@ function highlightFeature(e) {
         layer.bringToFront();
     }
 }
+function highlightFeatureFromTable(lay) {
+    var layer = lay
+    layer.setStyle({
+        weight: 5,
+        color: '#666',
+        dashArray: '',
+        fillOpacity: 0.1
+    });
+
+    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+        layer.bringToFront();
+    }
+}
 function resetHighlightReg(e) {
     vectorLayers['reg_aura_2']['objet'].resetStyle(e.target);
 	//console.log(e.target.feature)
 }
 function resetHighlightDisp(e) {
     vectorLayers['disp_reg_2']['objet'].resetStyle(e.target);
+}
+function resetHighlightCorr(lay) {
+    vectorLayers['corr']['objet'].resetStyle(lay);
 }
 function zoomToFeature(e) {
     //map.fitBounds(e.target.getBounds());
@@ -897,6 +920,7 @@ function onEachFeature(feature, layer) {
 			
         }
         layer.bindPopup(popupContent);
+        
     }
 function onEachFeatureEPCI(feature, layer) {
 	var popupContent="";
@@ -909,7 +933,62 @@ function onEachFeatureEPCI(feature, layer) {
 	}
 	layer.bindPopup(popupContent);
 }
+function onEachFeatureCorr(feature, layer) {
+        $("#cbx-"+feature.properties.pk.toString()).click(
+            function(){
+                console.log(!feature.properties.active)
+                set_expertises(feature.properties.pk,!feature.properties.active)
+                id_but=$(".active")[1].id
+                switch_map_1(id_but)
+                expMenu(activeLayer1[0])
+            }
+        )
+        $("#duplicate-"+feature.properties.pk.toString()).click(
+            function(){
 
+                showModal(feature['geometry']['coordinates'][0])
+            }
+        )
+        $("#tr-"+feature.properties.pk.toString()).hover(
+            function(){
+
+                $(this).css('background-color','grey')
+                $(this).css('color','white')
+                highlightFeatureFromTable(layer)
+                
+            },
+            function(){
+               resetHighlightCorr(layer)
+                $(this).css('background-color','orange')
+                $(this).css('color','white')
+            })
+        var popupContent="";
+        if (feature.properties && feature.properties.delta) {
+            popupContent += feature.properties.delta.toString();
+            popupContent += '<button onclick=showModal('+JSON.stringify(feature['geometry']['coordinates'][0])+') >Corriger</button><br>';
+
+        }
+		layer.on({
+            mouseover: function(e){
+                
+                highlightFeature(e)
+                console.log(feature.properties.pk)
+                $("#tr-"+feature.properties.pk.toString()).css('background-color','grey')
+                $("#tr-"+feature.properties.pk.toString()).css('color','white')
+               
+                
+
+            },
+
+			mouseout: function(e){
+                resetHighlightReg(e),
+                $("#tr-"+feature.properties.pk.toString()).css('color','white')
+                $("#tr-"+feature.properties.pk.toString()).css('background-color','orange')
+            },
+			click: zoomToFeature
+		});
+        layer.bindPopup(popupContent);
+    }
 function onEachFeatureReg(feature, layer) {
         var popupContent="";
         if (feature.properties && feature.properties.NOM_REG) {
@@ -918,7 +997,10 @@ function onEachFeatureReg(feature, layer) {
 
         }
 		layer.on({
-			mouseover: highlightFeature,
+			mouseover: function(e){
+                highlightFeature(e)
+                
+            },
 			mouseout: resetHighlightReg,
 			click: zoomToFeature
 		});
@@ -938,8 +1020,9 @@ function onEachFeatureDisp(feature, layer) {
 		});
         layer.bindPopup(popupContent);
     }
-// Enregistrement du polluant et de l'??ce par defaut
-
+function activeCorrFilter(feature) {
+  if (feature.properties.active === true) return true
+}
 
 
 var reg_aura;
@@ -987,7 +1070,7 @@ $.ajax({
     }
 });
 function showModal(geom){
-
+    console.log(geom)
 	corr_coords=geom
 	$("#modal_corr_form").modal("show")
 	
@@ -1015,6 +1098,7 @@ $.ajax({
 
     }
 });
+
 var epci;
 var epci_2
 $.ajax({
@@ -1393,6 +1477,7 @@ $("#submitFormCorr").click(function (e) {
                     var tbl=meta_source_tbl(liste_sources[id_source])
                     $('#active_layer_div1 > table').remove()
                     $('#active_layer_div1').append(tbl)
+                    expMenu(activeLayer1[0])
                 }
             })      
         },
@@ -1405,8 +1490,9 @@ $("#submitFormCorr").click(function (e) {
             $("#error_tube").show();
         },        
     });
-    drawLayer.removeFrom(map)
- 
+    if (drawLayer != 'undefined') {
+        drawLayer.removeFrom(map)
+    }
 }); 
 
 /* Fonction ?cut?lors de l'annulation de l'envoi du formulaire de correction */
@@ -2101,7 +2187,9 @@ function get_expertises(id_source){
         },
        
         success : function(msg){
-            exps=msg
+            console.log(msg)
+            exps=JSON.parse(msg)
+            
         }
     })
     return exps;
@@ -2114,56 +2202,124 @@ function set_expertises(id_exp,bool){
             id_exp : id_exp,
 			active : bool,
              randomnocache: Math.random()
-        },
-       
+        },      
         success : function(msg){
             exps=msg
         }
     })
     return exps;
 }
+
 function expMenu(id_source){
-	exps=get_expertises(id_source)
-	$(".table-corr").remove()
-	console.log(id_but)
-	
-	html='<table class="table-responsive table-bordered table-corr"><tr><th>val</th><th data-toggle="tooltip" title="seuil minimum pour appliquer la correction">min</th><th data-toggle="tooltip" title="seuil maximum pour appliquer la correction">max</th><th>active</th></tr>'
-	
-	for (e in exps){
-		console.log(e)
-		ob=exps[e]
-		id_cbx='cbx_'+ ob['id'].toString()
-		var check='';
-		if (ob['active']==true){
-			check=' checked="checked "'
+	if (vectorLayers['corr']!=undefined){
+		ob=vectorLayers['corr']['objet']
+		if (map.hasLayer(ob)){
+			console.log(ob)
+			ob.removeFrom(map)
 		}
-
-		html+='<tr><td>'+ob.delta.toString()+'</td><td>'+ob.min.toString()+'</td><td>'+ob.max.toString()+'</td><td><input class="exp_cbx" id="'+id_cbx+'" type="checkbox" '+check+'></td></tr>'	
-
 	}
-	html+='</table>'
-	$('#exp-btn').after(html)
-	$( ".exp_cbx" ).change(function() {
-		id=$(this)[0].id.split("_")[1]
-        console.log(id)
-		bool=$(this).is( ":checked" )
-		set_expertises(id,bool)
+    console.log('expMenu')
+    $("#corr-table").remove()
+    id_but=$(".active")[1].id
+    console.log(id_but)
+	exps=get_expertises(id_source)
+	
+
+    // $(".table-corr").remove()
+	// console.log(id_but)
+	
+	// html='<table class="table-responsive table-bordered table-corr"><tr><th>val</th><th data-toggle="tooltip" title="seuil minimum pour appliquer la correction">min</th><th data-toggle="tooltip" title="seuil maximum pour appliquer la correction">max</th><th>active</th></tr>'
+	
+	// for (e in exps){
+		// console.log(e)
+		// ob=exps[e]
+		// id_cbx='cbx_'+ ob['id'].toString()
+		// var check='';
+		// if (ob['active']==true){
+			// check=' checked="checked "'
+		// }
+
+		// html+='<tr><td>'+ob.delta.toString()+'</td><td>'+ob.min.toString()+'</td><td>'+ob.max.toString()+'</td><td><input class="exp_cbx" id="'+id_cbx+'" type="checkbox" '+check+'></td></tr>'	
+
+	// }
+	// html+='</table>'
+	// $('#exp-btn').after(html)
+	// $( ".exp_cbx" ).change(function() {
+		// id=$(this)[0].id.split("_")[1]
+        // console.log(id)
+		// bool=$(this).is( ":checked" )
+		// set_expertises(id,bool)
         
-		id_but=$(".active")[1].id
-		switch_map_1(id_but)		
-	})
+	
+	// })
+    var field_filter={'delta':'delta','mn':'seuil inférieur','mx' : 'seuil supérieur'}
+    var tbl='<table style="border : 2px solid red;" id="corr-table" class="table-bordered"><thead>'
+
+    for (var key in field_filter){
+        tbl+='<th style="text-align : center; color : white; background-color : grey;">'+field_filter[key] + '</th>'
+    }
+    tbl+='<th style="text-align : center; color : white; background-color : grey;">dupliquer</th>'
+    tbl+='<th style="text-align : center; color : white; background-color : grey;">activer</th>'
+    tbl+='</thead></tbody>'
+    for(var i=0;i<exps["features"].length;i++){       
+        feat=exps["features"][i]      
+        var tr="<tr style='color : white; background-color : orange;' id='tr-"+feat['properties']['pk'].toString()+ "' >";
+        for (var key in field_filter){
+            console.log(key)         
+            console.log(feat["properties"][key])
+            td="<td style='text-align : center;'  >"+feat["properties"][key]+"</td>";
+            tr+=td
+            
+        }
+        var check='';
+        if (feat["properties"]['active'] == true){
+            check=' checked="checked "'
+        }
+        tr+='<td style="text-align : center; width : 20px;"><button style="text-align : center;" class="corr-duplicate-btn" id="duplicate-'+feat['properties']['pk'].toString()+'" style="float : right;"><span  class="glyphicon glyphicon-plus-sign"></span></button><td style="width : 20px;" class="corr-toggle-btn"><input  class="exp_cbx" id="cbx-'+feat['properties']['pk'].toString()+ '" type="checkbox" '+check+'></td></tr>'
+        tbl+=tr
+    } 
+    tbl+='</tbody></table'
+    console.log(tbl)
+    $('#map').after(tbl)
+    corr = L.geoJSON(
+        exps,
+        {
+            onEachFeature: onEachFeatureCorr,
+            style : myStyle,
+            //filter : activeCorrFilter
+        }
+    )
+
+    vectorLayers['corr']= {'objet' : corr}
+    corr.addTo(map)
+    $('#corr > span').removeClass('glyphicon-eye-close')
+     $('#corr > span').addClass('glyphicon-eye-open')
+	
 }
 $('.map-block').css('display','inline-block')
 function switch_ecran() {
-	var dis=$('.map-block').css('display')
-	if (dis=='inline-block'){
-		$('.map-block').css('display','inline')
-		$('#map-block2').css('display','none')
-	}
-	else {
-		$('.map-block').css('display','inline-block')
-		$('#map-block2').css('display','inline-block')
-	}
+	
+
+    if ($('#map-block2').css('width')=="0px"){
+        $('.map-block').css('width','49%')
+        $('#map-block2').css('width','49%')
+        $('#sidemenu2').css('display','inline-block')
+        
+    }
+    else {
+        $('.map-block').css('width','95%')
+        $('#map-block2').css('width','0%')
+        $('#sidemenu2').css('display','none')
+    }
+    
+	// if (dis=='inline-block'){
+		// $('.map-block').css('display','inline')
+		// $('#map-block2').css('display','none')
+	// }
+	// else {
+		// $('.map-block').css('display','inline-block')
+		// $('#map-block2').css('display','inline-block')
+	// }
 }
 // function drag_start(event) {
     // var style = window.getComputedStyle(event.target, null);

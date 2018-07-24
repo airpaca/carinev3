@@ -143,6 +143,7 @@ class Raster:
 				log.debug("**************** EXPERTISE *********************")
 				log.debug(expertise)
 				modif = np.zeros(data.shape)
+
 				if expertise.ssup:
 					mk_ssup = (modif+expertise.delta) <= expertise.ssup
 				else:
@@ -154,13 +155,15 @@ class Raster:
 				else : 
 					mk_smin = (data > 0)
 					
-				if expertise.mn:
+				if expertise.mn > 0:
 					mk_mn = (data >= expertise.mn)
+					
 				else:
 					mk_mn = (data > 0)
 				   
-				if expertise.mx:
+				if expertise.mx < 9999:
 					mk_mx = (data <= expertise.mx)
+
 				else:
 					mk_mx = (data > 0)
 					
@@ -182,9 +185,32 @@ class Raster:
 				log.debug(rbuf.shape)
 				log.debug(np.max(rbuf))
 				
-				
+
 				modif[(rbuf == 255) & mk_mn & mk_mx & mk_ssup & mk_smin] = expertise.delta
 				data += modif
+				print(np.max(data))
+				mk1=(data * (modif ==expertise.delta))
+				#modif[mk_mx_ecret] = 100
+				# if (expertise.mx < 9999):
+
+					# print(np.max(mk1))
+					# d2= (mk1 < expertise.mx) & (mk1 > 0)
+					# print(' d2: ' + str(d2.shape))
+					# print('mx : ' + str(expertise.mx)) 
+					# data[d2] = expertise.mx
+				
+				# if (expertise.mn > 0):
+					# d3= (mk1 > expertise.mn) 
+					# print(' d3: ' + str(d3.shape))
+					# print('mn : ' + str(expertise.mn)) 
+					# data[d3] = expertise.mn
+				
+				# d3=mk1 < expertise.mn
+				# print('mn : ' + str(expertise.mn)) 
+				# print(' d3: ' + str(d3.shape))
+				# data[d3] = expertise.mn
+			
+				
 		print("get_array() end : " +str(np.min(data)))
 		return data
 	def sample_gen(self, x,y, indexes=None):

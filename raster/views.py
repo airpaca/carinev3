@@ -1030,9 +1030,12 @@ def get_expertises(request):
 	log.debug(src)
 	exps=Expertise.objects.filter(target=src)
 	ls={}
-	for i in exps:
-		ls[i.id]=dict(id=i.id,min=i.mn,max=i.mx,delta=i.delta,active=i.active)
-	return JsonResponse(ls)
+
+	ser=serializers.serialize('geojson', exps,
+		  geometry_field='geom'
+		  )
+		#ls[i.id]=ser
+	return HttpResponse(ser)
 def set_expertises(request):
 	id_exp=request.GET.get('id_exp')
 	js_active = request.GET.get('active')
@@ -1114,8 +1117,11 @@ def save_note(request):
 	return HttpResponse('save  '  +note)
 	
 def get_ids(request):
+#yyyymmdd
 	ech=int(request.GET.get('ech'))
 	tsp=int(int(request.GET.get('tsp'))/1000)
+	if (len(request.GET.get('tsp'))== 8 ):
+		tsp = libcarine3.timestamp.getTimestampFromDate(request.GET.get('tsp'))
 	poll=request.GET.get('poll')
 	print(tsp)
 	print(poll)
@@ -1152,7 +1158,7 @@ def zipday(request):
 	for i in p:
 		urls.append(i.src.url_2154())
 	urlss['source']=urls
-	outf = os.path.join(ctx.previ_mod.archive,'carine-'+str(tsp)+'.zip')
+	outf = os.path.join(ctx.previ_mod.archive,'carine-'+datetime.datetime.fromtimestamp(tsp).strftime('%Y-%m-%d')+'.zip')
 	libcarine3.archivage.zipdir(outf,urlss)
 	return HttpResponse(urlss)
 def getzip(request):
@@ -1160,5 +1166,5 @@ def getzip(request):
 	tsp = request.GET.get('tsp') 
 	if (tsp=='0'):
 		tsp=timestamp.getTimestamp(0)
-	outf = os.path.join(ctx.previ_mod.archive_publique,'carine-'+str(tsp)+'.zip')
+	outf = os.path.join(ctx.previ_mod.archive_publique,'carine-'+datetime.datetime.fromtimestamp(tsp).strftime('%Y-%m-%d')+'.zip')
 	return HttpResponse(outf)
