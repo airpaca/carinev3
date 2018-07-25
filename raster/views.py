@@ -1158,7 +1158,7 @@ def zipday(request):
 	for i in p:
 		urls.append(i.src.url_2154())
 	urlss['source']=urls
-	outf = os.path.join(ctx.previ_mod.archive,'carine-'+datetime.datetime.fromtimestamp(tsp).strftime('%Y-%m-%d')+'.zip')
+	outf = os.path.join(ctx.previ_mod.archive,'carine-'+datetime.fromtimestamp(int(tsp)).strftime('%Y-%m-%d')+'.zip')
 	libcarine3.archivage.zipdir(outf,urlss)
 	return HttpResponse(urlss)
 def getzip(request):
@@ -1166,5 +1166,5 @@ def getzip(request):
 	tsp = request.GET.get('tsp') 
 	if (tsp=='0'):
 		tsp=timestamp.getTimestamp(0)
-	outf = os.path.join(ctx.previ_mod.archive_publique,'carine-'+datetime.datetime.fromtimestamp(tsp).strftime('%Y-%m-%d')+'.zip')
+	outf = os.path.join(ctx.previ_mod.archive_publique,'carine-'+datetime.fromtimestamp(int(tsp)).strftime('%Y-%m-%d')+'.zip')
 	return HttpResponse(outf)
