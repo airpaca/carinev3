@@ -18,10 +18,13 @@ class TodayState(models.Model):
 		print(self.file_ok)
 		print("heure de preprocess : " + str(self.date_preprocess))
 		print("heure de dernier access à raster_source/ada : " + str(datetime.fromtimestamp(stat.st_atime,pytz.timezone("Europe/Paris"))))
-		if (datetime.fromtimestamp(stat.st_atime,pytz.timezone("Europe/Paris")) > self.date_preprocess):
-			self.file_ok = False
-			self.save()
-		return self.file_ok
+		if self.date_preprocess == None :
+			return self.file_ok
+		else :
+			if (datetime.fromtimestamp(stat.st_atime,pytz.timezone("Europe/Paris")) > self.date_preprocess):
+				self.file_ok = False
+				self.save()
+			return self.file_ok
 
 	def __str__(self):
 		return str(self.date)
