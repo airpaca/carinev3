@@ -272,8 +272,9 @@ class Expertise(models.Model):
 		return dict(delta=self.delta, mn=self.mn, mx=self.mx,
 					geom=json.loads(self.geom.json))        
 
+	class Meta:
 
-		
+		ordering = ['id']
 class IndiceCom(models.Model):
 	indice=models.FloatField()
 	prev=models.ForeignKey(Prev,null=True)

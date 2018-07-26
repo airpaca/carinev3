@@ -17,6 +17,7 @@ import os
 from raster import models
 import affine
 from rasterio.io import MemoryFile
+from datetime import date
 log = logging.getLogger('libcarinev3.raster')
 
 
@@ -128,32 +129,34 @@ class Raster:
 		
 	def get_array(self):
 		data = self.r.read(1)
-		print('get_array data 1  :  '  + str(np.min(data)))
+
 		mask = (data == self.r.nodata)
 		shape=self.r.shape
 		aff=self.r.transform
 		# self.r.close()
 		#data = np.ma.array(data, mask=mask)
 		del mask
-		log.debug(f"read data from raster {self.fn}")
-
+		bascule_exp_order = date(2018,7,20)
+		if (date.fromtimestamp(self.source.daterun) < bascule_exp_order):
+			self.expertises = self.expertises[::-1]
 		# Apply modifications
 		for expertise in self.expertises:
 			if (expertise.active==True):
 				log.debug("**************** EXPERTISE *********************")
 				log.debug(expertise)
+				print(expertise)
 				modif = np.zeros(data.shape)
 
-				if expertise.ssup:
-					mk_ssup = (modif+expertise.delta) <= expertise.ssup
-				else:
-					mk_ssup = (data > 0)
+				# if expertise.ssup:
+					# mk_ssup = (modif+expertise.delta) <= expertise.ssup
+				# else:
+					# mk_ssup = (data > 0)
 				# Use mask if mn or mx
 				# FIXME: comment faire le traitement avec les bornes min et max
-				if expertise.smin:
-					mk_smin = (data + expertise.delta > expertise.mn)
-				else : 
-					mk_smin = (data > 0)
+				# if expertise.smin:
+					# mk_smin = (data + expertise.delta > expertise.mn)
+				# else : 
+					# mk_smin = (data > 0)
 					
 				if expertise.mn > 0:
 					mk_mn = (data >= expertise.mn)
@@ -179,14 +182,9 @@ class Raster:
 
 				else:
 					raise NotImplementedError()
-				rbuf = rasterize_zt(g,  shape, aff)
-				log.debug("--------------------------------------------------------------------------------rbuf.shape--------------------------------------------------------------")
-				log.debug(self.fn)
-				log.debug(rbuf.shape)
-				log.debug(np.max(rbuf))
-				
+				rbuf = rasterize_zt(g,  shape, aff)			
 
-				modif[(rbuf == 255) & mk_mn & mk_mx & mk_ssup & mk_smin] = expertise.delta
+				modif[(rbuf == 255) & mk_mn & mk_mx] = expertise.delta
 				data += modif
 				# print(np.max(data))
 				# mk1=(data * (modif ==expertise.delta))
@@ -353,3 +351,6 @@ class Raster:
 				dst.write(new_ar,1)
 				dst.close()
 			return 'toto'
+			
+
+	

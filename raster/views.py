@@ -158,7 +158,7 @@ def img_raster(request):
 	mode=request.GET.get('mode')
 	ob=Source.objects.get(id=id)
 	expertises = Expertise.objects.filter(target=ob)
-	
+
 	# Read raster
 	fnrst =ob.url()   
 	r = libcarine3.Raster(fnrst, pol=Polluant.objects.get(nom=ob.tsr.pol).val,source=ob)
@@ -1028,7 +1028,7 @@ def get_expertises(request):
 	log.debug(id_source)
 	src=Source.objects.get(id=id_source)
 	log.debug(src)
-	exps=Expertise.objects.filter(target=src)
+	exps=Expertise.objects.filter(target=src).reverse()
 	ls={}
 
 	ser=serializers.serialize('geojson', exps,
