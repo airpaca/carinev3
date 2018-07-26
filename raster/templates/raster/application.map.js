@@ -2212,12 +2212,15 @@ function set_expertises(id_exp,bool){
 }
 
 function expMenu(id_source){
+	
 	if (vectorLayers['corr']!=undefined){
 		ob=vectorLayers['corr']['objet']
-		if (map.hasLayer(ob)){
-			console.log(ob)
-			ob.removeFrom(map)
-		}
+
+			if (map.hasLayer(ob)){
+				console.log(ob)
+				ob.removeFrom(map)
+			}
+		
 	}
     console.log('expMenu')
     $("#corr-table").remove()
@@ -2291,9 +2294,12 @@ function expMenu(id_source){
     )
 
     vectorLayers['corr']= {'objet' : corr}
-    corr.addTo(map)
-    $('#corr > span').removeClass('glyphicon-eye-close')
-     $('#corr > span').addClass('glyphicon-eye-open')
+	if ($("#corr > .glyphicon-eye-open").length > 0){
+		corr.addTo(map)
+	}
+	
+    // $('#corr > span').removeClass('glyphicon-eye-close')
+    // $('#corr > span').addClass('glyphicon-eye-open')
 	
 }
 $('.map-block').css('display','inline-block')
