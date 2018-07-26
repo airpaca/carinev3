@@ -1012,6 +1012,7 @@ function onEachFeatureDisp(feature, layer) {
         var popupContent="";
         if (feature.properties && feature.properties.lib_court_) {
 			popupContent += feature.properties.id_zone + '<br>';
+			popupContent += feature.properties.lib_court_ + '<br>';
 			popupContent += '<button onclick=showModal('+JSON.stringify(feature['geometry']['coordinates'][0][0])+') >Corriger</button><br>';
         }
 		layer.on({
@@ -1024,6 +1025,7 @@ function onEachFeatureDisp(feature, layer) {
 function activeCorrFilter(feature) {
   if (feature.properties.active === true) return true
 }
+
 
 
 var reg_aura;
@@ -1070,6 +1072,7 @@ $.ajax({
 
     }
 });
+
 function showModal(geom){
     console.log(geom)
 	corr_coords=geom
@@ -2103,6 +2106,8 @@ function getStatHTML(id,obj){
     sei=obj['surf_exp_info']
     sepa=obj['surf_exp_perc_alerte']
     sepi=obj['surf_exp_perc_info']
+	max=obj['max']
+	mean=obj['mean']
     tr_dep_cls='tr_grey'
     if (dsi=='oui'){
         tr_dep_cls='tr_red'      
@@ -2118,13 +2123,15 @@ function getStatHTML(id,obj){
     }
     s='<tr class="'+tr_dep_cls+'">'+
         '<td>'+id+'</td>'+
-        '<td>'+lib+'</td>'+
+        '<td style="border-right : 1px solid black;">'+lib+'</td>'+
+		'<td>'+mean+'</td>'+
+        '<td style="border-right: 1px solid black;">'+max+'</td>'+
         '<td>'+sei+'</td>'+
         '<td>'+sepi+'</td>'+
         '<td>'+dsi+'</td>'+
         '<td>'+pei+'</td>'+
         '<td>'+pepi+'</td>'+
-        '<td>'+dpi+'</td>'+
+        '<td style="border-right : 1px solid black;">'+dpi+'</td>'+
         '<td>'+sea+'</td>'+
         '<td>'+sepa+'</td>'+
         '<td>'+dsa+'</td>'+

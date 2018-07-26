@@ -306,6 +306,8 @@ class DepassementReg(models.Model):
 	depassement_surf_info=models.BooleanField(default=False)
 	depassement_pop_alerte=models.BooleanField(default=False)
 	depassement_surf_alerte=models.BooleanField(default=False)
+	max=models.FloatField(null=True)
+	mean=models.FloatField(null=True)
 	def json(self):
 		dct= dict(
 			date=self.prev.date_prev,
@@ -321,11 +323,14 @@ class DepassementReg(models.Model):
 			depassement_pop_info=self.depassement_pop_info,
 			depassement_surf_info=self.depassement_surf_info,
 			depassement_pop_alerte=self.depassement_pop_alerte,
-			depassement_surf_alerte=self.depassement_surf_alerte
+			depassement_surf_alerte=self.depassement_surf_alerte,
+			max=self.max,
+			mean=self.mean
 			)
 		return dct
-	def __str__(self):
-		return self.json()
+
+	# def __str__(self):
+		# return self.json()
 class DatePrev(models.Model):
 	date_prev=models.IntegerField(default=libcarine3.timestamp.getTimestamp(0))
 	commentaire=models.CharField(max_length=10000,null=True,default=None)

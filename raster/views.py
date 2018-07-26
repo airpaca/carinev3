@@ -547,7 +547,10 @@ def calcul_stats_reg(request):
 	r = libcarine3.Raster(fnrst, pol=Polluant.objects.get(nom=ob.tsr.pol).val,source=ob,epsg=2154)
 	r.add_expertises(expertises)
 	log.debug(r.expertises)
+	disp=r'/home/previ/vector_source/disp_reg_aura.shp'
 	data=r.get_array()
+	zs_basics = zonal_stats(disp, data,stats=['mean','max'], affine=r.r.transform,geojson_out=True)
+	
 	if (ob.tsr.pol!='MULTI'):
 		data=libcarine3.merge_tools.sous_indice(data,Polluant.objects.get(nom=ob.tsr.pol).val)
 	data=data.repeat(10,axis=0).repeat(10,axis=1)
@@ -559,7 +562,7 @@ def calcul_stats_reg(request):
 	aff=r.r.transform
 	newaff = affine.Affine(aff.a / 10, aff.b, aff.c,aff.d, aff.e / 10, aff.f)
 
-	disp=r'/home/previ/vector_source/disp_reg_aura.shp'
+	
 	pixel_3857=0.01
 	data2 = (data>90)
 	data3 = data2 * pixel_3857
@@ -589,7 +592,16 @@ def calcul_stats_reg(request):
 	zs_surf_alerte = zonal_stats(disp, data3,stats=['sum','count'], affine=newaff,geojson_out=True) 
 	zs_pop_alerte = zonal_stats(disp, data4,stats=['sum'], affine=newaff,geojson_out=True)
 	
-	dct=dict()
+	dct=dict({})
+	for b in zs_basics:
+		print(b['properties'])
+		max=round(b['properties']['max'],2)
+		print("res pour : " + str(b["properties"]["id_zone"]))
+		print(max)
+		mean=round(b['properties']['mean'],2)
+		print(mean)
+		dct[b["properties"]["id_zone"]]={'max':max}
+		dct[b["properties"]["id_zone"]]['mean']=mean
 	for i in zs_pop_info :  
 		pop=i['properties']['pop_tr_sum']
 		pop_exp_info = round(i["properties"]['sum'],2)
@@ -601,7 +613,10 @@ def calcul_stats_reg(request):
 		elif (pop <= 500000) :
 			if (pop_exp_info > 50000):
 				depassement_pop_info=True
-		dct[i["properties"]["id_zone"]]={'lib' :i["properties"]['lib_court_'] ,'pop_exp_info': pop_exp_info,'pop_exp_perc_info':pop_exp_perc_info,'depassement_pop_info' : depassement_pop_info}
+		dct[i["properties"]["id_zone"]]['lib']=i["properties"]['lib_court_']
+		dct[i["properties"]["id_zone"]]['pop_exp_info']= pop_exp_info
+		dct[i["properties"]["id_zone"]]['pop_exp_perc_info'] = pop_exp_perc_info
+		dct[i["properties"]["id_zone"]]['depassement_pop_info'] = depassement_pop_info
 	for j in zs_surf_info:
 		surf_exp_info = round(j["properties"]['sum'],2)
 		surf=round(j["properties"]['count'],2)
@@ -634,8 +649,11 @@ def calcul_stats_reg(request):
 		dct[l["properties"]["id_zone"]]['pop_exp_alerte'] = pop_exp_alerte
 		dct[l["properties"]["id_zone"]]['pop_exp_perc_alerte'] = pop_exp_perc_alerte
 		dct[l["properties"]["id_zone"]]['depassement_pop_alerte'] = depassement_pop_alerte
+	print(dct)
 	for i in dct:
+		
 		obj = dct[i]
+		print(obj)
 		log.debug(i)
 		log.debug(obj)
 		log.debug("  ***********************  ")
@@ -654,6 +672,8 @@ def calcul_stats_reg(request):
 		surf_exp_perc_alerte = obj['surf_exp_perc_alerte']
 		depassement_pop_alerte = obj['depassement_pop_alerte']
 		depassement_surf_alerte = obj['depassement_surf_alerte']
+		max =  obj['max']
+		mean =  obj['mean']
 		qs=DepassementReg.objects.filter(zone=id_zone,prev=prev)
 		if (len(qs)==0):
 			dp=DepassementReg(
@@ -671,7 +691,9 @@ def calcul_stats_reg(request):
 				surf_exp_alerte = surf_exp_alerte,
 				surf_exp_perc_alerte = surf_exp_perc_alerte,
 				depassement_pop_alerte = depassement_pop_alerte,
-				depassement_surf_alerte = depassement_surf_alerte
+				depassement_surf_alerte = depassement_surf_alerte,
+				mean=mean,
+				max=max
 			)
 			dp.save()
 		elif (len(qs)==1):
@@ -688,6 +710,8 @@ def calcul_stats_reg(request):
 			dp.surf_exp_perc_alerte = surf_exp_perc_alerte
 			dp.depassement_pop_alerte = depassement_pop_alerte
 			dp.depassement_surf_alerte = depassement_surf_alerte
+			dp.mean=mean
+			dp.max=max
 			dp.save()
 		else : 
 			log.debug(" === trop d'enregistrements pour <qs=DepassementReg.objects.filter(id_zone=id_zone,prev=prev> ===")        
