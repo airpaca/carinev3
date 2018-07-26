@@ -137,8 +137,9 @@ class Raster:
 		#data = np.ma.array(data, mask=mask)
 		del mask
 		bascule_exp_order = date(2018,7,26)
-		if (date.fromtimestamp(self.source.daterun) < bascule_exp_order):
-			self.expertises = self.expertises[::-1]
+		if (self.source != None):
+			if (date.fromtimestamp(self.source.daterun) < bascule_exp_order):
+				self.expertises = self.expertises[::-1]
 		# Apply modifications
 		for expertise in self.expertises:
 			if (expertise.active==True):
