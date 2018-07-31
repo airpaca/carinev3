@@ -233,6 +233,7 @@ class Source(models.Model):
 		"""Object as JSON data."""
 		return dict(url=url, daterun=self.daterun, pol=self.tsr.pol, ech=self.tsr.ech, type=self.tsr.type, intrun=self.tsr.intrun,statut=self.statut)
 class Prev(models.Model):
+	date_prev_fk = models.ForeignKey(DatePrev,on_delete=models.SET_NULL,null=True)
 	date_prev=models.IntegerField(default=libcarine3.timestamp.getTimestamp(0))
 	pol=models.CharField(max_length=10,null=True)
 	ech=models.IntegerField(null=True)
@@ -335,6 +336,8 @@ class DatePrev(models.Model):
 	date_prev=models.IntegerField(default=libcarine3.timestamp.getTimestamp(0))
 	commentaire=models.CharField(max_length=10000,null=True,default=None)
 	previsionniste=models.CharField(max_length=100,null=True,default=None)
+	def date_prev_to_human(self):
+		return datetime.fromtimestamp(self.date_prev).strftime('%Y-%m-%d')
 class Polluant(models.Model):
 	nom=models.CharField(max_length=10,null=True,default=None)
 	lib=models.CharField(max_length=100,null=True,default=None)
