@@ -29,5 +29,5 @@ urlpatterns = [
     url(r'^raster/', include('raster.urls_config')),
     url(r'^admin/', admin.site.urls),
 	url(r'^raster/', include('raster.urls_accueil')),
-
+	url(r'^rest/', include('raster.urls_rest')),
 ]

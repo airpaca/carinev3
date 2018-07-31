@@ -153,4 +153,4 @@ config.py
 logins.*
 carine_output
 raster/lib_static/raster/vector_files/region_4326_AE.geojson
-
+raster/lib_static/rest_framework/*
