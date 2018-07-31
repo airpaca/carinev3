@@ -501,7 +501,7 @@ def alter_raster(request):
 	e.save()
 
 	return JsonResponse(dict(one='uh'))
-@login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
+#@login_required(login_url='accounts/login/?next=inf-carine3/carinev3/raster')
 def get_pixel(request):
 	id = request.GET.get('id')
 	x = request.GET.get('x')
@@ -620,6 +620,9 @@ def calcul_stats_reg(request):
 	for j in zs_surf_info:
 		surf_exp_info = round(j["properties"]['sum'],2)
 		surf=round(j["properties"]['count'],2)
+		print("********* SURF **********")
+		print(j["properties"]["id_zone"])
+		print(surf)
 		depassement_surf_info=False
 		if (surf_exp_info > 25):
 			depassement_surf_info = True
