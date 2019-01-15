@@ -11,7 +11,7 @@ import rasterstats
 import affine
 from rasterstats import zonal_stats
 
-log = logging.getLogger('carinev3.libcarine3.bqa_lib')
+log = logging.getLogger('libcarine3.bqa_lib')
 
 def insert_BQA(dct,bd):
 	#bqa_log=logins.db_BQA_dev
@@ -72,6 +72,7 @@ def get_BQA(sql_req,bd):
 	
 def calc_BQA(id_prev,bd):
 	prev=Prev.objects.get(id=id_prev)
+	log.debug(id_prev)
 	other_prevs=Prev.objects.filter(date_prev=prev.date_prev,ech=prev.ech)
 	dct=dict()
 	ids=[]
@@ -97,10 +98,12 @@ def calc_BQA(id_prev,bd):
 		r.add_expertises(expertises)
 		log.debug(r.expertises)
 		data=r.get_array()
+
 		if (ob.tsr.pol!='MULTI'):
 			data=libcarine3.merge_tools.sous_indice(data,config.from_name(ob.tsr.pol))
+
 		data=data.repeat(10,axis=0).repeat(10,axis=1)
-		
+
 		fpop=r'/home/previ/raster_source/pop/pop100m_2154.tif'
 		ds= rio.open(fpop)
 
@@ -108,16 +111,27 @@ def calc_BQA(id_prev,bd):
 		newaff = affine.Affine(aff.a / 10, aff.b, aff.c,aff.d, aff.e / 10, aff.f)
 		disp=r'/home/previ/vector_source/disp_reg_aura.shp'
 		zs_25 = zonal_stats(disp, data,raster_out=True,add_stats={'ibg_25':libcarine3.merge_tools.ibg_25},nodata=-999, affine=newaff,geojson_out=True)   
+		#print("************")
+
 		zs_pop = zonal_stats(disp, ds.read(1),raster_out=True, affine=newaff,geojson_out=True, nodata=-999) 
 		dct=dict()
 		poll_ids={'indice_o3':  8 , 'indice_no2' : 3 , 'indice_pm10': 24}
 		lib_ech=['J_moins_1','J','J_plus_1','J_plus_2']
 		lib_zone=""
 		for i in zs_25 :
+			# #print("ZONE : " + str(i["properties"]["id_zone"]))
+			# #print(np.max(i["properties"]["mini_raster_array"]))
 			#pour ne travailler que sur grenoble
 			if (i["properties"]["id_zone"])==2000:
+				#print(np.max(i["properties"]["mini_raster_array"]))
+				ind=np.ma.flatnotmasked_edges(np.ma.sort(np.ma.ravel(i["properties"]["mini_raster_array"])))[1]
+				#print(np.ma.sort(np.ma.ravel(i["properties"]["mini_raster_array"]))[:ind][-2500])
+				#print(np.max(np.ma.getdata(i["properties"]["mini_raster_array"])))
+				#print(np.sort(np.ma.getdata(i["properties"]["mini_raster_array"]).flat)[-2500])
 				pop=i['properties']['pop_tr_sum']
 				val=i['properties']['ibg_25']
+				#print("pop : " + str(pop))
+				#print("ibg_25 : " + str(val))
 				mini_aff=i['properties']['mini_raster_affine']
 				mini_arr=i['properties']['mini_raster_array']
 				mini_nodata=i['properties']['mini_raster_nodata']
@@ -149,6 +163,7 @@ def calc_BQA(id_prev,bd):
 						cumul+=j
 						if (cumul > 10 ):
 							ib_10=fl_sort[::-1][c]
+							#print("ib_10 : " + str(ib_10))
 							break
 					c+=1  
 				log.debug(" ******** boucle done ************" )                    
@@ -178,5 +193,7 @@ def calc_BQA(id_prev,bd):
 				log.debug(val)
 				log.debug(ib_10)
 	dct['2000']={lib_ech[pr.ech+1] : vals}
+	
+	#print(dct['2000'])
 	insert_BQA(dct,bd)
 	return dct

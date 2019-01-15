@@ -129,7 +129,7 @@ class Raster:
 		
 	def get_array(self):
 		data = self.r.read(1)
-
+		print(self.pol)
 		mask = (data == self.r.nodata)
 		shape=self.r.shape
 		aff=self.r.transform
@@ -210,7 +210,7 @@ class Raster:
 				# data[d3] = expertise.mn
 			
 				
-		print("get_array() end : " +str(np.min(data)))
+		print("get_array() end : " +str(np.max(data)))
 		return data
 	def sample_gen(self, x,y, indexes=None):
 		#rewrite de la source du meme nom de rio (rio.sample.sample_gen) 

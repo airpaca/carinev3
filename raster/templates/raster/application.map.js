@@ -2100,8 +2100,8 @@ function getStatHTML(id,obj){
     dsi=bool_lib(dsi)
     pea=obj['pop_exp_alerte']
     pei=obj['pop_exp_info']
-    pepa=obj['pop_exp_perc_alerte']
-    pepi=obj['pop_exp_perc_info']
+    // pepa=obj['pop_exp_perc_alerte']
+    // pepi=obj['pop_exp_perc_info']
     sea=obj['surf_exp_alerte']
     sei=obj['surf_exp_info']
     sepa=obj['surf_exp_perc_alerte']
@@ -2130,13 +2130,13 @@ function getStatHTML(id,obj){
         '<td>'+sepi+'</td>'+
         '<td>'+dsi+'</td>'+
         '<td>'+pei+'</td>'+
-        '<td>'+pepi+'</td>'+
+        // '<td>'+pepi+'</td>'+
         '<td style="border-right : 1px solid black;">'+dpi+'</td>'+
         '<td>'+sea+'</td>'+
         '<td>'+sepa+'</td>'+
         '<td>'+dsa+'</td>'+
         '<td>'+pea+'</td>'+
-        '<td>'+pepa+'</td>'+
+        // '<td>'+pepa+'</td>'+
         '<td>'+dpa+'</td>'+
     '</tr>'
 	

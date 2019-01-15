@@ -177,3 +177,4 @@ def get_fine_url_merge(id_prev):
 			urls.append(i.get_url_fine())
    
 	return urls
+	# return []

@@ -37,7 +37,7 @@ def scp_classic(fic,dest_host,dest_user,dest_dir):
     bname=os.path.basename(fic)
     #dest rep
     dest=dest_user + "@" + dest_host + ":" + os.path.join(dest_dir,bname)
-    msg=subprocess.call(['scp','-r','-p',fic,dest])
+    msg=subprocess.call(['scp','-r','-p',fic,dest.lower()])
     return msg
 
 
