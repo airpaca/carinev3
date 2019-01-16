@@ -1,109 +1,117 @@
-# Carine
+# Contenu
 
-  
-## Données d'entrées
+Clônage / paramétrage de l'appli :
+- 1 : création de l'environnement et clônage du dépôt
+- 2 : création de la base Postgres/Postgis
+- 3 : initialisation des paramètres
+- 4 : gérer les clés ssh pour l'export des fichiers
+- 5 : test du serveur de dev python
 
-Les rasters en entrée doivent, pour l'instant, être en projection 3857
-Un rééchantillonnage est aussi nécessaire pour l'affichage dans carine(chez AURA : taille de pixel temporairement fixée à 71.25 en 3857 en attendant de gérer le bug (memory leak de mpl, j'ai perdu la ref du tcket) ).
+Déploiement :
+- 6 : configuration apache / mod-wsgi
+- 7 : collecte des fichiers statiques
 
-Faire un prétraitement sur les rasters (à modif pour le 3857) :
-    gdalwarp -t_srs EPSG:4326 -ts 2500 0 -r bilinear raster_PACA_NO2_20_04_2017_jp0.tif wgs84_ld/raster_PACA_NO2_20_04_2017_jp0.tif
+Mise en place des flux de données quotidiens en entrée
+- 8 : incron sur les fichier récpetionnés de mod
+- 9 : cron pour archivage et purge automatique
 
-Traitement en série :
-    for fn in $( ls raster_PACA_*_??_??_????_j??.tif ); do gdalwarp -t_srs EPSG:4326 -ts 2500 0 -r bilinear ${fn}  wgs84_ld/${fn}; done
+Validation (en plus des tests de fonctionnements évidents):
+- 10 : disponiblité des images sur le serveur de tuiles
+- 11 : disponibilité des données SMILE (endpoints : commentaire / indices_com / basse_def)
 
-Configuration de la localisation des rasters dans le fichier `config.py`
-
+Erreurs déjà rencontrées
 
 ## Installation
 
-Clonage du dépôt et installation des dépendances
+1- création de l'environnement et clônage du dépôt
 
-    git clone airpaca@vmli-cal2:/home/airpaca/git/carinev3.git
+
+    git clone https://github.com/airpaca/carinev3
     cd carinev3
     python3.6 -m venv .env
     source .env/bin/activate
-    pip install -r requirements.txt
+    pip3.6 install -r requirements.txt
+
+
+  remarque : c'est une bonne pratique d'utiliser un venv pour éviter les conflits avec d'autres lib de l'install système, mais on ne l'a pas testé chez Aura, ça tourne chez nous sur l'install système. La config apache / wsgi pour le déploiement sera je crois légèrement différente.
+  
+2- création de la base Postgres/Postgis
 
 Création d'une base vierge
 
-    echo "CREATE DATABASE carinev3" | psql -h<host> -U<user> -d<postgres>
+    CREATE USER xxx WITH PASSWORD 'xxx';
+    CREATE DATABASE carinev3;
+    GRANT ALL PRIVILEGES ON DATABASE carinev3 TO xxx;
 
 Création d'un fichier logins.py à la racine avec les paramètres de connexion à la base de données
 
-    host = "..."
-    dbname = "..."
-    user = "..."
-    password = "..."
-  
-Si besoin, éditer et utiliser add_sources.py pour initialiser les TypeSourceRaster (on peut le faire par l'inteface admin mais ça peut prendre booooocoup de temps)  
-  
-Modification des paramètres utilisateur 
-    
-    Dans settings.py
+    #!/usr/bin/env python3
+    # coding: utf-8
+    db_prod={
+        'default': {
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
+            'NAME': 'xxx',
+            'USER': 'xxx',
+            'PASSWORD': 'xxx',
+            'HOST': 'localhost', #possibilité d'utiliser une base distante
+        }
+    }
+
+
+Editer postgresql.conf : 
+
+    Listen_adresses = ‘*’ au lieu de ‘localhost’ 
+
+Editer pg_hba.conf (/var/lib/pgsql/) 
+
+    => ajouter les réseaux internes et changer la méthode d’identification ident => password 
 
 Migration dans la base de données
+ => makemigrations lit le model.py et crée les commandes sql qui utilisées pour générer la structure de la base (accessibles dans /raster/migrations)
+ => migrate execute ces commandes et crée la base
+ 
+    python3.6 manage.py makemigrations
+    python3.6 manage.py migrate
 
-    python manage.py migrate
-    
-Lancement du serveur de développement
 
-    python manage.py runserver
+3 - initialisation des paramètres : 
+    - python3.6 manage.py shell et import add_sources.py pour l'initialisation générique
+    - /admin pour la partie spécifique à chaque install (=création de contextes : répertoires de données, machines distantes, etc..)
 
-L'application est disponible à l'adresse [http://localhost:8100](http://localhost:8100).
+4 - Lancement du serveur de développement
+
+    python3.6 manage.py runserver nom_domaine_ou_ip:numport
+
+L'application est disponible à l'adresse http://nom_domaine_ou_ip:numport.
 
 Si on utilise un serveur distant le, rajouter dans allowed hosts de carinev3/settings.py
 
     python manage.py runserver host:port
     
-# uPDATE EN PHASE DE DEV:
-    - a chaque acces a /raster :
-        - carine initialise les instances de prev pour la journée aucune n'existe
-    - DONC : si carine n'a pas été lancé certains jours (we par exemeple), besoin de lancer ça manuellement :
-        => /raster/init_today_<id_des_jours_a_initialiser>
-        avec :
-            - hier = 1
-            - avant-hier = 2
-            - ...
-        #check TODO list
-
     
-## Urls
+Erreurs déjà rencontrées :
 
-Index : `/raster/`
+    - 1  : Si carine renvoie une erreur lors de l’édition des géométries : vérifier que postgis est bien installé.. 
+    - 2  : En passant de la version 3.5 à la version 3.6.2 de geos, une erreur est apparue : la regex de django qui détecte la version de geos ne fonctionne plus, il faut l’éditer dans le fichier ou repasser à la version antérieure (qui fonctionne bien). Extrait de stackoverflow : 
+    "
+    The error says: 
+    GEOSException: Could not parse version info string "3.4.2-CAPI-1.8.2 r3921" 
+    And the geos_version_info warns: 
+    Regular expression should be able to parse version strings such as '3.0.0rc4-CAPI-1.3.3', '3.0.0-CAPI-1.4.1' or '3.4.0dev-CAPI-1.8.0' 
+    Edit this file: site-packages/django/contrib/gis/geos/libgeos.py 
+    Look for the function: geos_version_info 
+    And change this line: 
+    ver = geos_version().decode() 
+    With this line: 
+    ver = geos_version().decode().split(' ')[0] 
+    "
+    - 3 : sur centos : 
+    Disable SElinux (sinon il n’arrive pas à charger certaines libs comme geos ou gdal) 
+    Disable firewalld 
 
-Raster sous la forme d'une image : `url : `/raster/img/raster_<id>.png`
-=> on passe l'id de l'objet TypeSourceRaster qui contient les infos de polluant / ech / run / type 
+    - 4 : attention aux versions de Matplotlib, la (les) version 2 renvoie parfois des erreurs sur l'import de tkinter.
+    => le passage en version règle semble-t-il le problème 
 
-Enveloppe du raster : `nouvelle url : `/raster/bbox/raster_<id>.json`
-=> pareil, on passe l'id
 
-#TODO => url modifiée
-Liste des modifications : `/raster/modifications/<pol>/ech<ech>/list.json`
-    
-Enregistrement des modifications (requête `POST`) : `/raster/alter_raster/`
 
-## Communication
 
-Transmission des modifications client -> serveur sous la forme d'une requête 
-POST :
-
-    {"pol": "NO2", 
-     "ech": 0, 
-     "modifs": [
-        {"delta": 5, 
-         "geom": {
-            "type": "Point", 
-            "coordinates": [5, 45]
-        }},
-        {"delta": -10, 
-         "geom": {
-            "type": "Polygon", 
-            "coordinates": [[[6, 46], [7, 48], [8, 42], [6, 46]]]
-        }}
-     ]
-    }
-    
-## sous indices
-La formule (qui consiste à modifier des subsets d'une array numpy) se trouve dans libcarine3.merge_tools.py   
-=> pour faciliter la maintenance inter-aasqa, réfléchir à un moyen de mettre  ça dans le fichier de conf
